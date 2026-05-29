@@ -1,0 +1,13 @@
+{
+  "name": "video-director-v3",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Chinese script to HyperFrames HTML preview to approved MP4 render",
+  "scripts": {
+    "preview": "bash scripts/run_preview.sh",
+    "render": "bash scripts/render_approved_mp4.sh",
+    "clean": "bash scripts/clean_test_outputs.sh"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

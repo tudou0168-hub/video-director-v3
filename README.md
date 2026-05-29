@@ -1,0 +1,195 @@
+# Video Director V3
+
+中文文案自动生成 HyperFrames 动画预览，并在确认后自动渲染 MP4。
+
+## 项目定位
+
+V3 唯一主线：
+```
+中文文案 → AI 导演解析 → 视觉设计规范 → HyperFrames 动画预览 → 用户确认 → MP4 视频
+```
+
+**当前不是：**
+- talking-head overlay 系统
+- CapCut draft 系统
+- content_pack 工具
+- HyperFrames Studio native composition 项目
+
+## 快速开始
+
+### 安装依赖
+
+```bash
+cd /Users/muzi/video-director-v3
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python -m playwright install chromium
+```
+
+### 运行 preview
+
+```bash
+python3 -m video_director_v3.cli \
+  --script samples/scripts/minimal_obsidian_codex_hermes.md \
+  --platform douyin \
+  --target-duration 40 \
+  --project-id demo_v3_preview \
+  --output-mode hyperframes_preview \
+  --tts-mode edge_tts \
+  --tts-fallback system_say \
+  --design-variance 7 \
+  --motion-intensity 6 \
+  --visual-density 8 \
+  --no-allow-mock-audio
+```
+
+### 查看预览
+
+1. 打开 `outputs/demo_v3_preview/combined/index.html`
+2. 查看 `outputs/demo_v3_preview/review_frames/` 截图
+3. 检查 `outputs/demo_v3_preview/approval_required.json`
+
+### 审批后渲染 MP4
+
+```bash
+python3 -m video_director_v3.cli \
+  --project-id demo_v3_preview \
+  --output-mode render_mp4 \
+  --approved
+```
+
+找到最终视频：`outputs/demo_v3_preview/rendered/final_video.mp4`
+
+## 目录结构
+
+```
+video-director-v3/
+├── AGENTS.md
+├── README.md
+├── requirements.txt
+├── pyproject.toml
+├── package.json
+├── .gitignore
+├── docs/
+│ ├── architecture.md
+│ ├── quickstart-preview-to-mp4.md
+│ ├── migration-from-v2.md
+│ ├── design-system.md
+│ └── testing.md
+├── samples/scripts/
+│ └── minimal_obsidian_codex_hermes.md
+├── src/video_director_v3/
+│ ├── cli.py
+│ ├── config.py
+│ ├── pipeline/
+│ │ ├── pipeline_runner.py
+│ │ ├── stages.py
+│ │ └── project_paths.py
+│ ├── director/
+│ │ ├── script_semantic_extractor.py
+│ │ ├── narration_planner.py
+│ │ ├── input_relevance_evaluator.py
+│ │ └── storyboard_builder.py
+│ ├── design/
+│ │ ├── design_dials.py
+│ │ ├── design_profile_builder.py
+│ │ ├── brandkit_adapter.py
+│ │ └── stitch_design_adapter.py
+│ ├── tts/
+│ │ ├── tts_adapter.py
+│ │ └── edge_tts_provider.py
+│ ├── motion/
+│ │ ├── caption_beat_generator.py
+│ │ ├── visual_beat_planner.py
+│ │ ├── motion_event_bindings.py
+│ │ ├── component_registry.py
+│ │ └── semantic_transition_planner.py
+│ ├── renderers/
+│ │ ├── hyperframes/
+│ │ │ ├── html_renderer.py
+│ │ │ ├── combined_html_builder.py
+│ │ │ └── scene_layout_director.py
+│ │ └── browser/
+│ │ ├── review_frame_capturer.py
+│ │ └── browser_mp4_renderer.py
+│ ├── quality/
+│ │ ├── quality_checker.py
+│ │ ├── rendered_frame_inspector.py
+│ │ └── report_builder.py
+│ └── exporters/
+│ └── approval_gate.py
+├── scripts/
+│ ├── run_preview.sh
+│ ├── render_approved_mp4.sh
+│ └── clean_test_outputs.sh
+└── tests/
+```
+
+## 输出目录规则
+
+- **正式输出**: `outputs/<project_id>/`
+- **测试输出**: `test_outputs/<project_id>/`
+
+禁止写入 `src/outputs/` 或临时散落目录。
+
+## V3 两个模式
+
+### hyperframes_preview
+
+生成 HTML 动画预览，包含：
+- combined/index.html
+- review_frames/
+- approval_required.json
+- quality_report.json
+
+**禁止**生成 final_video.mp4。
+
+### render_mp4
+
+必须有 `--approved` flag。从已有 combined/index.html 渲染 MP4。
+
+## 常见问题
+
+### 黑屏
+检查 combined/index.html 是否正确加载，scene-layer divs 是否有 data-composition-id。
+
+### 没音频
+确认 audio/voiceover.mp3 存在，检查 TTS provider 是否正常。
+
+### 字幕重叠
+检查 caption_beats.json 中是否有 overlap，调整 beat 数量。
+
+### render_mp4 被拒绝，因为未 approve
+必须先运行 hyperframes_preview，再加 --approved 运行 render_mp4。
+
+### Studio native 不兼容
+combined/index.html 使用定制 GSAP 时间轴架构，不支持 HyperFrames Studio native preview。使用 file:// 协议直接打开 HTML 预览。
+
+## 设计技能融合
+
+V3 接入以下技能作为 Design Profile 层：
+
+- **stitch-skill**: 生成 DESIGN.md（视频视觉设计规范）
+- **brandkit**: 生成 brandkit.json（统一颜色、字体、组件风格）
+- **imagegen-frontend-***: 可选视觉参考图，不阻塞 preview
+- **三个设计旋钮**:
+  - DESIGN_VARIANCE (1-10): 控制版式变化度
+  - MOTION_INTENSITY (1-10): 控制动效强度
+  - VISUAL_DENSITY (1-10): 控制信息密度
+
+## 系统要求
+
+- Python 3.10+
+- ffmpeg / ffprobe
+- Node/npm（可选）
+- Playwright Chromium
+
+## 安装命令
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+python -m playwright install chromium
+```

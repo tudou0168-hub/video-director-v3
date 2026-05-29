@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.env
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Outputs - V3 uses outputs/ and test_outputs/ only
+outputs/
+test_outputs/
+
+# Node
+node_modules/
+package-lock.json
+
+# OS
+.DS_Store
+*.swp
+
+# IDE
+.vscode/
+.idea/
+
+# Temporary
+*.tmp
+*.log

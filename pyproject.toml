@@ -1,0 +1,19 @@
+[project]
+name = "video-director-v3"
+version = "0.1.0"
+description = "Chinese script to HyperFrames HTML preview to approved MP4 render"
+requires-python = ">=3.10"
+dependencies = [
+    "edge-tts>=6.1.12",
+    "playwright>=1.52.0",
+    "pydantic>=2.10.0",
+    "jsonschema>=4.23.0",
+    "pytest>=8.3.0",
+]
+
+[project.scripts]
+video-director-v3 = "video_director_v3.cli:main"
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
