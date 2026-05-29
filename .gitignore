@@ -10,6 +10,18 @@ venv/
 .coverage
 htmlcov/
 
+# Media files - generated during testing/rendering
+*.mp4
+*.wav
+*.mp3
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.webm
+*.mov
+*.avi
+
 # Outputs - V3 uses outputs/ and test_outputs/ only
 outputs/
 test_outputs/
