@@ -20,7 +20,7 @@ V3 唯一主线：
 ### 安装依赖
 
 ```bash
-cd /Users/muzi/video-director-v3
+cd <PROJECT_ROOT>
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
@@ -177,6 +177,22 @@ V3 接入以下技能作为 Design Profile 层：
   - DESIGN_VARIANCE (1-10): 控制版式变化度
   - MOTION_INTENSITY (1-10): 控制动效强度
   - VISUAL_DENSITY (1-10): 控制信息密度
+
+## Agent Handoff / Persistent Memory
+
+Claude Code 重启后不会自动记住项目历史。
+本项目使用 `docs/status` + `docs/agents` 作为持久化项目记忆。
+
+**任何智能体接手必须先读：**
+- `AGENTS.md` — 行为规范和接手要求
+- `docs/agents/ANY_AGENT_START_HERE.md` — 通用接手步骤
+- `docs/status/PROJECT_STATE.md` — 项目当前状态
+- `docs/status/NEXT_TASK.md` — 当前任务和禁止事项
+
+**启动新会话前运行：**
+```bash
+bash scripts/memory/start_agent_session.sh
+```
 
 ## 系统要求
 

@@ -1,5 +1,26 @@
 # V3 AI Agent 行为规范
 
+## Agent 接手须知
+
+**所有智能体接手本项目，必须先读以下文件：**
+
+1. `docs/status/PROJECT_STATE.md`
+2. `docs/status/NEXT_TASK.md`
+3. `docs/status/CURRENT_BUGS.md`
+4. `docs/status/LAST_KNOWN_GOOD.md`
+5. `docs/runbooks/COMMANDS.md`
+6. `docs/decisions/DECISION_LOG.md`
+
+**如果这些文件和聊天记录冲突，以这些文件为准。**
+
+禁止：
+- 不允许直接相信旧会话记忆
+- 不允许只看 README 就开始改
+- 不允许没有读 NEXT_TASK 就做功能
+- 不允许跳过验收标准
+
+---
+
 ## 唯一产品主线
 
 ```

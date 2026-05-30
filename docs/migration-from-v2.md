@@ -4,7 +4,7 @@
 
 This document lists modules migrated from the old project and explains why others were skipped.
 
-**Old project path:** /Users/muzi/video-director_CapCut2.0
+**Old project path:** <OLD_PROJECT_ROOT>
 
 ## Immediately Migrated
 

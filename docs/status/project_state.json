@@ -1,0 +1,46 @@
+{
+  "project": "video-director-v3",
+  "project_path": "<PROJECT_ROOT>",
+  "last_updated": "2026-05-30 10:47:54",
+  "current_stage": "V3-D2 full render (audio mux issue)",
+  "next_task": "V3-D2.0-A Fix Final MP4 Audio Mux",
+  "last_preview_project_id": "demo_v3_preview",
+  "key_outputs": {
+    "combined_index": "exists (44260 bytes)",
+    "voiceover_mp3": "exists (duration=40.920000s)",
+    "final_video": "exists (1178126 bytes)",
+    "approval_required": "status=READY, can_approve=True"
+  },
+  "stage_status": {
+    "V3-A_project_structure": "PASS",
+    "V3-B_migration": "PASS",
+    "V3-C1_hyperframes_preview": "PASS",
+    "V3-C1.1_review_frames": "PASS",
+    "V3-D1_smoke_render": "PASS",
+    "V3-D2_full_render_tech": "TECH_PASS",
+    "V3-D2_full_render_product": "FAIL (audio mux issue)"
+  },
+  "known_bugs": [
+    "P0: final_video.mp4 has no sound (audio mux issue)",
+    "P1: Debug controls visible in final_video.mp4",
+    "P1: Captions are cropped",
+    "P1: Frame cache (1023 images) not cleaned up",
+    "P2: Motion is weak (static frames)"
+  ],
+  "do_not_do": [
+    "Don't fix video rendering logic",
+    "Don't fix TTS",
+    "Don't fix combined_html_builder",
+    "Don't fix browser_mp4_renderer mux logic",
+    "Don't add visual components",
+    "Don't continue D2.1",
+    "Don't enter content_pack, CapCut, HyperFrames Studio native",
+    "Don't commit outputs/ to git"
+  ],
+  "commands": {
+    "preview": "PYTHONPATH=src .venv/bin/python3 -m video_director_v3.cli --script samples/scripts/minimal_obsidian_codex_hermes.md --platform douyin --target-duration 40 --project-id demo_v3_preview --output-mode hyperframes_preview --tts-mode edge_tts --tts-fallback system_say --design-variance 7 --motion-intensity 6 --visual-density 8 --no-allow-mock-audio",
+    "smoke_render": "PYTHONPATH=src .venv/bin/python3 -m video_director_v3.cli --project-id demo_v3_preview --output-mode render_mp4 --approved --render-smoke-seconds 5 --fps 25",
+    "full_render": "PYTHONPATH=src .venv/bin/python3 -m video_director_v3.cli --project-id demo_v3_preview --output-mode render_mp4 --approved --fps 25",
+    "tests": "PYTHONPATH=src .venv/bin/python3 -m pytest tests/ -v"
+  }
+}

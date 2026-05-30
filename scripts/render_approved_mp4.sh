@@ -3,7 +3,7 @@
 
 set -e
 
-cd /Users/muzi/video-director-v3
+cd $(pwd)
 
 python3 -m video_director_v3.cli \
   --project-id demo_v3_preview \

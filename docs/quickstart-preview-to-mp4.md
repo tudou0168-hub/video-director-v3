@@ -3,7 +3,7 @@
 ## Prerequisites
 
 ```bash
-cd /Users/muzi/video-director-v3
+cd <PROJECT_ROOT>
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt

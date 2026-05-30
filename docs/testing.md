@@ -3,7 +3,7 @@
 ## Running Tests
 
 ```bash
-cd /Users/muzi/video-director-v3
+cd <PROJECT_ROOT>
 pytest tests/ -v
 ```
 
