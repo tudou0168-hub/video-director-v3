@@ -1,88 +1,60 @@
 # LAST KNOWN GOOD
 
-## 可确认通过的能力
+## V3-P2.5 HUD Style System Upgrade
 
 | 能力 | 状态 | 备注 |
 |------|------|------|
-| combined/index.html 生成 | PASS | 44KB，包含 GSAP timeline |
-| TTS voiceover.mp3 | PASS | 40.92s，时长在 38-43s 合同范围内 |
-| review_frames 7张 | PASS | 7/7 帧捕获成功 |
-| approval_required.json | PASS | can_approve_preview=true |
-| render_mp4 smoke | PASS | 5s smoke MP4 生成 |
-| full render 生成 MP4 文件 | PASS | 40.92s MP4 文件存在 |
-| hyperframes 预览播放 | PASS | HTML 可用 Play/Pause 控制 |
-| 24 个单元测试 | PASS | 全部通过 |
+| HudExplainerSmoke composition | PASS | 450 frames @ 25fps = 18s |
+| HudPrimitives.tsx | PASS | 8 HUD 组件：HUD_COLORS, HudHeader, GlassPanel, BigMetric, StatusBadge, StepBadge, FlowLine, DataTable, ConclusionBar |
+| HookScene HUD 风格 | SMOKE PASS | HudHeader + BigMetric + StatusBadge + ConclusionBar |
+| PainCardStack HUD 风格 | SMOKE PASS | HudHeader + BigMetric + DataTable + ConclusionBar |
+| ProcessChainScene HUD 风格 | SMOKE PASS | HudHeader + BigMetric(4 BREAKS) + StatusBadge + FlowLine |
+| ToolWorkflowScene HUD 风格 | SMOKE PASS | HudHeader + StepBadge + ConclusionBar |
+| BeforeAfterScene HUD 风格 | SMOKE PASS | HudHeader + BigMetric(5h→40m) + ConclusionBar |
+| ChecklistScene HUD 风格 | SMOKE PASS | HudHeader + BigMetric(3/3) + StatusBadge + ConclusionBar |
 
-## 不能算通过的
+## 历史能力（保持通过）
 
 | 能力 | 状态 | 备注 |
 |------|------|------|
-| final_video.mp4 有声音 | **FAIL** | 用户反馈播放无声音，音频疑似损坏或 mux 错误 |
-| clean render | FAIL | 调试控件、时间、HUD 被录入视频 |
-| 字幕显示正确 | FAIL | 底部字幕被裁切 |
-| frame cache 清理 | FAIL | 1023 张临时帧保留在输出目录 |
+| Remotion 项目编译 | PASS | npx remotion build 成功 |
+| Remotion 场景组件 | PASS | 6 个 scene 全部可渲染 |
+| Remotion full render | PASS | 2063 帧 (82.5s) 渲染完成，4.4MB |
+| Remotion audio mux | PASS | ffmpeg 合成 video+audio 成功，82.52s |
 
-## 最近运行命令
+## V3-P2.5 Smoke 测试产物
 
-### Preview
+| 产物 | 路径 |
+|------|------|
+| smoke video | `outputs/demo_v3_p25_hud_style_smoke/smoke_18s.mp4` (1.8MB, 18.048s) |
+| review frames | `outputs/demo_v3_p25_hud_style_smoke/review_frames/` |
+| frame_1s.jpg | 110KB — HookScene, HUD 风格 |
+| frame_4s.jpg | 90KB — PainCardStack, HUD DataTable |
+| frame_7s.jpg | 94KB — ProcessChainScene, HUD 链路诊断 |
+| frame_10s.jpg | 95KB — ToolWorkflowScene, HUD 三端协作 |
+| frame_14s.jpg | 100KB — BeforeAfterScene, HUD 效率对比 |
+| frame_18s.jpg | 91KB — ChecklistScene, HUD 行动清单 |
+
+## Smoke 渲染命令
+
 ```bash
-cd <PROJECT_ROOT>
-source .venv/bin/activate
-PYTHONPATH=src .venv/bin/python3 -m video_director_v3.cli \
-  --script samples/scripts/minimal_obsidian_codex_hermes.md \
-  --platform douyin \
-  --target-duration 40 \
-  --project-id demo_v3_preview \
-  --output-mode hyperframes_preview \
-  --tts-mode edge_tts \
-  --tts-fallback system_say \
-  --design-variance 7 \
-  --motion-intensity 6 \
-  --visual-density 8 \
-  --no-allow-mock-audio
+cd /Users/muzi/video-director-v3/remotion_templates/hud_explainer
+npx remotion render src/Root.tsx "HudExplainerSmoke" \
+  /Users/muzi/video-director-v3/outputs/demo_v3_p25_hud_style_smoke/smoke_18s.mp4 \
+  --props /Users/muzi/video-director-v3/outputs/publishable_viral_v2/remotion_smoke_props.json
 ```
 
-### Smoke Render
+## 关键帧导出命令
+
 ```bash
-PYTHONPATH=src .venv/bin/python3 -m video_director_v3.cli \
-  --project-id demo_v3_preview \
-  --output-mode render_mp4 \
-  --approved \
-  --render-smoke-seconds 5 \
-  --fps 25
+cd /Users/muzi/video-director-v3
+for t in 1 4 7 10 14; do
+  ffmpeg -ss $t -i outputs/demo_v3_p25_hud_style_smoke/smoke_18s.mp4 \
+    -frames:v 1 -q:v 2 outputs/demo_v3_p25_hud_style_smoke/review_frames/frame_${t}s.jpg -y
+done
+ffmpeg -ss 17.8 -i outputs/demo_v3_p25_hud_style_smoke/smoke_18s.mp4 \
+  -frames:v 1 -q:v 2 outputs/demo_v3_p25_hud_style_smoke/review_frames/frame_18s.jpg -y
 ```
-
-### Full Render
-```bash
-PYTHONPATH=src .venv/bin/python3 -m video_director_v3.cli \
-  --project-id demo_v3_preview \
-  --output-mode render_mp4 \
-  --approved \
-  --fps 25
-```
-
-### Tests
-```bash
-PYTHONPATH=src .venv/bin/python3 -m pytest tests/ -v
-```
-
-### 诊断音频
-```bash
-ffprobe -v error -select_streams a:0 -show_entries stream=codec_name,sample_rate,channels,duration -of default=noprint_wrappers=1 <PROJECT_ROOT>/outputs/demo_v3_preview/rendered/final_video.mp4
-
-ffmpeg -i <PROJECT_ROOT>/outputs/demo_v3_preview/rendered/final_video.mp4 -map 0:a:0 -c copy /tmp/final_audio_check.aac
-
-ffmpeg -i /tmp/final_audio_check.aac -af "volumedetect" -f null /dev/null
-```
-
-## 最近 commit
-
-| 时间 | Commit | 内容 |
-|------|--------|------|
-| 2026-05-29 | 05ae50d | Update .gitignore: add media file extensions |
-| 2026-05-29 | 71f5386 | Initial commit: video-director-v3 project |
-| 未 commit | — | 11 个文件 + 2 个新文件未提交 |
 
 ---
-
 最后更新：2026-05-30

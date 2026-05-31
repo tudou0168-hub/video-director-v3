@@ -8,6 +8,7 @@
     "render": "bash scripts/render_approved_mp4.sh",
     "clean": "bash scripts/clean_test_outputs.sh"
   },
-  "dependencies": {},
-  "devDependencies": {}
+  "dependencies": {
+    "playwright": "^1.60.0"
+  }
 }

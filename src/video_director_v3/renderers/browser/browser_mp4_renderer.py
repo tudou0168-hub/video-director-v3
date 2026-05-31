@@ -60,6 +60,7 @@ async def _capture_frame(
     ts: float,
     frame_index: int,
     output_dir: Path,
+    clean_mode: bool = False,
 ) -> dict[str, Any]:
     frame_name = f"frame_{frame_index:06d}.png"
     output_path = output_dir / frame_name
@@ -91,6 +92,7 @@ async def _capture_frame_sequence(
     output_dir: Path,
     fps: int = 25,
     duration: float = 40.0,
+    clean_mode: bool = False,
 ) -> dict[str, Any]:
     """Capture frame sequence from HTML using Playwright."""
     frame_duration = 1.0 / fps
@@ -116,6 +118,30 @@ async def _capture_frame_sequence(
                 timeout=30000,
             )
             await page.wait_for_timeout(5000)
+
+            # Inject clean mode CSS to hide debug controls
+            if clean_mode:
+                await page.evaluate("""
+                    () => {
+                        const style = document.createElement('style');
+                        style.textContent = `
+                            #combined-progress, #combined-hud, #combined-time, #combined-controls, .scene-label {
+                                display: none !important;
+                            }
+                            #combined-captions {
+                                left: 72px !important;
+                                right: 72px !important;
+                                transform: none !important;
+                            }
+                            .caption-beat {
+                                left: 0 !important;
+                                right: 0 !important;
+                                width: auto !important;
+                            }
+                        `;
+                        document.head.appendChild(style);
+                    }
+                """)
 
             timeline_ok = await page.evaluate("""
                 () => !!(window.__timelines && window.__timelines["combined"])
@@ -206,6 +232,8 @@ async def render_browser_mp4(
     fps: int = 25,
     smoke_seconds: float | None = None,
     progress_callback=None,
+    clean_mode: bool = True,
+    keep_frames: bool = False,
 ) -> dict[str, Any]:
     """Render MP4 from combined/index.html using Playwright + FFmpeg.
 
@@ -214,6 +242,8 @@ async def render_browser_mp4(
         fps: frames per second for output video
         smoke_seconds: if set, only render this many seconds (smoke test)
         progress_callback: optional callable(frame_count, total) for progress
+        clean_mode: if True, inject CSS to hide debug controls (default: True)
+        keep_frames: if True, keep frames/ directory after render (default: False)
 
     Returns render report dict.
     """
@@ -259,6 +289,7 @@ async def render_browser_mp4(
         output_dir=rendered_dir,
         fps=fps,
         duration=render_duration,
+        clean_mode=clean_mode,
     )
 
     if capture_result["status"] == "FAIL":
@@ -296,6 +327,27 @@ async def render_browser_mp4(
     has_video = ffprobe_has_stream(final_video, "v")
     has_audio = ffprobe_has_stream(final_video, "a")
 
+    # ── Step 5: Cleanup frames cache ─────────────────────────────────────
+    frames_cache_cleaned = False
+    frames_cache_exists_after = frames_dir.exists() and any(frames_dir.iterdir()) if frames_dir.exists() else False
+    if not keep_frames and frames_dir.exists():
+        import shutil
+        shutil.rmtree(frames_dir)
+        frames_cache_cleaned = True
+        frames_cache_exists_after = False
+
+    # Determine clean_render status
+    clean_render_status = "PASS"
+    clean_render_issues = []
+    if not clean_mode:
+        clean_render_issues.append("clean_mode was disabled")
+    if frames_cache_exists_after:
+        clean_render_status = "FAIL"
+        clean_render_issues.append("frames/ directory still exists after render")
+    if clean_mode and frames_dir.exists() and not any(frames_dir.iterdir()):
+        # frames dir exists but is empty - OK
+        pass
+
     render_status = "PASS"
     issues = []
     if not has_video:
@@ -309,6 +361,15 @@ async def render_browser_mp4(
             issues.append(f"Final duration {final_duration:.2f}s outside contract")
     if frames_generated < frames_expected * 0.95:
         issues.append(f"Only {frames_generated}/{frames_expected} frames captured")
+    if clean_render_status == "FAIL":
+        render_status = "FAIL"
+        issues.extend(clean_render_issues)
+
+    # Count final_review_frames
+    final_review_frames_dir = project_dir / "final_review_frames"
+    final_review_frames_count = 0
+    if final_review_frames_dir.exists():
+        final_review_frames_count = len(list(final_review_frames_dir.iterdir()))
 
     return {
         "status": render_status,
@@ -329,6 +390,15 @@ async def render_browser_mp4(
         "final_video_duration": final_duration or 0.0,
         "render_status": render_status,
         "issues": issues,
+        # Clean render fields
+        "clean_render_status": clean_render_status,
+        "debug_controls_hidden": clean_mode,
+        "captions_layout_fixed": clean_mode,
+        "frames_cache_cleaned": frames_cache_cleaned,
+        "frames_cache_path": str(frames_dir),
+        "frames_cache_exists_after_render": frames_cache_exists_after,
+        "final_review_frames_count": final_review_frames_count,
+        "clean_render_issues": clean_render_issues,
     }
 
 

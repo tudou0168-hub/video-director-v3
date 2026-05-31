@@ -17,6 +17,10 @@ def build_combined_html(
     duration_contract: Any | None = None,
 ) -> dict[str, Any]:
     """Build combined/index.html from storyboard."""
+    # Import here to avoid circular dependency
+    from video_director_v3.renderers.hyperframes.publish_templates import (
+        get_scene_body, get_scene_css, get_scene_gsap,
+    )
     project_id = storyboard.get("project", {}).get("project_id", "unknown")
     scenes = storyboard.get("scenes", [])
 
@@ -37,8 +41,10 @@ def build_combined_html(
         duration = float(scene.get("duration", 5.0))
         layout = scene.get("layout_type", f"{role}_centered")
 
-        # Generate scene body from role
-        body_content = _generate_scene_body(sid, role, scene)
+        # Generate scene body/CSS/GSAP using publish_templates
+        body_content = get_scene_body(sid, role, scene)
+        scene_css = get_scene_css(sid, role, scene)
+        scene_gsap = get_scene_gsap(sid, role, scene, start, duration)
 
         scene_parts.append({
             "scene_id": sid,
@@ -48,8 +54,8 @@ def build_combined_html(
             "body": body_content,
             "layout": layout,
             "components": scene.get("components", []),
-            "css": _generate_scene_css(sid, role),
-            "gsap": _generate_scene_gsap(sid, role, start, duration),
+            "css": scene_css,
+            "gsap": scene_gsap,
         })
 
     # Resolve audio

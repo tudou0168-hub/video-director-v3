@@ -40,6 +40,7 @@ def main() -> int:
     parser.add_argument("--render-smoke-seconds", type=float, default=None)
     parser.add_argument("--fps", type=int, default=25)
     parser.add_argument("--test-mode", action="store_true")
+    parser.add_argument("--keep-frames", action="store_true", help="Keep frames/ directory after render (default: False)")
 
     args = parser.parse_args()
 
@@ -429,6 +430,8 @@ def run_render(args: argparse.Namespace, project_dir: Path) -> int:
                 project_dir=project_dir,
                 fps=args.fps,
                 smoke_seconds=smoke_dur,
+                clean_mode=True,
+                keep_frames=args.keep_frames,
             )
         )
 
@@ -441,6 +444,9 @@ def run_render(args: argparse.Namespace, project_dir: Path) -> int:
         print(f"  duration: {report.get('final_video_duration', 0):.2f}s")
         print(f"  video_stream: {report.get('final_video_has_video_stream')}")
         print(f"  audio_stream: {report.get('final_video_has_audio_stream')}")
+        print(f"  clean_render_status: {report.get('clean_render_status')}")
+        print(f"  frames_cache_cleaned: {report.get('frames_cache_cleaned')}")
+        print(f"  final_review_frames_count: {report.get('final_review_frames_count', 0)}")
 
         if report.get("issues"):
             print(f"  issues: {report['issues']}")

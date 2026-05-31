@@ -2,60 +2,36 @@
 
 ## 当前任务
 
-**V3-D2.0-A Fix Final MP4 Audio Mux**
+**V3-P2.5 HUD Style System Upgrade Smoke** — 等待人工审查 6 张关键帧。
 
-## 目标
+## 任务背景
 
-修复 final_video.mp4 无声音问题。
+V3-P2.5 Goal 1-4 已完成：
+- Goal 1: 新增 HudExplainerSmoke composition (450 frames @ 25fps = 18s)
+- Goal 2: 新增 HudPrimitives.tsx (8 个 HUD 组件)
+- Goal 3: 6 个 scene 改造为 HUD 信息系统风
+- Goal 4: smoke_18s.mp4 生成，6 张 review frames 导出
 
-用户反馈：
-- 单独 voiceover.mp3 播放正常
-- final_video.mp4 播放无声音
-- render_report.json 报告 audio stream 存在，但实际播放异常
+Smoke 验收通过，等待人工审查。
 
-## 验收标准
+## 产出清单
 
-修复完成后必须满足：
+| 产物 | 路径 |
+|------|------|
+| smoke video | `outputs/demo_v3_p25_hud_style_smoke/smoke_18s.mp4` (1.8MB, 18s) |
+| review frames | `outputs/demo_v3_p25_hud_style_smoke/review_frames/` |
+| frame_1s.jpg | 110KB, 1080x1920 |
+| frame_4s.jpg | 90KB, 1080x1920 |
+| frame_7s.jpg | 94KB, 1080x1920 |
+| frame_10s.jpg | 95KB, 1080x1920 |
+| frame_14s.jpg | 100KB, 1080x1920 |
+| frame_18s.jpg | 91KB, 1080x1920 |
 
-1. `ffprobe -select_streams a` 在 final_video.mp4 上有输出
-2. 从 final_video.mp4 抽取的 audio 时长 >= 视频时长 * 0.9
-3. `ffmpeg volumedetect` mean_volume > -40dB（非静音）
-4. render_report.json 增加 `audio_truth_status: PASS`
-5. 用户实际播放 final_video.mp4 能听到声音
+## 下一步
 
-## 当前禁止
-
-- 不要做视觉优化
-- 不要做 D2.1（clean render）
-- 不要改 TTS
-- 不要改字幕
-- 不要重构 pipeline
-- 不要新增视觉组件
-- 不要做 motion validation
-- 不要改变 approval gate 逻辑
-- **不要改 browser_mp4_renderer 的 mux 逻辑以外的代码**（见约束）
-
-## 约束
-
-根据用户明确要求：
-- 不修改 browser_mp4_renderer 的 mux 逻辑
-- 不修改视频渲染逻辑
-- 不修改 TTS
-
-**仅允许**：
-- 诊断问题根因
-- 在 render_report 或 quality_report 中增加音频真实性检查
-- 修改 mux 命令参数（如果问题是参数错误）
-- 清理无效的 frame cache
-
-## 下一步骤
-
-1. 运行 CURRENT_BUGS.md 中的诊断命令
-2. 确认 audio mux 问题根因
-3. 修复后重新渲染
-4. 验证音频真实性
-5. 更新 PROJECT_STATE.md / CURRENT_BUGS.md / LAST_KNOWN_GOOD.md
+1. 人工审查 6 张关键帧
+2. 通过后：决定是否进入下一阶段
+3. **不建议直接 full render**，先确认 HUD 风格达标
 
 ---
-
 最后更新：2026-05-30

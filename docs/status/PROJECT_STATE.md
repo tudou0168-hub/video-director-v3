@@ -36,77 +36,53 @@ script.md
 | V3-C1 hyperframes_preview | PASS | combined/index.html 生成 |
 | V3-C1.1 review_frames | PASS | 7/7 帧捕获成功 |
 | V3-D1 smoke render_mp4 | PASS | 5s smoke MP4 生成 |
-| V3-D2 full render_mp4 | **TECH PASS / PRODUCT FAIL** | MP4 生成但音频疑似异常 |
+| V3-D2 full render_mp4 | PASS | MP4 生成正常，音频验证通过 |
+| V3-D2.1 clean render | PASS | 隐藏调试控件，修复字幕容器宽度 |
+| V3-D2.2 productionize clean render | PASS | clean_mode 固化进 pipeline |
+| **V3-P2.1 Remotion Minimal Publishable** | **PASS** | Remotion 模板渲染 82.5s 视频，6 个关键帧验证 |
+| **V3-P2.2 Remotion Visual Upgrade** | **PASS** | 6 个 scene 全部增强动画和视觉密度 |
 
-**V3-D2 技术层面**：final_video.mp4 存在 video+audio stream，时长 40.92s，文件 1.1MB。
-**V3-D2 产品层面**：用户反馈播放无声音，音频 mux 需诊断。
+**V3-P2 视觉渲染技术栈**：Remotion → HTML/CSS/React 动画 → MP4
 
 ## 当前最高优先级
 
-### P0（暂停，跳过）
-修复 final_video.mp4 无声音问题。**已暂停，优先建立记忆系统。**
+### P0
+V3-P2.3 Full Remotion Render — 用正确 18s smoke props 渲染 smoke，验证通过后 full render 82.5s。
 
 ### P1
-Clean Render Mode：
-- 隐藏 Play/Pause/Reset 调试控件
-- 隐藏时间调试框（S01 · hook / 0.0s / 40.9s）
-- 隐藏 scene label
-- 隐藏进度条
-- 修复字幕裁切（底部字幕只露出右侧）
-- 逐帧缓存默认删除，只保留 final review frames
-
-### P2
-Motion Validation：
-- 检测重复帧
-- 检测静态视频
-- 检测调试 UI
-- 检测字幕裁切
+- Remotion 完整 82.5s 渲染 + audio mux
+- 最终视频质量人工验收
 
 ## 当前不要做
 
-- 不要重构 HyperFrames Studio native。
-- 不要接 CapCut。
-- 不要做 content_pack 主线。
-- 不要接素材库。
-- 不要新增复杂视觉组件。
-- 不要优化视觉风格，直到音频 mux 和 clean render 修完。
-- 不要把 smoke video 当 final video。
-- 不要把有 video/audio stream 当作最终产品成功，必须实际播放有声音、画面可看。
-- **不要修复视频无声音问题**（本阶段目标）。
-- 不要做 D2.1。
-
-## 当前关键路径
-
-当前阶段：**建立持久化记忆系统和交接文档**
-
-下一步（音频问题修复阶段）：
-V3-D2.0-A Fix Final MP4 Audio Mux
-
-然后才做：
-V3-D2.1 Clean Render Mode + Motion Validation
+- 不要回到 Playwright 截帧路线
+- 不要改 TTS / audio path
+- 不要重构 V3 director layer
+- 不要修 publish_templates.py
+- 不要继续扩展 Remotion 组件库（当前 6 个 scene 已够用）
 
 ## 关键产物路径
 
 | 产物 | 路径 |
 |------|------|
-| 唯一预览权威 | `outputs/demo_v3_preview/combined/index.html` |
-| TTS 音频 | `outputs/demo_v3_preview/audio/voiceover.mp3` (40.92s) |
-| 最终视频 | `outputs/demo_v3_preview/rendered/final_video.mp4` |
-| 审批 gate | `outputs/demo_v3_preview/approval_required.json` |
-| 质量报告 | `outputs/demo_v3_preview/quality_report.json` |
+| Remotion 模板 | `remotion_templates/hud_explainer/` |
+| smoke props | `outputs/publishable_viral_v2/remotion_smoke_props.json` |
+| full props | `outputs/publishable_viral_v2/remotion_props.json` |
+| smoke 视频 | `outputs/publishable_viral_v2/remotion_smoke_v2/final_video.mp4` |
+| smoke 帧 | `outputs/publishable_viral_v2/remotion_smoke_v2/frames/` |
 
-## 项目约束
+## 当前视觉风格
 
-- **输出目录**：仅 `outputs/<project_id>/` 和 `test_outputs/<project_id>/`
-- **禁止**写入 `src/outputs/` 或散落临时目录
-- **禁止** hyperframes_preview 模式生成 final_video.mp4
-- **禁止** render_mp4 无 --approved 就渲染
-- **禁止** mock final_video 冒充真实视频
+AI 科技解释型 HUD 风格：
+- 深色渐变背景 (#050814)
+- 细网格 + 柔光光斑
+- 半透明玻璃卡片
+- 青蓝/橙红/荧光绿强调色
+- Spring / ease-out 动效
 
 ## 测试状态
 
 24 个测试全部通过（最近运行：2026-05-30）
 
 ---
-
 最后更新：2026-05-30
