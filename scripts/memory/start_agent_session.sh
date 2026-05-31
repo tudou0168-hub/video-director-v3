@@ -7,7 +7,8 @@ echo "Video Director V3 — Agent Start Here"
 echo "=========================================="
 echo ""
 
-PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 echo "Step 1: Read PROJECT_STATE.md"
 echo "---"
