@@ -14,7 +14,7 @@ pytest tests/ -v
 | test_paths.py | Verify outputs go to outputs/ or test_outputs/, never src/outputs |
 | test_input_relevance.py | Verify sample script input_relevance_score >= 0.7 |
 | test_tts_contract.py | Verify audio duration is 38-43 seconds |
-| test_preview_pipeline.py | Run minimal preview, check combined/index.html exists with audio |
+| test_preview_pipeline.py | Run minimal preview, check hyperframes_timeline/ exists with audio |
 | test_render_gate.py | Verify render_mp4 without --approved fails |
 
 ## Smoke Test

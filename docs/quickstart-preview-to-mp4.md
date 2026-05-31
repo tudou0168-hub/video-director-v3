@@ -29,9 +29,10 @@ python3 -m video_director_v3.cli \
 
 ## Step 2: Inspect Preview
 
-1. Open `outputs/demo_v3_preview/combined/index.html` in browser
-2. Check `outputs/demo_v3_preview/review_frames/` for screenshots
-3. Review `outputs/demo_v3_preview/approval_required.json`
+1. 启动 HyperFrames Studio 本地服务（确保 `http://localhost:3002` 可访问）
+2. 打开：`http://localhost:3002/#project/hyperframes_timeline`
+3. 检查 `outputs/demo_v3_preview/review_frames/` 截图
+4. 检查 `outputs/demo_v3_preview/approval_required.json`
 
 ## Step 3: Approve and Render
 

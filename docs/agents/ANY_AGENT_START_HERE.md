@@ -22,22 +22,24 @@ source .venv/bin/activate
 PYTHONPATH=src .venv/bin/python3 -m pytest tests/ -v --tb=short
 
 # 确认产物存在
-ls -la outputs/demo_v3_preview/combined/index.html
+ls -la outputs/demo_v3_preview/hyperframes_timeline/index.html
 ls -la outputs/demo_v3_preview/audio/voiceover.mp3
 ls -la outputs/demo_v3_preview/rendered/final_video.mp4
 ```
 
 ## 第三步：当前只能做什么
 
-**V3-D2.0-A Fix Final MP4 Audio Mux**
+**V3-P2.7 Docs Native Only Cleanup（已完成）**
+
+下一任务：**V3-P2.7-G2-R9-Native-Fix** — 修复 HyperFrames Studio 原生预览
 
 禁止：
-- 不要做视觉优化
-- 不要做 D2.1（clean render）
-- 不要改 TTS
-- 不要改 combined_html_builder
-- 不要改 browser_mp4_renderer 的 mux 逻辑以外的代码
-- 不要新增功能
+- 不要 render MP4
+- 不要重新生成 TTS
+- 不要改男声
+- 不要接 CapCut
+- 不要迁移旧 pipeline
+- 不要重构系统
 
 ## 第四步：禁止做什么
 

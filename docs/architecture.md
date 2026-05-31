@@ -13,7 +13,7 @@ script.md → hyperframes_preview → approval_required.json → render_mp4 → 
 video-director-v3/
 ├── outputs/                    # Formal project outputs
 │   └── <project_id>/
-│       ├── combined/index.html
+│       ├── hyperframes_timeline/index.html
 │       ├── review_frames/
 │       ├── rendered/
 │       └── ...

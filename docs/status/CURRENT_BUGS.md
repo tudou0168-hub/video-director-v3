@@ -1,47 +1,40 @@
 # CURRENT BUGS
 
-## P0 — Smoke 视频时长不符（已修复 ✅）
+## P0 — R9 HyperFrames Studio 打开显示"请先选择"（待修复）
 
-**问题**：smoke_props.json 指定 duration_seconds: 18.0，但静态 composition 注册为 2063 帧（82.5s）。导致 smoke 渲染实际输出了 82s 而非 18s。
+**问题**：R9 的 HyperFrames Studio 原生项目默认 composition/entry/manifest 不完整，导致 Studio 打开后 stage 显示"请先选择"，而非直接显示 scene01。
 
-**影响**：smoke 测试无法准确验证 18s 范围内的视觉增强效果
+**影响**：无法通过 HyperFrames Studio 原生预览验收
 
-**修复方式**：在 Root.tsx 新增 HudExplainerSmoke composition，durationInFrames=450，fps=25，直接渲染 18s smoke，不再依赖 --frame-range 或 ffmpeg 截取。
+**修复方式**：修复 Root.tsx / manifest/entry 确保 Studio 打开即显示 scene01
 
-**状态**：✅ 已修复（V3-P2.5 Goal 1）
+**不允许的绕过方式**：
+- autoplay 或 JS 强制 play
+- file:// 普通 HTML 作为通过
+- 回到 combined/index.html 路线
 
----
-
-## P1 — 字幕黑条仍较重
-
-**问题**：Caption.tsx 透明度 0.52，仍可能影响主体画面
-
-**涉及文件**：src/components/Caption.tsx
-
-**修复方向**：可进一步降低透明度至 0.35，适配 HUD 风格
-
-**状态**：低优先级，V3-P2.5 未涉及
+**状态**：待 V3-P2.7-G2-R9-Native-Fix 修复
 
 ---
 
-## P2 — 动画流畅度可提升
+## P1 — combined/index.html 旧路线需清理
 
-**问题**：部分 spring 动画可能有跳跃感
+**问题**：V3 早期文档大量出现 combined/index.html / file:// / 自定义 GSAP 等旧路线描述
 
-**涉及文件**：各 scene 的 spring config
+**涉及文件**：README.md, AGENTS.md, docs/status/*.md, docs/runbooks/COMMANDS.md 等
 
-**修复方向**：调整 damping/stiffness 参数
+**修复方式**：V3-P2.7-Docs-Native-Only-Cleanup 阶段统一清理，改为 HyperFrames Studio 原生预览
 
-**状态**：低优先级，不阻塞主线
-
----
-
-## V3-P2.5 待解决
-
-| 问题 | 状态 |
-|------|------|
-| 6 张关键帧人工审查 | **PENDING HUMAN REVIEW** |
-| 是否进入下一阶段 | 待决策 |
+**状态**：✅ V3-P2.7-Docs-Native-Only-Cleanup 已完成
 
 ---
-最后更新：2026-05-30
+
+## 低优先级（不阻塞主线）
+
+| 问题 | 涉及文件 | 修复方向 | 状态 |
+|------|------|------|------|
+| 字幕黑条较重 | Caption.tsx | 透明度可降至 0.35 | 低优先级 |
+| 动画流畅度 | 各 scene spring config | 调整 damping/stiffness | 低优先级 |
+
+---
+最后更新：2026-05-31

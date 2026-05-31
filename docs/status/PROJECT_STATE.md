@@ -33,7 +33,7 @@ script.md
 |------|------|------|
 | V3-A 项目结构 | PASS | 目录规范、输出分离 |
 | V3-B 可复用模块迁移 | PASS | 从 V2 迁移核心模块 |
-| V3-C1 hyperframes_preview | PASS | combined/index.html 生成 |
+| V3-C1 hyperframes_preview | PASS | hyperframes_timeline/ 生成 |
 | V3-C1.1 review_frames | PASS | 7/7 帧捕获成功 |
 | V3-D1 smoke render_mp4 | PASS | 5s smoke MP4 生成 |
 | V3-D2 full render_mp4 | PASS | MP4 生成正常，音频验证通过 |
@@ -85,4 +85,4 @@ AI 科技解释型 HUD 风格：
 24 个测试全部通过（最近运行：2026-05-30）
 
 ---
-最后更新：2026-05-30
+最后更新：2026-05-31

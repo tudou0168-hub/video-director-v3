@@ -28,7 +28,7 @@
 ```
 
 - `script.md` 是输入
-- `combined/index.html` 是预览权威产物
+- `hyperframes_timeline/` 是预览权威产物（HyperFrames Studio 原生项目）
 - `approval_required.json` 是审批 gate
 - `final_video.mp4` 只能由 `render_mp4` 生成
 
@@ -42,7 +42,7 @@
 
 ### render_mp4
 - 必须有 `--approved` flag
-- 从已有 `combined/index.html` 渲染
+- 从 HyperFrames Studio 原生预览通过的项目渲染
 - 不重新跑完整 pipeline
 - 输出 `rendered/final_video.mp4`
 
@@ -76,7 +76,7 @@ hyperframes_preview 必须通过：
 - `input_relevance_score >= 0.7`
 - TTS ok
 - audio duration 38-43s
-- combined/index.html 有 audio
+- hyperframes_timeline/ 有 audio
 - scene body inserted
 - S01 headline visible 且 >=72px
 - caption_beats_count >= scene_count * 2

@@ -24,7 +24,31 @@ PYTHONPATH=src .venv/bin/python3 -m video_director_v3.cli \
   --no-allow-mock-audio
 ```
 
+## HyperFrames Studio Native Preview
+
+标准预览入口：
+```
+http://localhost:3002/#project/hyperframes_timeline
+```
+
+或者实际项目名对应的 URL：
+```
+http://localhost:3002/#project/<project_id>
+```
+
+Studio 审查标准：
+1. Studio 是否正常加载项目
+2. 是否有 scene / audio / caption / visual beats
+3. 1080×1920 是否正确
+4. 音频是否可播放
+5. 字幕是否全程覆盖
+6. visual beats 是否随时间切换
+7. 是否无黑屏
+8. 是否无内部调试词
+
 ## Smoke Render
+
+前置条件：HyperFrames Studio 原生预览通过。
 
 ```bash
 PYTHONPATH=src .venv/bin/python3 -m video_director_v3.cli \
@@ -36,6 +60,8 @@ PYTHONPATH=src .venv/bin/python3 -m video_director_v3.cli \
 ```
 
 ## Full Render
+
+前置条件：HyperFrames Studio 原生预览通过，`--approved` 已确认。
 
 ```bash
 PYTHONPATH=src .venv/bin/python3 -m video_director_v3.cli \

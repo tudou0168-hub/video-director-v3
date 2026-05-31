@@ -31,21 +31,21 @@
 
 ---
 
-### 决策 4：不重构 HyperFrames Studio native
+### 决策 4：不使用 combined/index.html 路线（已废弃）
 
 **日期**：2026-05-29
 **内容**：combined/index.html 使用定制 GSAP 时间轴架构，不支持 HyperFrames Studio native preview
-**理由**：V3 使用 Playwright + FFmpeg 渲染，Studio native 不是目标
-**结果**：使用 `file://` 协议直接打开 HTML 预览，不依赖 Studio
+**理由**：V3 早期决策，已被 V3-P2.7 决策覆盖
+**结果**：❌ 已废弃。V3 唯一预览路线为 HyperFrames Studio 原生项目预览，不再使用 combined/index.html / file:// 路线
 
 ---
 
-### 决策 5：使用 Playwright + FFmpeg，不自研视频引擎
+### 决策 5：使用 Playwright + FFmpeg + HyperFrames Studio Native Preview
 
 **日期**：2026-05-29
-**内容**：渲染方案使用 Playwright 捕获帧 + FFmpeg 编码
-**理由**：成熟方案，无需自研
-**结果**：不接 CapCut，不接 Remotion，不接其他渲染方案
+**内容**：渲染方案使用 Playwright 捕获帧 + FFmpeg 编码；预览使用 HyperFrames Studio 原生项目
+**理由**：成熟方案 + 复用 Studio 能力
+**结果**：V3 主线为 Studio Native Preview → Approval → MP4 render
 
 ---
 

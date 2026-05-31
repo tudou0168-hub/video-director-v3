@@ -2,36 +2,26 @@
 
 ## 当前任务
 
-**V3-P2.5 HUD Style System Upgrade Smoke** — 等待人工审查 6 张关键帧。
+**V3-P2.7-Docs-Native-Only-Cleanup** — 文档统一为 HyperFrames Studio 原生预览路线（已完成 ✅）
 
-## 任务背景
+## 下一任务（待人工审查后启动）
 
-V3-P2.5 Goal 1-4 已完成：
-- Goal 1: 新增 HudExplainerSmoke composition (450 frames @ 25fps = 18s)
-- Goal 2: 新增 HudPrimitives.tsx (8 个 HUD 组件)
-- Goal 3: 6 个 scene 改造为 HUD 信息系统风
-- Goal 4: smoke_18s.mp4 生成，6 张 review frames 导出
+**V3-P2.7-G2-R9-Native-Fix**：HyperFrames Studio Native Preview Repair
 
-Smoke 验收通过，等待人工审查。
+目标：修复当前 R9 的 HyperFrames Studio 原生预览，使其：
+1. Studio 打开默认显示 scene01，不出现"请先选择"黑屏
+2. scene/audio/caption/visual beats 可被 Studio 识别
+3. 音频路径稳定
+4. caption-layer 在 stage 内
+5. 字幕全程覆盖
+6. 输出关键帧截图和 contact sheet
+7. QA 通过
+8. **不 render MP4**
 
-## 产出清单
-
-| 产物 | 路径 |
-|------|------|
-| smoke video | `outputs/demo_v3_p25_hud_style_smoke/smoke_18s.mp4` (1.8MB, 18s) |
-| review frames | `outputs/demo_v3_p25_hud_style_smoke/review_frames/` |
-| frame_1s.jpg | 110KB, 1080x1920 |
-| frame_4s.jpg | 90KB, 1080x1920 |
-| frame_7s.jpg | 94KB, 1080x1920 |
-| frame_10s.jpg | 95KB, 1080x1920 |
-| frame_14s.jpg | 100KB, 1080x1920 |
-| frame_18s.jpg | 91KB, 1080x1920 |
-
-## 下一步
-
-1. 人工审查 6 张关键帧
-2. 通过后：决定是否进入下一阶段
-3. **不建议直接 full render**，先确认 HUD 风格达标
+**不允许：**
+- 用 autoplay 或 JS 强制 play 绕过
+- 用 file:// 普通 HTML 作为通过
+- 回到 combined/index.html 路线
 
 ---
-最后更新：2026-05-30
+最后更新：2026-05-31

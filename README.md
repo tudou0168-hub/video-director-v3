@@ -1,19 +1,18 @@
 # Video Director V3
 
-中文文案自动生成 HyperFrames 动画预览，并在确认后自动渲染 MP4。
+中文文案自动生成 HyperFrames Studio 原生项目预览，并在确认后自动渲染 MP4。
 
 ## 项目定位
 
 V3 唯一主线：
 ```
-中文文案 → AI 导演解析 → 视觉设计规范 → HyperFrames 动画预览 → 用户确认 → MP4 视频
+中文文案 → AI 导演解析 → 视觉设计规范 → HyperFrames Studio 原生项目 → 用户确认 → MP4 视频
 ```
 
 **当前不是：**
 - talking-head overlay 系统
 - CapCut draft 系统
 - content_pack 工具
-- HyperFrames Studio native composition 项目
 
 ## 快速开始
 
@@ -46,9 +45,22 @@ python3 -m video_director_v3.cli \
 
 ### 查看预览
 
-1. 打开 `outputs/demo_v3_preview/combined/index.html`
-2. 查看 `outputs/demo_v3_preview/review_frames/` 截图
-3. 检查 `outputs/demo_v3_preview/approval_required.json`
+**唯一预览路线**：HyperFrames Studio 原生项目预览。
+
+1. 启动 HyperFrames Studio 本地服务（确保 `http://localhost:3002` 可访问）
+2. 打开：`http://localhost:3002/#project/hyperframes_timeline`
+3. 检查 `outputs/demo_v3_preview/review_frames/` 截图
+4. 检查 `outputs/demo_v3_preview/approval_required.json`
+
+Studio 审查标准：
+- Studio 是否正常加载项目
+- 是否有 scene / audio / caption / visual beats
+- 1080×1920 是否正确
+- 音频是否可播放
+- 字幕是否全程覆盖
+- visual beats 是否随时间切换
+- 是否无黑屏
+- 是否无内部调试词
 
 ### 审批后渲染 MP4
 
@@ -138,7 +150,7 @@ video-director-v3/
 ### hyperframes_preview
 
 生成 HTML 动画预览，包含：
-- combined/index.html
+- combined/index.html（V3 早期实验性输出，已废弃）
 - review_frames/
 - approval_required.json
 - quality_report.json
@@ -147,12 +159,12 @@ video-director-v3/
 
 ### render_mp4
 
-必须有 `--approved` flag。从已有 combined/index.html 渲染 MP4。
+必须有 `--approved` flag。从 HyperFrames Studio 原生预览通过的项目渲染 MP4。
 
 ## 常见问题
 
 ### 黑屏
-检查 combined/index.html 是否正确加载，scene-layer divs 是否有 data-composition-id。
+检查 hyperframes_timeline 项目是否正确加载，scene-layer divs 是否有 data-composition-id。
 
 ### 没音频
 确认 audio/voiceover.mp3 存在，检查 TTS provider 是否正常。
@@ -163,8 +175,8 @@ video-director-v3/
 ### render_mp4 被拒绝，因为未 approve
 必须先运行 hyperframes_preview，再加 --approved 运行 render_mp4。
 
-### Studio native 不兼容
-combined/index.html 使用定制 GSAP 时间轴架构，不支持 HyperFrames Studio native preview。使用 file:// 协议直接打开 HTML 预览。
+### Studio 原生预览
+V3 使用 HyperFrames Studio 原生项目预览作为唯一审查路线。
 
 ## 设计技能融合
 
