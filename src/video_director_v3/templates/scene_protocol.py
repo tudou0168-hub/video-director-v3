@@ -440,6 +440,221 @@ CTA_QUOTE_CLOSE: dict[str, Any] = {
 }
 
 
+# ─── P3.5 — 10 new seed templates (final 30-asset target) ─────────────
+
+HOOK_MYTH_BUST: dict[str, Any] = {
+    "id": "scene.hook.myth_bust",
+    "kind": "scene_framework",
+    "render_template": "myth_bust",
+    "semantic_roles": ["hook", "pain"],
+    "content_shapes": ["myth_vs_truth", "strikethrough", "correction"],
+    "density": "high",
+    "variables": ["headline", "myth", "truth", "accent"],
+    "motion_preset": "kinetic_title_burst",
+    "compatible_transitions": ["transition.glow_shift", "transition.scan_reveal"],
+    "preview_fixture": {
+        "headline": "大部分人都搞错了",
+        "myth": "多装插件就能提高效率",
+        "truth": "先跑通最小闭环再说",
+        "accent": "#FF4757",
+    },
+}
+
+HOOK_BEFORE_AFTER_FLASH: dict[str, Any] = {
+    "id": "scene.hook.before_after_flash",
+    "kind": "scene_framework",
+    "render_template": "before_after_flash",
+    "semantic_roles": ["hook", "evidence"],
+    "content_shapes": ["flash_compare", "split_frame", "impact_moment"],
+    "density": "high",
+    "variables": ["before_metric", "after_metric", "metric_label", "accent"],
+    "motion_preset": "count_up",
+    "compatible_transitions": ["transition.scan_reveal", "transition.glow_shift"],
+    "preview_fixture": {
+        "before_metric": "5h",
+        "after_metric": "40m",
+        "metric_label": "找素材时间",
+        "accent": "#2ED573",
+    },
+}
+
+PAIN_TIMELINE_PAIN: dict[str, Any] = {
+    "id": "scene.pain.timeline_pain",
+    "kind": "scene_framework",
+    "render_template": "timeline_pain",
+    "semantic_roles": ["pain", "summary"],
+    "content_shapes": ["timeline_horizon", "pain_points_over_time", "accumulation"],
+    "density": "high",
+    "variables": ["headline", "events", "conclusion", "accent"],
+    "motion_preset": "marker_sweep",
+    "compatible_transitions": ["transition.scan_reveal", "transition.glow_shift"],
+    "preview_fixture": {
+        "headline": "三个月没整理的代价",
+        "events": [
+            {"week": "W1", "text": "笔记散 5 个 App", "severity": "LOW"},
+            {"week": "W4", "text": "素材找不到，想用时空白", "severity": "MID"},
+            {"week": "W8", "text": "开始怀疑记笔记的意义", "severity": "HIGH"},
+            {"week": "W12", "text": "放弃，开始纯靠脑子", "severity": "CRIT"},
+        ],
+        "conclusion": "信息过载不是记不住，是没结构",
+        "accent": "#FF6B35",
+    },
+}
+
+METHOD_TIMELINE_PATH: dict[str, Any] = {
+    "id": "scene.method.timeline_path",
+    "kind": "scene_framework",
+    "render_template": "timeline_path",
+    "semantic_roles": ["method", "explain"],
+    "content_shapes": ["timeline_horizon", "step_milestones", "progress"],
+    "density": "high",
+    "variables": ["headline", "milestones", "top_label", "accent"],
+    "motion_preset": "node_pulse",
+    "compatible_transitions": ["transition.line_draw_bridge", "transition.panel_slide_bridge"],
+    "preview_fixture": {
+        "headline": "90 天建立第二大脑",
+        "milestones": [
+            {"week": "W1-W2", "text": "统一入口"},
+            {"week": "W3-W4", "text": "建结构"},
+            {"week": "W5-W8", "text": "跑通检索"},
+            {"week": "W9-W12", "text": "持续输出"},
+        ],
+        "top_label": "ROADMAP",
+        "accent": "#4D9FFF",
+    },
+}
+
+METHOD_TOOL_STACK: dict[str, Any] = {
+    "id": "scene.method.tool_stack",
+    "kind": "scene_framework",
+    "render_template": "tool_stack",
+    "semantic_roles": ["method", "explain"],
+    "content_shapes": ["stacked_layers", "tool_pyramid", "stack_visualization"],
+    "density": "medium",
+    "variables": ["headline", "stack_layers", "accent"],
+    "motion_preset": "graph_rise",
+    "compatible_transitions": ["transition.panel_slide_bridge", "transition.glow_shift"],
+    "preview_fixture": {
+        "headline": "三件套搭起来",
+        "stack_layers": [
+            {"name": "Obsidian", "role": "存储", "color": "#7C3AED"},
+            {"name": "Codex", "role": "整理", "color": "#4D9FFF"},
+            {"name": "Hermes", "role": "复盘", "color": "#2ED573"},
+        ],
+        "accent": "#A855F7",
+    },
+}
+
+EVIDENCE_CASE_STUDY: dict[str, Any] = {
+    "id": "scene.evidence.case_study",
+    "kind": "scene_framework",
+    "render_template": "case_study",
+    "semantic_roles": ["evidence", "example"],
+    "content_shapes": ["single_case", "metrics_3", "outcome"],
+    "density": "medium",
+    "variables": ["headline", "case_label", "metrics", "outcome", "accent"],
+    "motion_preset": "card_stagger",
+    "compatible_transitions": ["transition.soft_wipe", "transition.glow_shift"],
+    "preview_fixture": {
+        "headline": "真实案例 · 知识管理 90 天",
+        "case_label": "李同学 / 设计师 / 自由职业",
+        "metrics": [
+            {"label": "整理耗时", "value": "-75%"},
+            {"label": "素材复用", "value": "3.4×"},
+            {"label": "完稿速度", "value": "+200%"},
+        ],
+        "outcome": "从 1 篇/周到 3 篇/周，质量反而更稳",
+        "accent": "#4D9FFF",
+    },
+}
+
+EVIDENCE_CARDS: dict[str, Any] = {
+    "id": "scene.evidence.evidence_cards",
+    "kind": "scene_framework",
+    "render_template": "evidence_cards",
+    "semantic_roles": ["evidence", "proof"],
+    "content_shapes": ["card_grid_2x2", "evidence_pills", "multi_proof"],
+    "density": "high",
+    "variables": ["headline", "cards", "caption", "accent"],
+    "motion_preset": "card_stagger",
+    "compatible_transitions": ["transition.glow_shift", "transition.soft_wipe"],
+    "preview_fixture": {
+        "headline": "四项独立证据",
+        "cards": [
+            {"label": "测试 1", "text": "素材利用率 ↑ 78%"},
+            {"label": "测试 2", "text": "完播率 ↑ 61%"},
+            {"label": "测试 3", "text": "复盘耗时 ↓ 65%"},
+            {"label": "测试 4", "text": "草稿接受率 80%"},
+        ],
+        "caption": "三个独立测试都指向同一结论",
+        "accent": "#2ED573",
+    },
+}
+
+PROOF_SCORE_PANEL: dict[str, Any] = {
+    "id": "scene.proof.score_panel",
+    "kind": "scene_framework",
+    "render_template": "score_panel",
+    "semantic_roles": ["proof", "summary"],
+    "content_shapes": ["score_breakdown", "criteria_panel", "verdict"],
+    "density": "medium",
+    "variables": ["headline", "criteria", "verdict", "accent"],
+    "motion_preset": "count_up",
+    "compatible_transitions": ["transition.soft_wipe", "transition.final_hold_fade"],
+    "preview_fixture": {
+        "headline": "这一轮的得分",
+        "criteria": [
+            {"name": "内容", "score": 9, "max": 10},
+            {"name": "节奏", "score": 8, "max": 10},
+            {"name": "结构", "score": 9, "max": 10},
+            {"name": "互动", "score": 7, "max": 10},
+        ],
+        "verdict": "PASS / 已可发布",
+        "accent": "#34D399",
+    },
+}
+
+PROOF_NEXT_STEP_BOARD: dict[str, Any] = {
+    "id": "scene.proof.next_step_board",
+    "kind": "scene_framework",
+    "render_template": "next_step_board",
+    "semantic_roles": ["proof", "summary", "cta"],
+    "content_shapes": ["next_steps_list", "action_plan", "do_this_next"],
+    "density": "medium",
+    "variables": ["headline", "next_steps", "accent"],
+    "motion_preset": "check_pop",
+    "compatible_transitions": ["transition.soft_wipe", "transition.final_hold_fade"],
+    "preview_fixture": {
+        "headline": "下一步你做哪一步？",
+        "next_steps": [
+            {"label": "1", "text": "选一个入口 App"},
+            {"label": "2", "text": "把 10 条素材搬进去"},
+            {"label": "3", "text": "建立 3 个主题页"},
+            {"label": "4", "text": "问 AI 一个真实问题"},
+        ],
+        "accent": "#FF6B35",
+    },
+}
+
+CTA_COMMENT_INVITE: dict[str, Any] = {
+    "id": "scene.cta.comment_invite",
+    "kind": "scene_framework",
+    "render_template": "comment_invite",
+    "semantic_roles": ["cta", "comment"],
+    "content_shapes": ["comment_invitation", "engagement_card", "simple_cta"],
+    "density": "low",
+    "variables": ["headline", "question", "action", "accent"],
+    "motion_preset": "quote_reveal",
+    "compatible_transitions": ["transition.soft_wipe", "transition.final_hold_fade"],
+    "preview_fixture": {
+        "headline": "评论区告诉我",
+        "question": "你愿意先只保留一个入口吗？",
+        "action": "评论 / 点赞 / 收藏 / 转发",
+        "accent": "#FF4757",
+    },
+}
+
+
 # ─── P3.4 — 6 new motion presets + 4 new transitions ───────────────────
 
 # Motion presets (used by scene variables) — protocol only; actual GSAP
@@ -454,6 +669,12 @@ MOTION_PRESETS: dict[str, dict[str, str]] = {
     "node_pulse": {"kind": "pulse", "intensity": "high", "trigger": "step_reveal"},
     "graph_rise": {"kind": "rise", "intensity": "medium", "trigger": "bar_reveal"},
     "quote_reveal": {"kind": "reveal", "intensity": "low", "trigger": "phrase_reveal"},
+    # P3.5 — 5 new motion presets (final 14-asset target)
+    "parallax_drift": {"kind": "drift", "intensity": "low", "trigger": "scroll_like"},
+    "scan_focus": {"kind": "focus", "intensity": "high", "trigger": "key_metric"},
+    "depth_push": {"kind": "depth", "intensity": "medium", "trigger": "stack_reveal"},
+    "glow_breathe": {"kind": "breathe", "intensity": "low", "trigger": "ambient"},
+    "check_pop": {"kind": "pop", "intensity": "medium", "trigger": "checklist_reveal"},
 }
 
 # Transition catalog (referenced by scene.compatible_transitions).
@@ -495,6 +716,16 @@ SEED_TEMPLATES: list[dict[str, Any]] = [
     EVIDENCE_PROGRESS_TRACKER,
     PROOF_KNOWLEDGE_GRAPH,
     CTA_QUOTE_CLOSE,
+    HOOK_MYTH_BUST,
+    HOOK_BEFORE_AFTER_FLASH,
+    PAIN_TIMELINE_PAIN,
+    METHOD_TIMELINE_PATH,
+    METHOD_TOOL_STACK,
+    EVIDENCE_CASE_STUDY,
+    EVIDENCE_CARDS,
+    PROOF_SCORE_PANEL,
+    PROOF_NEXT_STEP_BOARD,
+    CTA_COMMENT_INVITE,
 ]
 
 TEMPLATE_BY_ID: dict[str, dict[str, Any]] = {
@@ -532,6 +763,17 @@ ROLE_DEFAULT_TEMPLATE: dict[str, str] = {
     "progress": EVIDENCE_PROGRESS_TRACKER["id"],
     "graph": PROOF_KNOWLEDGE_GRAPH["id"],
     "close": CTA_QUOTE_CLOSE["id"],
+    # P3.5 — final 10 new seed overrides (30 total)
+    "myth": HOOK_MYTH_BUST["id"],
+    "flash": HOOK_BEFORE_AFTER_FLASH["id"],
+    "timeline_pain": PAIN_TIMELINE_PAIN["id"],
+    "roadmap": METHOD_TIMELINE_PATH["id"],
+    "stack": METHOD_TOOL_STACK["id"],
+    "case": EVIDENCE_CASE_STUDY["id"],
+    "evidence_cards": EVIDENCE_CARDS["id"],
+    "score": PROOF_SCORE_PANEL["id"],
+    "next_step": PROOF_NEXT_STEP_BOARD["id"],
+    "comment_invite": CTA_COMMENT_INVITE["id"],
 }
 
 

@@ -2,19 +2,19 @@
 
 ## 当前任务
 
-**V3-P3.4 Template Library Expansion（批次 9）** — 已完成并验证。
+**V3-P3.5 Template Library Complete（批次 10）** — 已完成并验证。
 
 路线图：`docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md`
 
 ## 下一任务
 
-**V3-P3.5 Template Library Complete**
+**V3-P3.6 Viral QA Loop**
 
 目标：
-1. 把 20 个 seed 扩展到 30 个场景框架（+10），达到路线图 56 资产目标。
-2. 动效预设扩展到 14，语义转场扩展到 12。
-3. 覆盖 5 类内容（AI 工具 / 职场效率 / 知识管理 / 自媒体方法 / 复盘清单）每类 ≥5 变体。
-4. 保持现有 routing 逻辑（narration 关键词 + role 兜底 + explain fallback）覆盖全部新 seed。
+1. 新增 `viral_quality_report.json`：覆盖 6 维度内容结构评分（Hook / Promise / 收藏价值 / 评论触发 / 视觉节奏 / 同步可靠性）。
+2. 实现 A/B 输出：同一文案默认生成 2 个 Hook 版本 + 2 个视觉版本。
+3. 发布复盘：手工录入或未来接入播放、完播、收藏、点赞、评论数据。
+4. 评分用于筛选和复盘，不冒充平台推荐算法；数据反馈用于调整模板路由权重。
 5. 保持 P3.1 的自然语速、Native Preview、显式音频 mux 和 `<= 1.0s` 同步 gate。
 
 ## P3.2 批次 7 验收证据
@@ -36,8 +36,7 @@
 
 ## 后续阶段
 
-- `V3-P3.5 Template Library Complete`（P3.4 完成后）
-- `V3-P3.6 Viral QA Loop`
+- `V3-P3.6 Viral QA Loop`（P3.5 完成后）
 
 ## 不允许
 

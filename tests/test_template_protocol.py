@@ -1,4 +1,4 @@
-"""Test P3.2.1: scene_framework protocol + 20 seed templates (P3.4)."""
+"""Test P3.2.1: scene_framework protocol + 30 seed templates (P3.5)."""
 import sys
 from pathlib import Path
 
@@ -44,17 +44,28 @@ REQUIRED_TEMPLATE_IDS = {
     "scene.evidence.progress_tracker",
     "scene.proof.knowledge_graph",
     "scene.cta.quote_close",
+    # P3.5
+    "scene.hook.myth_bust",
+    "scene.hook.before_after_flash",
+    "scene.pain.timeline_pain",
+    "scene.method.timeline_path",
+    "scene.method.tool_stack",
+    "scene.evidence.case_study",
+    "scene.evidence.evidence_cards",
+    "scene.proof.score_panel",
+    "scene.proof.next_step_board",
+    "scene.cta.comment_invite",
 }
 
 
 def test_seed_template_count_is_twenty():
-    assert len(SEED_TEMPLATES) == 20, f"expected 20 seeds, got {len(SEED_TEMPLATES)}"
+    assert len(SEED_TEMPLATES) == 30, f"expected 30 seeds, got {len(SEED_TEMPLATES)}"
 
 
 def test_register_seed_templates_populates_registry():
     clear_registry()
     n = register_seed_templates()
-    assert n == 20
+    assert n == 30
     assert set(list_components()) == REQUIRED_TEMPLATE_IDS
 
 
@@ -80,6 +91,7 @@ def test_role_routing_covers_main_pipeline_roles():
         "explain", "evidence", "proof", "compare", "cta", "ready", "summary",
         "framework", "decision", "metric", "example", "board", "comment",
         "countdown", "punchline", "table", "ladder", "layers", "progress", "graph", "close",
+        "myth", "flash", "timeline_pain", "roadmap", "stack", "case", "evidence_cards", "score", "next_step", "comment_invite",
     ]
     for role in roles:
         tpl = pick_template_for_role(role)
@@ -109,6 +121,17 @@ def test_hook_routes_to_hero_center():
     assert pick_template_for_role("progress")["id"] == "scene.evidence.progress_tracker"
     assert pick_template_for_role("graph")["id"] == "scene.proof.knowledge_graph"
     assert pick_template_for_role("close")["id"] == "scene.cta.quote_close"
+    # P3.5 explicit overrides
+    assert pick_template_for_role("myth")["id"] == "scene.hook.myth_bust"
+    assert pick_template_for_role("flash")["id"] == "scene.hook.before_after_flash"
+    assert pick_template_for_role("timeline_pain")["id"] == "scene.pain.timeline_pain"
+    assert pick_template_for_role("roadmap")["id"] == "scene.method.timeline_path"
+    assert pick_template_for_role("stack")["id"] == "scene.method.tool_stack"
+    assert pick_template_for_role("case")["id"] == "scene.evidence.case_study"
+    assert pick_template_for_role("evidence_cards")["id"] == "scene.evidence.evidence_cards"
+    assert pick_template_for_role("score")["id"] == "scene.proof.score_panel"
+    assert pick_template_for_role("next_step")["id"] == "scene.proof.next_step_board"
+    assert pick_template_for_role("comment_invite")["id"] == "scene.cta.comment_invite"
 
 
 def test_compatible_transitions_mention_known_set():
@@ -132,8 +155,8 @@ def test_role_default_template_map_consistent():
 
 # ─── P3.4 — protocol & motion/transitions coverage ───
 
-def test_motion_presets_catalog_has_nine_entries():
-    assert len(MOTION_PRESETS) == 9, f"expected 9 motion presets, got {len(MOTION_PRESETS)}"
+def test_motion_presets_catalog_has_fourteen_entries():
+    assert len(MOTION_PRESETS) == 14, f"expected 14 motion presets, got {len(MOTION_PRESETS)}"
 
 
 def test_motion_presets_all_have_required_fields():
@@ -373,3 +396,145 @@ def test_narration_planner_classifies_evidence_keywords_correctly():
     assert classify_role("效率提升 40%", 1, 5) == "evidence"
     assert classify_role("8 周能力曲线", 1, 5) == "evidence"
     assert classify_role("李同学用了一周上手", 1, 5) == "evidence"
+
+
+# ─── P3.5 — 10 new narration-driven seed routing tests ───
+
+def test_hook_routes_to_myth_bust_by_keyword():
+    from video_director_v3.director.storyboard_builder import _pick_seed_id
+    assert _pick_seed_id("hook", "大部分人都搞错了这个方法") == "scene.hook.myth_bust"
+    assert _pick_seed_id("hook", "真相是：先跑通最小闭环") == "scene.hook.myth_bust"
+
+
+def test_hook_routes_to_before_after_flash_by_keyword():
+    from video_director_v3.director.storyboard_builder import _pick_seed_id
+    assert _pick_seed_id("hook", "从 5h 缩短到 40m") == "scene.hook.before_after_flash"
+    assert _pick_seed_id("hook", "前后反差：完播率翻倍") == "scene.hook.before_after_flash"
+
+
+def test_pain_routes_to_timeline_pain_by_keyword():
+    from video_director_v3.director.storyboard_builder import _pick_seed_id
+    assert _pick_seed_id("pain", "三个月没整理的代价") == "scene.pain.timeline_pain"
+    assert _pick_seed_id("pain", "时间线上的痛点恶化") == "scene.pain.timeline_pain"
+
+
+def test_method_routes_to_timeline_path_by_keyword():
+    from video_director_v3.director.storyboard_builder import _pick_seed_id
+    assert _pick_seed_id("method", "90 天建立第二大脑的 roadmap") == "scene.method.timeline_path"
+    assert _pick_seed_id("method", "时间线里程碑") == "scene.method.timeline_path"
+
+
+def test_method_routes_to_tool_stack_by_keyword():
+    from video_director_v3.director.storyboard_builder import _pick_seed_id
+    assert _pick_seed_id("method", "三件套搭起来：Obsidian + Codex + Hermes") == "scene.method.tool_stack"
+    assert _pick_seed_id("method", "工具堆栈是基础") == "scene.method.tool_stack"
+
+
+def test_evidence_routes_to_case_study_by_keyword():
+    from video_director_v3.director.storyboard_builder import _pick_seed_id
+    assert _pick_seed_id("evidence", "具体案例：设计师李同学 90 天") == "scene.evidence.case_study"
+    assert _pick_seed_id("evidence", "真实案例研究") == "scene.evidence.case_study"
+
+
+def test_evidence_routes_to_evidence_cards_by_keyword():
+    from video_director_v3.director.storyboard_builder import _pick_seed_id
+    assert _pick_seed_id("evidence", "四项独立证据") == "scene.evidence.evidence_cards"
+    assert _pick_seed_id("evidence", "证据卡组") == "scene.evidence.evidence_cards"
+
+
+def test_proof_routes_to_score_panel_by_keyword():
+    from video_director_v3.director.storyboard_builder import _pick_seed_id
+    assert _pick_seed_id("proof", "这一轮的得分 9/10") == "scene.proof.score_panel"
+    assert _pick_seed_id("proof", "评估打分") == "scene.proof.score_panel"
+
+
+def test_proof_routes_to_next_step_board_by_keyword():
+    from video_director_v3.director.storyboard_builder import _pick_seed_id
+    assert _pick_seed_id("proof", "下一步你做哪一步？") == "scene.proof.next_step_board"
+    assert _pick_seed_id("proof", "next step 行动") == "scene.proof.next_step_board"
+
+
+def test_cta_routes_to_comment_invite_by_keyword():
+    from video_director_v3.director.storyboard_builder import _pick_seed_id
+    assert _pick_seed_id("cta", "评论区告诉我你的想法") == "scene.cta.comment_invite"
+    assert _pick_seed_id("cta", "留言互动") == "scene.cta.comment_invite"
+
+
+# ─── P3.5 — protocol & motion coverage ───
+
+def test_motion_presets_catalog_has_fourteen_entries():
+    assert len(MOTION_PRESETS) == 14, f"expected 14 motion presets, got {len(MOTION_PRESETS)}"
+
+
+def test_role_default_template_map_covers_p35_roles():
+    p35_roles = ["myth", "flash", "timeline_pain", "roadmap", "stack", "case", "evidence_cards", "score", "next_step", "comment_invite"]
+    for role in p35_roles:
+        assert role in ROLE_DEFAULT_TEMPLATE, f"P3.5 role {role!r} not in ROLE_DEFAULT_TEMPLATE"
+        assert ROLE_DEFAULT_TEMPLATE[role] in REQUIRED_TEMPLATE_IDS
+
+
+# ─── P3.5 — 10 new render-distinct & data-helper tests ───
+
+def test_ten_new_renderers_produce_visually_distinct_html():
+    from video_director_v3.renderers.hyperframes.publish_templates import get_scene_body
+    templates = [
+        "myth_bust", "before_after_flash", "timeline_pain", "timeline_path",
+        "tool_stack", "case_study", "evidence_cards", "score_panel",
+        "next_step_board", "comment_invite",
+    ]
+    htmls = {t: get_scene_body("S01", "method", {"visual_template": t}) for t in templates}
+    assert len(set(htmls.values())) == 10, "Some P3.5 templates produced identical HTML"
+    assert "MYTH / BUST" in htmls["myth_bust"]
+    assert "BEFORE" in htmls["before_after_flash"] and "AFTER" in htmls["before_after_flash"]
+    assert "tl-pain-event" in htmls["timeline_pain"]
+    assert "tl-milestone" in htmls["timeline_path"]
+    assert "stack-layer" in htmls["tool_stack"]
+    assert "cs-metric" in htmls["case_study"]
+    assert "ev-card" in htmls["evidence_cards"]
+    assert "score-bar" in htmls["score_panel"]
+    assert "next-step-row" in htmls["next_step_board"]
+    assert "COMMENT / INVITE" in htmls["comment_invite"]
+
+
+def test_hud_scene_config_supplies_data_for_each_p35_template():
+    from video_director_v3.renderers.hyperframes.studio_native_project_builder import _hud_scene_config
+
+    mb = _hud_scene_config({"visual_template": "myth_bust"}, 0, "大部分人都搞错了")
+    assert mb["myth"]
+    assert mb["truth"]
+
+    bf = _hud_scene_config({"visual_template": "before_after_flash"}, 0, "从 5h 到 40m")
+    assert bf["before_metric"]
+    assert bf["after_metric"]
+    assert bf["metric_label"]
+
+    tp = _hud_scene_config({"visual_template": "timeline_pain"}, 0, "三个月没整理")
+    assert len(tp["events"]) >= 3
+    assert tp["conclusion"]
+
+    tpath = _hud_scene_config({"visual_template": "timeline_path"}, 0, "90 天建立第二大脑")
+    assert len(tpath["milestones"]) >= 3
+    assert tpath["top_label"]
+
+    ts = _hud_scene_config({"visual_template": "tool_stack"}, 0, "三件套搭起来")
+    assert len(ts["stack_layers"]) >= 3
+
+    cs2 = _hud_scene_config({"visual_template": "case_study"}, 0, "李同学 90 天")
+    assert cs2["case_label"]
+    assert len(cs2["metrics"]) == 3
+    assert cs2["outcome"]
+
+    ec = _hud_scene_config({"visual_template": "evidence_cards"}, 0, "四项独立证据")
+    assert len(ec["cards"]) == 4
+    assert ec["caption"]
+
+    sp = _hud_scene_config({"visual_template": "score_panel"}, 0, "这一轮的得分")
+    assert len(sp["criteria"]) >= 3
+    assert sp["verdict"]
+
+    nsb = _hud_scene_config({"visual_template": "next_step_board"}, 0, "下一步你做哪一步？")
+    assert len(nsb["next_steps"]) >= 3
+
+    ci = _hud_scene_config({"visual_template": "comment_invite"}, 0, "评论区告诉我")
+    assert ci["question"]
+    assert ci["action"]

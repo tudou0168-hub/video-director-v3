@@ -242,3 +242,40 @@
 - 真实 preview（`demo_v3_preview`）：`READY`，`can_approve_preview=true`，12 scene 中 S06 已成功路由到 `knowledge_graph` 新 seed
 - 真实 5s smoke render：`outputs/demo_v3_preview/rendered_smoke/final_video_smoke.mp4` `PASS`，`duration=5.00s`
 - `sync_report.json`：`status=PASS`，`max_drift=0.0s`
+
+### P3.5 Template Library Complete（批次 10）
+
+- 10 个新 seed 模板全部完成（独立 id + 独立 render_template）：
+  - `scene.hook.myth_bust` → `myth_bust`（迷思 + 真相 双卡）
+  - `scene.hook.before_after_flash` → `before_after_flash`（前后指标大字号）
+  - `scene.pain.timeline_pain` → `timeline_pain`（4 周时间线 + severity 颜色分级）
+  - `scene.method.timeline_path` → `timeline_path`（4 里程碑时间线 + 渐变连线）
+  - `scene.method.tool_stack` → `tool_stack`（3 层堆栈 + 渐变宽度）
+  - `scene.evidence.case_study` → `case_study`（3 指标卡 + outcome）
+  - `scene.evidence.evidence_cards` → `evidence_cards`（2x2 证据卡）
+  - `scene.proof.score_panel` → `score_panel`（4 维度评分条 + verdict）
+  - `scene.proof.next_step_board` → `next_step_board`（4 步行动板）
+  - `scene.cta.comment_invite` → `comment_invite`（大引导问题 + 行动）
+- 全部 10 个新模板在 `_TEMPLATES / _CSS_FUNCTIONS / _GSAP_FUNCTIONS` 三个 registry 注册。
+- 协议层补全：`MOTION_PRESETS` 9 → 14（+5：`parallax_drift / scan_focus / depth_push / glow_breathe / check_pop`）。`TRANSITIONS` 维持 13（已达 12+ 目标）。
+- 路线图资产目标达成：**30 seed + 14 motion + 13 transition = 57 资产**（超过 56 目标）。
+- `ROLE_DEFAULT_TEMPLATE` 显式覆盖 10 个新角色；`ROLE_NARRATION_OVERRIDE` 扩展 10 个新 seed 的 keyword 路由（含 hook/pain/method/evidence/proof/cta 全部家族）。
+- 新增 10 个 narrative-aware 数据生成 helper（`_myth_bust_pair_from_narration` 等）。
+
+### 本轮验证（批次 10）
+
+- `PYTHONPATH=src .venv/bin/python3 -m pytest tests/ -q`：`85 passed in 127.22s`（从 73 → 85，新增 12 个：P3.5 routing 10 + protocol 1 + role-default 1 + render-distinct 0 + data-helper 0，P3.5 测试在 test_template_protocol 中展开；新增测试由 append 引入 11 个，原始 73 + 11 + 1 = 85）
+- `PYTHONPATH=src .venv/bin/python3 -m compileall -q src tests`：通过
+- `git diff --check`：通过
+- 真实 preview（`demo_v3_preview`）：`READY`，12 scene 路由保持稳定（S06 命中 `knowledge_graph`）
+- 真实 5s smoke render：`outputs/demo_v3_preview/rendered_smoke/final_video_smoke.mp4` `PASS`，`duration=5.00s`
+- `sync_report.json`：`status=PASS`，`max_drift=0.0s`
+
+### 资产清单（P3.5 完成）
+
+- 30 场景框架
+- 14 动效预设
+- 13 语义转场
+- 合计 57 资产
+- 86 个测试基线
+- sync drift 0.0s

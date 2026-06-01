@@ -249,6 +249,47 @@ def _hud_scene_config(scene: dict[str, Any], index: int, narration: str) -> dict
         config.setdefault("quote", narration[:30] or "记住，是把素材变成自己的过程")
         config.setdefault("attribution", "— 第二大脑实践 90 天")
         config.setdefault("action", "先跑通最小闭环，评论区告诉我你的第一步")
+    elif template == "myth_bust":
+        config.setdefault("headline", narration[:30] or "大部分人都搞错了")
+        myth, truth = _myth_bust_pair_from_narration(narration)
+        config.setdefault("myth", myth)
+        config.setdefault("truth", truth)
+    elif template == "before_after_flash":
+        before_m, after_m, label = _flash_metrics_from_narration(narration)
+        config.setdefault("before_metric", before_m)
+        config.setdefault("after_metric", after_m)
+        config.setdefault("metric_label", label)
+    elif template == "timeline_pain":
+        config.setdefault("headline", narration[:30] or "三个月没整理的代价")
+        config.setdefault("events", _timeline_pain_events_from_narration(narration))
+        config.setdefault("conclusion", "信息过载不是记不住，是没结构")
+    elif template == "timeline_path":
+        config.setdefault("headline", narration[:30] or "90 天建立第二大脑")
+        config.setdefault("milestones", _timeline_path_milestones_from_narration(narration))
+        config.setdefault("top_label", "ROADMAP")
+    elif template == "tool_stack":
+        config.setdefault("headline", narration[:30] or "三件套搭起来")
+        config.setdefault("stack_layers", _tool_stack_layers_from_narration(narration))
+    elif template == "case_study":
+        config.setdefault("headline", narration[:30] or "真实案例")
+        config.setdefault("case_label", _case_study_label_from_narration(narration))
+        config.setdefault("metrics", _case_study_metrics_from_narration(narration))
+        config.setdefault("outcome", _case_study_outcome_from_narration(narration))
+    elif template == "evidence_cards":
+        config.setdefault("headline", narration[:30] or "四项独立证据")
+        config.setdefault("cards", _evidence_cards_data_from_narration(narration))
+        config.setdefault("caption", "三个独立测试都指向同一结论")
+    elif template == "score_panel":
+        config.setdefault("headline", narration[:30] or "这一轮的得分")
+        config.setdefault("criteria", _score_panel_criteria_from_narration(narration))
+        config.setdefault("verdict", "PASS / 已可发布")
+    elif template == "next_step_board":
+        config.setdefault("headline", narration[:30] or "下一步你做哪一步？")
+        config.setdefault("next_steps", _next_step_board_steps_from_narration(narration))
+    elif template == "comment_invite":
+        config.setdefault("headline", narration[:30] or "评论区告诉我")
+        config.setdefault("question", _comment_invite_question_from_narration(narration))
+        config.setdefault("action", "评论 / 点赞 / 收藏 / 转发")
     return config
 
 
@@ -819,6 +860,158 @@ def _knowledge_graph_edges_from_narration(narration: str) -> list[tuple[str, str
     if "笔记" in narration or "Obsidian" in narration:
         return [("N1","N2"), ("N1","N3"), ("N1","N4"), ("N2","N5"), ("N3","N6"), ("N4","N5"), ("N4","N6")]
     return [("N1","N2"), ("N1","N3"), ("N2","N4"), ("N3","N4"), ("N2","N5"), ("N3","N6"), ("N4","N6")]
+
+
+# ─── P3.5 — 10 new seed template data helpers ──────────────────────────
+
+def _myth_bust_pair_from_narration(narration: str) -> tuple[str, str]:
+    if "插件" in narration or "工具" in narration:
+        return ("多装插件就能提高效率", "先跑通最小闭环再说")
+    if "分类" in narration:
+        return ("一开始就设计完美分类", "先粗糙再用，迭代优化")
+    if "记笔记" in narration:
+        return ("记得多就是记得好", "用得到的才算")
+    return ("多就是好", "对才是好")
+
+
+def _flash_metrics_from_narration(narration: str) -> tuple[str, str, str]:
+    if "5h" in narration or "5 小时" in narration or "素材" in narration:
+        return ("5h", "40m", "找素材时间")
+    if "30 秒" in narration:
+        return ("10min", "30s", "写作起步")
+    if "1 周" in narration or "一周" in narration:
+        return ("1 周", "2 天", "上手时间")
+    return ("5h", "40m", "执行时间")
+
+
+def _timeline_pain_events_from_narration(narration: str) -> list[dict[str, str]]:
+    if "笔记" in narration or "App" in narration:
+        return [
+            {"week": "W1", "text": "笔记散 5 个 App", "severity": "LOW"},
+            {"week": "W4", "text": "素材找不到", "severity": "MID"},
+            {"week": "W8", "text": "怀疑记笔记的意义", "severity": "HIGH"},
+            {"week": "W12", "text": "放弃，靠脑子", "severity": "CRIT"},
+        ]
+    return [
+        {"week": "W1", "text": "开始有想法", "severity": "LOW"},
+        {"week": "W4", "text": "执行力下降", "severity": "MID"},
+        {"week": "W8", "text": "出现明显损耗", "severity": "HIGH"},
+        {"week": "W12", "text": "复盘成本陡增", "severity": "CRIT"},
+    ]
+
+
+def _timeline_path_milestones_from_narration(narration: str) -> list[dict[str, str]]:
+    if "Obsidian" in narration or "笔记" in narration:
+        return [
+            {"week": "W1-W2", "text": "统一入口"},
+            {"week": "W3-W4", "text": "建结构"},
+            {"week": "W5-W8", "text": "跑通检索"},
+            {"week": "W9-W12", "text": "持续输出"},
+        ]
+    return [
+        {"week": "P1", "text": "准备阶段"},
+        {"week": "P2", "text": "执行阶段"},
+        {"week": "P3", "text": "稳定阶段"},
+        {"week": "P4", "text": "扩展阶段"},
+    ]
+
+
+def _tool_stack_layers_from_narration(narration: str) -> list[dict[str, str]]:
+    if "Obsidian" in narration or "AI" in narration:
+        return [
+            {"name": "Obsidian", "role": "存储", "color": "#7C3AED"},
+            {"name": "Codex", "role": "整理", "color": "#4D9FFF"},
+            {"name": "Hermes", "role": "复盘", "color": "#2ED573"},
+        ]
+    return [
+        {"name": "Layer 1", "role": "采集", "color": "#7C3AED"},
+        {"name": "Layer 2", "role": "加工", "color": "#4D9FFF"},
+        {"name": "Layer 3", "role": "输出", "color": "#2ED573"},
+    ]
+
+
+def _case_study_label_from_narration(narration: str) -> str:
+    if "同学" in narration:
+        return "李同学 / 设计师 / 自由职业"
+    if "博主" in narration:
+        return "某博主 / 5 万粉 / 自媒体"
+    return "真实用户 / 90 天实践"
+
+
+def _case_study_metrics_from_narration(narration: str) -> list[dict[str, str]]:
+    if "笔记" in narration or "App" in narration:
+        return [
+            {"label": "整理耗时", "value": "-75%"},
+            {"label": "素材复用", "value": "3.4×"},
+            {"label": "完稿速度", "value": "+200%"},
+        ]
+    return [
+        {"label": "效率", "value": "+60%"},
+        {"label": "复用", "value": "2.5×"},
+        {"label": "产出", "value": "+120%"},
+    ]
+
+
+def _case_study_outcome_from_narration(narration: str) -> str:
+    if "笔记" in narration or "App" in narration:
+        return "从 1 篇/周到 3 篇/周，质量反而更稳"
+    return "持续输出变得可预期，不再靠灵感"
+
+
+def _evidence_cards_data_from_narration(narration: str) -> list[dict[str, str]]:
+    if "完播" in narration or "效率" in narration:
+        return [
+            {"label": "测试 1", "text": "素材利用率 ↑ 78%"},
+            {"label": "测试 2", "text": "完播率 ↑ 61%"},
+            {"label": "测试 3", "text": "复盘耗时 ↓ 65%"},
+            {"label": "测试 4", "text": "草稿接受率 80%"},
+        ]
+    return [
+        {"label": "指标 A", "text": "覆盖率 ↑ 70%"},
+        {"label": "指标 B", "text": "满意度 ↑ 50%"},
+        {"label": "指标 C", "text": "留存 ↑ 40%"},
+        {"label": "指标 D", "text": "推荐率 ↑ 30%"},
+    ]
+
+
+def _score_panel_criteria_from_narration(narration: str) -> list[dict[str, Any]]:
+    if "内容" in narration or "节奏" in narration:
+        return [
+            {"name": "内容", "score": 9, "max": 10},
+            {"name": "节奏", "score": 8, "max": 10},
+            {"name": "结构", "score": 9, "max": 10},
+            {"name": "互动", "score": 7, "max": 10},
+        ]
+    return [
+        {"name": "指标 A", "score": 8, "max": 10},
+        {"name": "指标 B", "score": 9, "max": 10},
+        {"name": "指标 C", "score": 7, "max": 10},
+        {"name": "指标 D", "score": 8, "max": 10},
+    ]
+
+
+def _next_step_board_steps_from_narration(narration: str) -> list[dict[str, str]]:
+    if "入口" in narration or "素材" in narration:
+        return [
+            {"label": "1", "text": "选一个入口 App"},
+            {"label": "2", "text": "把 10 条素材搬进去"},
+            {"label": "3", "text": "建立 3 个主题页"},
+            {"label": "4", "text": "问 AI 一个真实问题"},
+        ]
+    return [
+        {"label": "1", "text": "明确你的目标"},
+        {"label": "2", "text": "拆出第一个动作"},
+        {"label": "3", "text": "今天就做完"},
+        {"label": "4", "text": "复盘 + 调整"},
+    ]
+
+
+def _comment_invite_question_from_narration(narration: str) -> str:
+    if "笔记" in narration or "App" in narration:
+        return "你愿意先只保留一个入口吗？"
+    if "下一步" in narration:
+        return "下一步你打算先做哪一步？"
+    return "你有什么想分享的实践经验？"
 
 
 def capture_native_review_frames(timeline_dir: Path, frames: int = 7) -> dict[str, Any]:
