@@ -2,20 +2,20 @@
 
 ## 当前任务
 
-**V3-P3.5 Template Library Complete（批次 10）** — 已完成并验证。
+**V3-P3.6 Viral QA Loop（批次 11）** — 已完成并验证。**V3 路线图全 6 阶段完成**。
 
 路线图：`docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md`
 
 ## 下一任务
 
-**V3-P3.6 Viral QA Loop**
+**V3 Retrospective + Cleanup**
 
 目标：
-1. 新增 `viral_quality_report.json`：覆盖 6 维度内容结构评分（Hook / Promise / 收藏价值 / 评论触发 / 视觉节奏 / 同步可靠性）。
-2. 实现 A/B 输出：同一文案默认生成 2 个 Hook 版本 + 2 个视觉版本。
-3. 发布复盘：手工录入或未来接入播放、完播、收藏、点赞、评论数据。
-4. 评分用于筛选和复盘，不冒充平台推荐算法；数据反馈用于调整模板路由权重。
-5. 保持 P3.1 的自然语速、Native Preview、显式音频 mux 和 `<= 1.0s` 同步 gate。
+1. 写 V3 retrospective：6 个 P3 阶段的产品/工程判断与教训
+2. 清理 107 个调试 JS 与未跟踪文件（产出 `tests/` 与 `samples/scripts/` 正式资产）
+3. 评估 V3 已有能力：30 场景框架 + 14 动效 + 13 转场 + viral QA 6 维评分
+4. 决定 V4 方向：继续扩模板（>30）/ 接入真实播放数据 / 跨平台分发 / 其他
+5. 保持 P3.1 的自然语速、Native Preview、显式音频 mux 和 `<= 1.0s` 同步 gate
 
 ## P3.2 批次 7 验收证据
 
@@ -36,7 +36,7 @@
 
 ## 后续阶段
 
-- `V3-P3.6 Viral QA Loop`（P3.5 完成后）
+- `V3 Retrospective + Cleanup`（P3.6 完成后）
 
 ## 不允许
 

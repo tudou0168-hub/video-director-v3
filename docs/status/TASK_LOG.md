@@ -50,7 +50,8 @@
 | 2026-06-01 | V3-P3.3 Template Registry MVP | DONE | 12 seed templates (6 旧 + 6 新：framework_quadrant/decision_tree/metric_dashboard/case_study_card/section_board/comment_question); narration keyword routing + explain fallback; 56 tests pass, max_drift 0.0s |
 | 2026-06-01 | V3-P3.4 Template Library Expansion | DONE | 20 seed (12 → 20 +8: countdown_strike/keyword_punchline/data_dense_table/step_ladder/concept_layers/progress_tracker/knowledge_graph/quote_close); 9 动效 + 13 转场; classify_role keyword 扩展; 73 tests pass; demo S06 命中 knowledge_graph; max_drift 0.0s |
 | 2026-06-01 | V3-P3.5 Template Library Complete | DONE | 30 seed (20 → 30 +10: myth_bust/before_after_flash/timeline_pain/timeline_path/tool_stack/case_study/evidence_cards/score_panel/next_step_board/comment_invite); 14 动效; 13 转场; 达成 57 资产超 56 目标; 85 tests pass; max_drift 0.0s |
-| 2026-06-01 | V3-P3.6 Viral QA Loop | NEXT | 6 维内容结构评分 + A/B 输出 + 复盘 |
+| 2026-06-01 | V3-P3.6 Viral QA Loop | DONE | viral_qa_evaluator: 6 维评分 (hook/promise/saveable_value/comment_trigger/visual_rhythm/sync_reliability) + A/B manifest; pipeline_runner 自动生成 viral_quality_report.json; 评分不冒充平台算法; 110 tests pass; max_drift 0.0s |
+| 2026-06-01 | V3 Retrospective + Cleanup | NEXT | 写 V3 复盘 / 清理 107 调试 JS / 评估 V4 方向 |
 
 ---
 最后更新：2026-06-01

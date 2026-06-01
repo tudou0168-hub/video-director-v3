@@ -300,6 +300,28 @@ def run_preview(args: argparse.Namespace, project_dir: Path) -> int:
         _record_error(errors, "preview_report", e)
         _record_stage(stages, "preview_report", "FAIL", str(e))
 
+    # ── 13.5. Viral QA report (P3.6) ─────────────────────────────────────
+    try:
+        from video_director_v3.qa.viral_qa_evaluator import build_viral_quality_report
+        vq_report = build_viral_quality_report(
+            project_id=args.project_id,
+            project_dir=project_dir,
+            narration_plan=narration_plan,
+            storyboard=storyboard or {},
+            sync_report_path=project_dir / "rendered_smoke" / "sync_report.json",
+        )
+        (project_dir / "viral_quality_report.json").write_text(
+            json.dumps(vq_report, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        _record_stage(
+            stages, "viral_qa", "PASS" if vq_report["status"] == "PASS" else "WARN",
+            f"score={vq_report['total_score']}/{vq_report['max_score']} status={vq_report['status']}",
+        )
+    except Exception as e:
+        _record_error(errors, "viral_qa", e)
+        _record_stage(stages, "viral_qa", "FAIL", str(e))
+
     # ── 14. Approval required ─────────────────────────────────────────────
     try:
         approval = _build_approval_payload(

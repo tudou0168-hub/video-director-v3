@@ -279,3 +279,40 @@
 - 合计 57 资产
 - 86 个测试基线
 - sync drift 0.0s
+
+### P3.6 Viral QA Loop（批次 11）
+
+- 实现 `viral_qa_evaluator.py`（`src/video_director_v3/qa/`）：
+  - 6 维评分（每维 0-10 分，总分 60，PASS 阈值 42 + 0 failed）
+  - **hook**：首句长度 + 冲击词命中 + emphasis_words + hook visual 模板
+  - **promise**：前 2-3 句的方法信号（我会 / 告诉你 / 步骤 / 怎么用 等）
+  - **saveable_value**：可复用结构关键词（步骤 / 清单 / 复盘 / 框架 / 象限 等）
+  - **comment_trigger**：自然评论引导（你愿意 / 评论区 / 告诉我 等）+ 惩罚机械诱导词（点赞 / 关注）
+  - **visual_rhythm**：unique visual_templates / scenes 比例 + 30 模板库就绪 bonus
+  - **sync_reliability**：从 `sync_report.json` max_drift 反向（0.0s=10 分，>1.0s=0 分）
+- A/B 路由 manifest：`ab_variants` 给出当前 hook + 2 个候选 hook 变体 + method/evidence/cta 各 2 候选；不实际渲染两套 HTML（避免成本爆炸），只是选种清单
+- 接入 `pipeline_runner`：每个 preview 流程自动写出 `viral_quality_report.json`
+- 报告含 disclaimer 明确"不冒充平台推荐算法"
+- 新增 25 项测试覆盖：6 维评分边界 + A/B manifest + 真实 demo 路径
+
+### 本轮验证（批次 11）
+
+- `PYTHONPATH=src .venv/bin/python3 -m pytest tests/ -q`：`110 passed in 120.85s`（从 85 → 110，新增 25 个 viral_qa 测试）
+- `PYTHONPATH=src .venv/bin/python3 -m compileall -q src tests`：通过
+- `git diff --check`：通过
+- 真实 preview（`demo_v3_preview`）：`READY`，`viral_quality_report.json` 自动生成（status=FAIL, total=26/60）
+- 真实 5s smoke render：`outputs/demo_v3_preview/rendered_smoke/final_video_smoke.mp4` `PASS`，`duration=5.00s`
+- `sync_report.json`：`max_drift=0.0s`，`viral_quality_report.json` 中 `sync_reliability=10/10`
+- 端到端 P3.6 真实路径验证：viral_qa evaluator 在真实 demo 文案上能区分强项（sync 满分）和弱点（hook/promise/comment 内容结构偏弱）
+
+### V3 路线图完整状态（全部 6 阶段 PASS）
+
+| 阶段 | 状态 | 关键交付 |
+|------|------|---------|
+| P3.0 产品基线冻结 | PASS | 路线图 + 状态文档 + AGENTS 规范 |
+| P3.1 Audio-First | PASS | 自然语速 TTS + 真实音频时长 + sync_report |
+| P3.2 Dynamic Storyboard | PASS | 12 scene / 11 transition / 26 caption + 6 批次优化 |
+| P3.3 Template Registry MVP | PASS | 12 seed templates（首批）|
+| P3.4 Template Library Expansion | PASS | 20 seed templates（+8）|
+| P3.5 Template Library Complete | PASS | 30 seed templates（+10）达成 57 资产 |
+| P3.6 Viral QA Loop | PASS | 6 维评分 + A/B manifest + viral_quality_report |
