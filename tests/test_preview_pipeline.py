@@ -191,6 +191,95 @@ def test_hud_scene_config_derives_semantic_template_data():
     assert checklist_scene["final_message"] == "先把闭环跑通，再决定要不要加插件"
 
 
+def test_cta_routes_to_layout_variants_by_narration_semantics():
+    # Default checklist_steps
+    default = _hud_scene_config(
+        {"visual_template": "checklist_cta"}, 0, "先跑通一个最小闭环：输入、存储、检索、输出。"
+    )
+    assert default["layout_variant"] == "checklist_steps"
+
+    # Button banner — strong single action verb
+    banner = _hud_scene_config(
+        {"visual_template": "checklist_cta"}, 0, "立即开始搭建，先把最小闭环跑通。"
+    )
+    assert banner["layout_variant"] == "button_banner"
+    assert banner["button_label"]
+    assert "滑动看完" in banner["hint"]
+
+    # End score goodbye — chapter close
+    end = _hud_scene_config(
+        {"visual_template": "checklist_cta"}, 0, "系列完结，下期再见。"
+    )
+    assert end["layout_variant"] == "end_score_goodbye"
+    assert end["score"] == "100"
+    assert "下期" in end["next_teaser"]
+
+    # Scorecard — status / metric
+    score = _hud_scene_config(
+        {"visual_template": "checklist_cta"}, 0, "得分 100，三项就绪：输入、检索、输出。"
+    )
+    assert score["layout_variant"] == "scorecard"
+    assert len(score["scorecard_metrics"]) == 3
+    assert all(m["value"] in {"READY", "OK", "GO", "DONE", "PASS"} for m in score["scorecard_metrics"])
+
+
+def test_cta_renders_distinct_html_for_each_variant():
+    from video_director_v3.renderers.hyperframes.publish_templates import (
+        _render_cta_button_banner,
+        _render_cta_end_score_goodbye,
+        _render_cta_scorecard,
+        _render_cta_checklist_steps,
+    )
+    acc = "#2ED573"
+    role = "cta"
+
+    base_scene = {"checklist": ["a", "b", "c"], "final_message": "msg"}
+    checklist_html = _render_cta_checklist_steps("S01", role, base_scene, acc)
+    assert "check-item" in checklist_html
+    assert "▶" not in checklist_html
+
+    banner_scene = {**base_scene, "button_label": "立即开始", "hint": "滑动看完"}
+    banner_html = _render_cta_button_banner("S01", role, banner_scene, acc)
+    assert "▶" in banner_html
+    assert "立即开始" in banner_html
+    assert "ACTION / CTA" in banner_html
+
+    end_scene = {**base_scene, "score": "98", "score_label": "本章掌握度", "next_teaser": "下期再见"}
+    end_html = _render_cta_end_score_goodbye("S01", role, end_scene, acc)
+    assert "98" in end_html
+    assert "CHAPTER CLOSE" in end_html
+    assert "下期再见" in end_html
+
+    score_scene = {**base_scene, "scorecard_metrics": [
+        {"label": "输入", "value": "READY", "color": "#2ED573"},
+        {"label": "检索", "value": "OK", "color": "#4D9FFF"},
+        {"label": "输出", "value": "GO", "color": "#FF6B35"},
+    ]}
+    score_html = _render_cta_scorecard("S01", role, score_scene, acc)
+    assert "SCORECARD" in score_html
+    assert "cta-metric" in score_html
+    assert "READY" in score_html
+
+
+def test_template_checklist_cta_dispatches_by_layout_variant():
+    from video_director_v3.renderers.hyperframes.publish_templates import get_scene_body
+    base_scene = {"visual_template": "checklist_cta", "checklist": ["a"], "final_message": "m"}
+    html_default = get_scene_body("S01", "cta", base_scene)
+    html_banner = get_scene_body("S01", "cta", {**base_scene, "layout_variant": "button_banner"})
+    html_end = get_scene_body("S01", "cta", {**base_scene, "layout_variant": "end_score_goodbye"})
+    html_score = get_scene_body("S01", "cta", {**base_scene, "layout_variant": "scorecard"})
+
+    # Each variant produces visually different output
+    assert "check-item" in html_default
+    assert "▶" in html_banner
+    assert "CHAPTER CLOSE" in html_end
+    assert "SCORECARD" in html_score
+    # Variants should be distinguishable from each other
+    assert html_default != html_banner
+    assert html_banner != html_end
+    assert html_end != html_score
+
+
 def test_native_project_persists_enriched_scene_config(tmp_path: Path):
     audio_path = tmp_path / "voiceover.mp3"
     audio_path.write_bytes(b"fake-audio")

@@ -28,8 +28,8 @@
 
 完整路线图：`docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md`
 
-当前阶段：`V3-P3.2 Hook / Method / Explain 视觉差异化（批次 6）已验证`
-下一任务：`V3-P3.2 CTA 路由融合 + GSAP 可选动效层评估`
+当前阶段：`V3-P3.2 CTA 路由融合 + GSAP 评估（批次 7）已验证`
+下一任务：`V3-P3.3 Template Registry MVP`
 
 ## 项目目标
 
@@ -79,6 +79,7 @@ script.md
 | **V3-P3.2 Visual Differentiation（批次 4）** | **PASS** | `tool_chain_three_cols` 新增 `three_col_row / source_ingest / knowledge_triangle / vertical_flow` 四种语义布局；`S05/S06/S07` 视觉骨架已分开；preview / smoke 继续 `PASS` |
 | **V3-P3.2 Explain / Evidence / Proof 路由融合（批次 5）** | **PASS** | 复用现有 HUD 卡片/对比骨架，为 `broken_chain` 增加 `responsibility_split / binary_choice_split`，为 `before_after_compare` 增加 `dashboard_mobile / symptom_panel`；真实产物中 `S04/S08/S09/S11` 已按句子语义切换布局；preview / smoke 继续 `PASS` |
 | **V3-P3.2 Hook / Method / Explain 视觉差异化（批次 6）** | **PASS** | `hook_big_claim` 增加 `quote_punch / big_number_left`；`tool_chain_three_cols` 增加 `intro_offset`；`broken_chain` 继续拉开责任分工与二选一场景；`S01/S03/S04` 从同一类居中双卡改成封面式 / 导语式 / 对撞式；preview / smoke 继续 `PASS` |
+| **V3-P3.2 CTA 路由融合 + GSAP 评估（批次 7）** | **PASS** | `checklist_cta` 新增 `button_banner / end_score_goodbye / scorecard` 三个复用型变体；按 narration 关键词自动路由；GSAP 动效层评估为"接入但未触发"状态，保留 `get_scene_gsap` 接口但不再注入 Native Preview，以保护 0.0s 同步漂移基线；preview / smoke / 47 个测试全部 `PASS` |
 
 **V3-P2 视觉渲染技术栈**：Remotion → HTML/CSS/React 动画 → MP4
 
@@ -128,7 +129,11 @@ AI 科技解释型 HUD 风格：
 
 ## 测试状态
 
-41 个测试基线保持通过；Hook / Method / Explain 视觉差异化后，相关批次单测 `14 passed`，真实 preview 与 5 秒 smoke render 继续通过，`sync_report.json` 仍为 `PASS`（最近运行：2026-06-01）
+47 个测试基线保持通过（`tests/test_preview_pipeline.py` 25 个 + `tests/test_tts_contract.py` + `tests/test_template_protocol.py` + 其他）；CTA 路由融合批次 7 后，相关单测 4 项新增断言全部通过；真实 preview `READY`、5 秒 smoke render `PASS`、`sync_report.json` `max_drift=0.0s`（最近运行：2026-06-01）
+
+---
+
+最后更新：2026-06-01
 
 ---
 最后更新：2026-06-01

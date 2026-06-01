@@ -53,7 +53,7 @@
 
 ---
 
-## P1 — Hook / CTA 还未接入同等级的语义路由
+## 已解决 — Hook / CTA 还未接入同等级的语义路由
 
 **问题**：
 - `method / explain / evidence / proof` 已接入多种语义变体，但 `hook` 和 `cta` 仍主要停留在 `hook_big_claim` 与 `checklist_cta` 两个基础模板。
@@ -61,7 +61,7 @@
 
 **影响**：开头和结尾仍缺少与中段同等级的样式变化，整条视频的首尾记忆点还不够强。
 
-**修复方向**：优先复用现有 HUD 面板、数字卡和收尾板，把 Hook / CTA 家族接入当前 renderer，并继续用 preview / smoke gate 验证。
+**状态**：✅ P3.2 批次 7 已修复。`hook_big_claim` 已扩展 `quote_punch / big_number_left`；`checklist_cta` 已扩展 `button_banner / end_score_goodbye / scorecard` 三个复用型 layout_variant；按 narration 关键词自动路由；4 项新单测断言全部通过；preview / smoke 继续 `PASS`，同步漂移仍为 `0.0s`。
 
 ## 历史问题 — R9 HyperFrames Studio 打开显示"请先选择"（冻结）
 
@@ -98,6 +98,8 @@
 |------|------|------|------|
 | 字幕黑条较重 | Caption.tsx | 透明度可降至 0.35 | 低优先级 |
 | 动画流畅度 | 各 scene spring config | 调整 damping/stiffness | 低优先级 |
+| 107 个调试 JS 未与产品代码隔离 | repo 根目录 | 单独归档或清理 | P2 |
+| `get_scene_gsap` 当前仅被废弃 `combined_html_builder` 消费 | `publish_templates.py` | 保留接口作为未来扩展点；不接入 Native Preview（保护 0.0s 漂移） | P3 |
 
 ---
 最后更新：2026-06-01

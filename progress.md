@@ -1,0 +1,191 @@
+# Progress
+
+## 2026-06-01
+
+### 已完成
+
+- 读取项目强制状态文档与决策日志。
+- 读取 `planning-with-files-zh`、`hyperframes-director` 和 `hyperframes` 工作流。
+- 盘点旧 TTS、口播规划、字幕节拍、分镜、转场、模板注册和 MP4 mux 实现。
+- 建立新的持久化规划文件。
+- 核对平台公开资料，形成不猜算法权重的爆款 QA 原则。
+- 创建 `docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md`。
+- 更新 `AGENTS.md`、项目状态、下一任务、当前问题、决策日志和命令迁移提示。
+- 将 `AGENTS.md` 的旧 `38-43s` Gate 替换为 Audio-First 同步 Gate。
+- 运行 `git diff --check`：通过。
+- 关闭上一轮遗留的本地 HyperFrames Studio 服务。
+- 完成 `P3.1 Audio-First`：自然语速 Edge TTS、真实音频时长权威、Native Preview Builder、Native MP4 renderer、显式 FFmpeg audio mux、`sync_report.json`。
+- 修复 Markdown YAML frontmatter 进入口播的问题。
+- 根据用户反馈新增短视频口播提炼器：目标 `<=120s`、硬上限 `<=150s`，不允许加速 TTS。
+- 用指定文案 `2026-05-27-Obsidian打造第二大脑AI记住一切.md` 将 76 句长文提炼为 12 句、419 字口播。
+- 复用原有 HUD 科技风模板族升级 Native Preview：深色网格、扫描线、卡片堆栈、链路节点、对比卡、CTA 清单。
+- 将字幕改为句级音频时间轴驱动：21 条字幕覆盖完整提炼口播。
+- 用指定文案生成 Native Preview：音频 `81.10s`、`speaking_rate=+0%`、Native lint `0 errors`。
+- 用指定文案生成 5 秒有声 smoke：`h264 + aac`、音量已检测、最大同步漂移 `0.0s`。
+- 运行完整测试集：`28 passed`。
+
+### 当前阶段
+
+- `P3.1 Audio-First 主线修复`：已完成。
+
+### 下一步
+
+- 启动 `P3.2 Dynamic Storyboard`。
+- 将固定 8 场景、每场景固定 2 条字幕和固定转场替换为语义节拍驱动。
+
+### P3.2 接手审计
+
+- 读取强制状态文档、路线图、现有规划文件、核心 pipeline、TTS、storyboard、caption、transition、visual beat、Native Builder、Native renderer 和测试文件。
+- 确认 P3.1 既有产物证据仍可作为基线：81.1s Native Preview、5s 有声 smoke、同步报告 PASS。
+- 运行 `git diff --check`：通过。
+- 运行 `compileall`：失败。`src/video_director_v3/director/storyboard_builder.py:201` 存在未闭合字符串。
+- 运行完整测试集：`36 passed in 120.68s`。随后确认这是误导性绿灯：storyboard 导入失败后 pipeline 回退到固定 7 场景，approval 仍 READY。
+- 识别 P3.2 主阻塞：动态 storyboard 草稿未接入 pipeline，固定转场、固定视觉 beat 和 Native Builder 索引模板仍未替换。
+- 识别 approval fail-open：必需阶段失败未阻止 `can_approve_preview=true`。
+- 识别模板协议接线问题：seed registry 未在 pipeline 初始化，协议 ID 与发布渲染键不一致。
+- 识别文档漂移：`docs/status/project_state.json` 与 `docs/testing.md` 仍保留旧 D2 / `38-43s` 信息。
+- 识别提交卫生问题：未跟踪调试 JS 共 107 个，应与 P3.2 产品提交隔离处理。
+
+### P3.2 批次推进
+
+- 批次 1：修复 `storyboard_builder.py` 编译错误；preview approval 改为 fail-closed；接通 `audio_timeline -> dynamic storyboard`；真实产物变为 12 scene / 11 transition / 26 caption。
+- 批次 2：细化 `classify_role()`；将第二句重新归到 `pain`，把“以前/现在/30 秒”类结果句归到 `evidence`，把“你才能/把记住交给第二大脑”类总结句归到 `proof`。
+- 批次 3：在 Native Builder 中按句子语义生成更具体的 template data，并把实际渲染使用的 scene config 持久化到 `outputs/<project_id>/hyperframes_timeline/data/director_timeline.json`。
+
+### 本轮验证
+
+- `PYTHONPATH=src .venv/bin/python3 -m pytest tests/test_preview_pipeline.py tests/test_tts_contract.py -q`：`14 passed`
+- `PYTHONPATH=src .venv/bin/python3 -m compileall -q src tests`：通过
+- `git diff --check`：通过
+- 真实 preview：`demo_v3_preview` 继续 `READY`
+- 真实 smoke render：`outputs/demo_v3_preview/rendered_smoke/final_video_smoke.mp4` 继续 `PASS`
+- `outputs/demo_v3_preview/rendered_smoke/sync_report.json`：`has_video_stream=true`、`has_audio_stream=true`、三类漂移 `0.0s`
+
+### P3.2 视觉差异化
+
+- 为 `tool_chain_three_cols` 增加语义驱动的布局变体：
+  - `three_col_row`
+  - `source_ingest`
+  - `knowledge_triangle`
+  - `vertical_flow`
+- 让 `studio_native_project_builder.py` 根据句子语义写入 `layout_variant`。
+- 让 `director_timeline.json` 持久化这些布局变体，便于后续排查和接手。
+- 实际产物中：
+  - `S03=three_col_row`
+  - `S05=source_ingest`
+  - `S06=knowledge_triangle`
+  - `S07=vertical_flow`
+- 最新 review frame 已证明 `S05` 与 `S06` 的视觉骨架明显分开。
+
+### 外部参考图库提炼
+
+- 新增任务：结合系统原有模板与 `/Users/muzi/Windows共享文件/视频效果分析` 的 79 张截图，抽取 HUD 样式、布局骨架、图表框架、动效语法，并和文案场景建立映射。
+- 已确认参考目录图片总数：`79`
+- 已生成本地批次 HTML 联系表到 `outputs/reference_analysis/html/`
+- 已完成批次 1（前 12 张）人工提炼，识别出：
+  - `hero_big_number_left`
+  - `comparison_progress_bars`
+  - `money_ladder_with_evidence`
+  - `top_carousel_examples`
+  - `feature_cards_row`
+  - `step_tabs_or_paths`
+  - `dual_curve_growth`
+  - `relationship_triangle_or_bridge`
+  - `checklist_claim_left`
+  - `keyword_punchline`
+- 已完成后续批次抽样，确认中后段大多是前述模板家族的主题变体，并补出这些独立骨架：
+  - `comment_quote_hook`
+  - `binary_choice_split`
+  - `dashboard_mobile`
+  - `section_board`
+  - `matrix_glossary_wall`
+  - `parallel_lanes`
+  - `symptom_panel`
+  - `end_score_goodbye`
+- 已新增后续可直接接入 P3.3 的资产：
+  - `docs/visual/HUD_TEMPLATE_EXTRACTION.md`
+  - `docs/visual/hud_template_catalog.json`
+- 已结合 `/Users/muzi/LLM_Knowledge2.0/wiki` 的内容结构，把模板骨架和高频文案场景建立初版路由映射。
+
+### P3.2 Explain / Evidence / Proof 路由融合
+
+- 延续“整合、编排、融合、复用”原则，没有新造独立动画系统，而是复用当前 `publish_templates.py + studio_native_project_builder.py + HyperFrames HUD 基线`。
+- 参考已安装技能与能力边界后，明确当前实现策略：
+  - 大场景编排继续以 HyperFrames Native timeline 为主；
+  - 主要场景骨架继续复用现有 HUD 面板、边框、网格、卡片；
+  - 大块时序编排优先 GSAP 语义，但 Native Preview 当前仍以稳定 HTML 布局为主；
+  - CSS 只保留给轻量装饰性扫描线、网格漂移和柔光，不另造新框架。
+- 为 `broken_chain` 增加两种复用型布局变体：
+  - `responsibility_split`
+  - `binary_choice_split`
+- 为 `before_after_compare` 增加两种复用型布局变体：
+  - `dashboard_mobile`
+  - `symptom_panel`
+- 让 Native Builder 根据真实句子语义自动路由：
+  - `S04=responsibility_split`
+  - `S08=dashboard_mobile`
+  - `S09=binary_choice_split`
+  - `S11=symptom_panel`
+- 已补定向 snapshot 审查，确认 Explain / Evidence / Proof 四段的视觉骨架明显分开。
+- 本轮验证：
+  - `PYTHONPATH=src .venv/bin/python3 -m pytest tests/test_preview_pipeline.py tests/test_tts_contract.py -q`：`14 passed`
+  - `PYTHONPATH=src .venv/bin/python3 -m compileall src tests`：通过
+  - `git diff --check`：通过
+  - 真实 preview：`READY`
+  - 真实 5 秒 smoke render：`PASS`
+  - `outputs/demo_v3_preview/rendered_smoke/sync_report.json`：`PASS`，视频流 / 音频流存在，漂移 `0.0s`
+
+### P3.2 Hook / Method 视觉差异化
+
+- 针对用户指出的 `S01 / S03 / S04` 视觉重复问题，进一步把首段、导语段和解释段拆成不同语法，而不是继续在同类双卡上堆文案。
+- `hook_big_claim` 新增两种复用型布局：
+  - `quote_punch`
+  - `big_number_left`
+- `tool_chain_three_cols` 新增导语型布局：
+  - `intro_offset`
+- 真实 preview 中已路由为：
+  - `S01=quote_punch`
+  - `S03=intro_offset`
+  - `S04=responsibility_split`
+- 定向 snapshot 已确认三段不再是同一套居中卡片：
+  - `S01` 变成封面式引言海报
+  - `S03` 变成偏置式导语流程板
+  - `S04` 变成左右对撞式职责分工板
+- 本轮验证：
+  - `PYTHONPATH=src .venv/bin/python3 -m pytest tests/test_preview_pipeline.py tests/test_tts_contract.py -q`：`14 passed`
+  - `PYTHONPATH=src .venv/bin/python3 -m compileall src tests`：通过
+  - `git diff --check`：通过
+  - 真实 preview：`READY`
+  - 真实 5 秒 smoke render：`PASS`
+  - `outputs/demo_v3_preview/rendered_smoke/sync_report.json`：`PASS`，视频流 / 音频流存在，漂移 `0.0s`
+
+### P3.2 CTA 路由融合（批次 7）
+
+- 为 `checklist_cta` 复用现有 HUD 卡片骨架扩展为 4 个 layout_variant：
+  - `checklist_steps`（默认 3-step action）
+  - `button_banner`（大按钮式行动号召）
+  - `end_score_goodbye`（大分数收束 + 下期预告）
+  - `scorecard`（3 项指标得分卡）
+- `_cta_layout_variant_from_narration()` 按 narration 关键词自动路由：
+  - 完结 / 下期 / 系列 → `end_score_goodbye`
+  - 得分 / 状态 / 指标 → `scorecard`
+  - 立即 / 现在 / 下一步 → `button_banner`
+  - 其他 → `checklist_steps`
+- 让 `get_scene_body` 在 `_template_checklist_cta` 入口按 `layout_variant` dispatch 到 4 个 render 函数。
+- 新增 3 个 GSAP 适配器（`_gsap_cta_button_banner / _gsap_cta_end_score_goodbye / _gsap_cta_scorecard`）保持与现有 GSAP 调度风格一致。
+
+### P3.2 GSAP 动效层评估（批次 7）
+
+- 调研结论：`get_scene_gsap` 当前只被已废弃的 `combined_html_builder.py` 消费，Native Preview 主线（`studio_native_project_builder`）不消费 GSAP。
+- 按用户"如破坏稳定性就停止扩大范围"原则，**不**将 GSAP timeline 注入到 Native Preview HTML。`get_scene_gsap` 函数体与 seed GSAP 字符串保留作为未来扩展点。
+- 评估理由：当前 `sync_report.json` `max_drift=0.0s` 是 native data-attribute driven 的稳定基线；注入 GSAP 后时间偏移会引入额外漂移。
+
+### 本轮验证（批次 7）
+
+- `PYTHONPATH=src .venv/bin/python3 -m pytest tests/ -q`：`47 passed in 124.13s`
+- `PYTHONPATH=src .venv/bin/python3 -m compileall -q src tests`：通过
+- `git diff --check`：通过
+- 真实 preview：`demo_v3_preview` 继续 `READY`（`can_approve_preview=true`）
+- 真实 smoke render：`outputs/demo_v3_preview/rendered_smoke/final_video_smoke.mp4` `PASS`，`duration=5.00s`，视频流 / 音频流存在
+- `outputs/demo_v3_preview/rendered_smoke/sync_report.json`：`status=PASS`，`max_drift=0.0s`
+- CTA 路由验证：构造 4 类 narration 触发 4 种 layout_variant，单元测试 + 真实路径双重确认
