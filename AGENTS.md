@@ -1,5 +1,23 @@
 # V3 AI Agent 行为规范
 
+## V3 项目定位（唯一产品主线）
+
+```
+中文文案
+  → AI 导演解析（narration_planner + classify_role）
+  → 视觉设计规范（scene_protocol + 30 模板库）
+  → HyperFrames Studio 原生项目（studio_native_project_builder）
+  → 用户确认（浏览器人眼验收 hyperframes_timeline/index.html）
+  → MP4 视频（render_mp4 + audio mux）
+```
+
+**这是 V3 唯一允许的主线。任何新需求、任何改造、任何"捷径"，都必须能落到这条主线的某一步上。**
+
+如果新需求不能落进这条主线：
+- 先回到这条主线的某一步
+- 不要发明并列链路（不要"另一套管线"、"另一种渲染方式"）
+- 不要绕过"用户确认"（未经用户人眼验收就生成 MP4 是禁止的）
+
 ## 2026-06-01 P3 产品基线覆盖
 
 以下规则覆盖本文后续仍保留的旧版固定 40 秒 P0 Gate：
@@ -102,6 +120,25 @@ hyperframes_preview 必须通过：
 - approval_required.json 存在
 
 render_mp4 必须有 `--approved` 才允许渲染，并验证最终 MP4 含视频流、音频流，时长偏差 `<= 1.0s`。
+
+## 客户交付流程（用户要求的工作方式）
+
+**默认流程：先生成 HTML 预览 → 用户人眼确认 → 再合成 MP4。**
+
+具体步骤：
+1. 接到新文案时，**只跑 hyperframes_preview**（不跑 render_mp4）。
+2. 在浏览器中打开 `outputs/<project_id>/hyperframes_timeline/index.html`（`open <path>` 或拖到浏览器）。
+3. 等待用户人眼验收视觉、节奏、字幕。
+4. **只有用户明确确认"OK / 合成 / render"后才能跑 render_mp4**。
+
+**禁止**：
+- 未经用户确认就跑 `render_mp4`
+- 自动跑 smoke render / full render（即使 sync drift = 0.0s 也不行）
+- 在用户没说"可以了"前提交任何 MP4 产物
+
+例外（仅以下情况可自动 render_mp4）：
+- 用户明确说"自动跑 / 直接生成 / 不需要确认"
+- 用户脚本里带 `--no-confirm`（若未来加这个 flag）
 
 ## 禁止事项
 

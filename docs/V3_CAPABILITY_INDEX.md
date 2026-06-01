@@ -3,6 +3,19 @@
 **日期**：2026-06-01
 **状态**：V3 路线图全 6 阶段 PASS，63 资产 / 110 测试 / 0.0s drift
 
+## 0. V3 唯一产品主线
+
+```
+中文文案
+  → AI 导演解析（narration_planner + classify_role）
+  → 视觉设计规范（scene_protocol + 30 模板库）
+  → HyperFrames Studio 原生项目（studio_native_project_builder）
+  → 用户确认（浏览器人眼验收 hyperframes_timeline/index.html）
+  → MP4 视频（render_mp4 + audio mux）
+```
+
+**这是 V3 唯一允许的主线。任何新需求、任何改造、任何"捷径"，都必须能落到这条主线的某一步上。**
+
 ## 1. 主线能力
 
 ### 1.1 输入
