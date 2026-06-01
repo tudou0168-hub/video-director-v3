@@ -17,6 +17,14 @@ from video_director_v3.templates.scene_protocol import (
     EVIDENCE_CASE_STUDY_CARD,
     PROOF_SECTION_BOARD,
     PROOF_COMMENT_QUESTION,
+    HOOK_COUNTDOWN_STRIKE,
+    HOOK_KEYWORD_PUNCHLINE,
+    PAIN_DATA_DENSE_TABLE,
+    METHOD_STEP_LADDER,
+    METHOD_CONCEPT_LAYERS,
+    EVIDENCE_PROGRESS_TRACKER,
+    PROOF_KNOWLEDGE_GRAPH,
+    CTA_QUOTE_CLOSE,
     pick_template_for_role,
     register_seed_templates,
 )
@@ -35,19 +43,35 @@ ROLE_NARRATION_OVERRIDE: dict[str, list[tuple[tuple[str, ...], str]]] = {
     "method": [
         (("四象限", "框架", "矩阵", "四个", "quadrant"), METHOD_FRAMEWORK_QUADRANT["id"]),
         (("要不要", "是否", "决策", "选择", "判断"), METHOD_DECISION_TREE["id"]),
+        (("层", "层次", "递进", "深入", "层层"), METHOD_CONCEPT_LAYERS["id"]),
+        (("步骤", "阶梯", "从 0", "从 0 到", "从 0 到 1", "langkah"), METHOD_STEP_LADDER["id"]),
     ],
     "explain": [
         (("四象限", "框架", "矩阵"), METHOD_FRAMEWORK_QUADRANT["id"]),
         (("要不要", "是否", "决策", "选择", "判断"), METHOD_DECISION_TREE["id"]),
+        (("层", "层次", "递进", "深入"), METHOD_CONCEPT_LAYERS["id"]),
+        (("步骤", "阶梯", "从 0"), METHOD_STEP_LADDER["id"]),
         (("案例", "学员", "同学", "博主", "账号", "李同学"), EVIDENCE_CASE_STUDY_CARD["id"]),
     ],
     "evidence": [
         (("数据", "指标", "增长", "对比", "提升", "效率", "完播率"), EVIDENCE_METRIC_DASHBOARD["id"]),
         (("案例", "学员", "同学", "博主", "账号", "李同学"), EVIDENCE_CASE_STUDY_CARD["id"]),
+        (("进度", "曲线", "周", "每周", "能力曲线"), EVIDENCE_PROGRESS_TRACKER["id"]),
     ],
     "proof": [
         (("维度", "板块", "几个", "三条", "四条", "判断"), PROOF_SECTION_BOARD["id"]),
         (("评论", "想问", "告诉我", "评论区", "你愿意", "愿不愿意"), PROOF_COMMENT_QUESTION["id"]),
+        (("网络", "关系", "节点", "知识图谱", "结构图"), PROOF_KNOWLEDGE_GRAPH["id"]),
+    ],
+    "hook": [
+        (("还剩", "倒计时", "最后", "最后几天", "3 天", "2 天", "1 天"), HOOK_COUNTDOWN_STRIKE["id"]),
+        (("金句", "记住", "重点是", "核心是", "关键在于"), HOOK_KEYWORD_PUNCHLINE["id"]),
+    ],
+    "pain": [
+        (("数据", "状态", "表", "清单", "列表"), PAIN_DATA_DENSE_TABLE["id"]),
+    ],
+    "cta": [
+        (("金句", "记住", "总结一句", "一句话", "quote"), CTA_QUOTE_CLOSE["id"]),
     ],
 }
 

@@ -217,6 +217,38 @@ def _hud_scene_config(scene: dict[str, Any], index: int, narration: str) -> dict
         config.setdefault("headline", narration[:30] or "你想先跑通哪一步？")
         config.setdefault("fake_comment", _comment_question_fake_comment(narration))
         config.setdefault("guide_question", _comment_question_guide_question(narration))
+    elif template == "countdown_strike":
+        config.setdefault("headline", narration[:30] or "你只剩 3 天")
+        config.setdefault("countdown_steps", _countdown_steps_from_narration(narration))
+        config.setdefault("final_label", "GO / NOW")
+    elif template == "keyword_punchline":
+        kw, pl = _keyword_punchline_from_narration(narration)
+        config.setdefault("keyword", kw)
+        config.setdefault("punchline", pl)
+    elif template == "data_dense_table":
+        config.setdefault("headline", narration[:30] or "输入流汇聚状态")
+        config.setdefault("rows", _data_dense_rows_from_narration(narration))
+        config.setdefault("summary", "数据已结构化，等待调用")
+    elif template == "step_ladder":
+        config.setdefault("headline", narration[:30] or "从 0 到可用")
+        config.setdefault("steps", _step_ladder_data_from_narration(narration))
+        config.setdefault("top_label", "MILESTONE")
+    elif template == "concept_layers":
+        config.setdefault("headline", narration[:30] or "三个层次递进")
+        config.setdefault("layers", _concept_layers_data_from_narration(narration))
+    elif template == "progress_tracker":
+        config.setdefault("headline", narration[:30] or "8 周能力曲线")
+        config.setdefault("tracks", _progress_tracker_tracks_from_narration(narration))
+        config.setdefault("caption", "持续跑通后，三条曲线同步进入加速段")
+    elif template == "knowledge_graph":
+        config.setdefault("headline", narration[:30] or "你的知识网络")
+        config.setdefault("nodes", _knowledge_graph_nodes_from_narration(narration))
+        config.setdefault("edges", _knowledge_graph_edges_from_narration(narration))
+        config.setdefault("central_node", "N1")
+    elif template == "quote_close":
+        config.setdefault("quote", narration[:30] or "记住，是把素材变成自己的过程")
+        config.setdefault("attribution", "— 第二大脑实践 90 天")
+        config.setdefault("action", "先跑通最小闭环，评论区告诉我你的第一步")
     return config
 
 
@@ -649,6 +681,144 @@ def _comment_question_guide_question(narration: str) -> str:
     if "笔记" in narration or "App" in narration:
         return "你愿意先只保留一个入口吗？评论区告诉我"
     return "你打算先做哪一步？评论区说说你现在的状态"
+
+
+# ─── P3.4 — 8 new seed template data helpers ──────────────────────────
+
+def _countdown_steps_from_narration(narration: str) -> list[dict[str, str]]:
+    if "笔记" in narration or "App" in narration:
+        return [
+            {"num": "03", "label": "选一个入口"},
+            {"num": "02", "label": "把 10 条素材搬进去"},
+            {"num": "01", "label": "写第一篇草稿"},
+        ]
+    if "素材" in narration:
+        return [
+            {"num": "03", "label": "统一到一处"},
+            {"num": "02", "label": "标好标签"},
+            {"num": "01", "label": "调出第一份"},
+        ]
+    return [
+        {"num": "03", "label": "搭好入口"},
+        {"num": "02", "label": "跑通最小"},
+        {"num": "01", "label": "开始输出"},
+    ]
+
+
+def _keyword_punchline_from_narration(narration: str) -> tuple[str, str]:
+    if "记住" in narration:
+        return ("记住", narration[:30] or "不是多一个工具，而是把链路接通")
+    if "创造" in narration:
+        return ("创造", narration[:30] or "把精力留给真正的判断")
+    if "检索" in narration:
+        return ("检索", narration[:30] or "需要时直接调用，比记得更快")
+    return ("重点", narration[:30] or "把链路接通，比再多一个工具更值")
+
+
+def _data_dense_rows_from_narration(narration: str) -> list[dict[str, str]]:
+    if "素材" in narration or "笔记" in narration:
+        return [
+            {"label": "微信读书笔记", "status": "SYNC", "value": "1,234"},
+            {"label": "网页剪藏", "status": "SYNC", "value": "568"},
+            {"label": "语音转写", "status": "PENDING", "value": "21"},
+            {"label": "视频笔记", "status": "STALE", "value": "12"},
+        ]
+    if "AI" in narration or "工作流" in narration:
+        return [
+            {"label": "AI 提问入口", "status": "OK", "value": "1"},
+            {"label": "笔记库", "status": "SYNC", "value": "1,892"},
+            {"label": "草稿生成", "status": "READY", "value": "12"},
+            {"label": "复盘面板", "status": "PENDING", "value": "0"},
+        ]
+    return [
+        {"label": "输入流", "status": "SYNC", "value": "1,234"},
+        {"label": "结构化", "status": "OK", "value": "78%"},
+        {"label": "调用", "status": "READY", "value": "12"},
+        {"label": "输出", "status": "PENDING", "value": "0"},
+    ]
+
+
+def _step_ladder_data_from_narration(narration: str) -> list[dict[str, str]]:
+    if "Obsidian" in narration or "笔记" in narration:
+        return [
+            {"label": "1. 入口", "text": "Obsidian 库"},
+            {"label": "2. 链接", "text": "双向链接"},
+            {"label": "3. 检索", "text": "AI 提问"},
+            {"label": "4. 输出", "text": "草稿 + 复盘"},
+        ]
+    if "AI" in narration:
+        return [
+            {"label": "1. 提需求", "text": "自然语言"},
+            {"label": "2. 检索", "text": "找素材"},
+            {"label": "3. 整理", "text": "拼草稿"},
+            {"label": "4. 复盘", "text": "改稿子"},
+        ]
+    return [
+        {"label": "1. 起步", "text": "建立入口"},
+        {"label": "2. 串联", "text": "链接结构"},
+        {"label": "3. 调用", "text": "随时提问"},
+        {"label": "4. 产出", "text": "持续输出"},
+    ]
+
+
+def _concept_layers_data_from_narration(narration: str) -> list[dict[str, str]]:
+    if "Obsidian" in narration or "AI" in narration:
+        return [
+            {"level": "L1", "text": "收集：素材进库"},
+            {"level": "L2", "text": "结构：双向链接"},
+            {"level": "L3", "text": "调用：AI 提问"},
+        ]
+    return [
+        {"level": "L1", "text": "现象：散落"},
+        {"level": "L2", "text": "结构：可检索"},
+        {"level": "L3", "text": "调用：随用随取"},
+    ]
+
+
+def _progress_tracker_tracks_from_narration(narration: str) -> list[dict[str, Any]]:
+    if "笔记" in narration or "App" in narration:
+        return [
+            {"label": "输入", "weeks": [20, 35, 50, 60, 70, 78, 85, 90]},
+            {"label": "检索", "weeks": [10, 25, 45, 60, 72, 80, 88, 93]},
+            {"label": "输出", "weeks": [5, 18, 35, 50, 62, 75, 85, 92]},
+        ]
+    if "完播" in narration or "效率" in narration:
+        return [
+            {"label": "留存", "weeks": [25, 38, 52, 65, 74, 82, 88, 92]},
+            {"label": "互动", "weeks": [12, 22, 38, 50, 64, 74, 84, 90]},
+            {"label": "收藏", "weeks": [8, 18, 32, 45, 58, 70, 80, 88]},
+        ]
+    return [
+        {"label": "能力 A", "weeks": [15, 30, 45, 58, 68, 76, 84, 90]},
+        {"label": "能力 B", "weeks": [10, 22, 38, 50, 62, 72, 82, 88]},
+        {"label": "能力 C", "weeks": [5, 15, 30, 45, 58, 70, 80, 86]},
+    ]
+
+
+def _knowledge_graph_nodes_from_narration(narration: str) -> list[dict[str, Any]]:
+    if "笔记" in narration or "Obsidian" in narration:
+        return [
+            {"id": "N1", "label": "时间管理", "x": 540, "y": 800},
+            {"id": "N2", "label": "GTD", "x": 250, "y": 500},
+            {"id": "N3", "label": "番茄钟", "x": 830, "y": 500},
+            {"id": "N4", "label": "Obsidian", "x": 540, "y": 400},
+            {"id": "N5", "label": "AI 提问", "x": 250, "y": 1100},
+            {"id": "N6", "label": "写作复盘", "x": 830, "y": 1100},
+        ]
+    return [
+        {"id": "N1", "label": "核心概念", "x": 540, "y": 800},
+        {"id": "N2", "label": "方法 A", "x": 250, "y": 500},
+        {"id": "N3", "label": "方法 B", "x": 830, "y": 500},
+        {"id": "N4", "label": "案例 1", "x": 540, "y": 400},
+        {"id": "N5", "label": "案例 2", "x": 250, "y": 1100},
+        {"id": "N6", "label": "输出", "x": 830, "y": 1100},
+    ]
+
+
+def _knowledge_graph_edges_from_narration(narration: str) -> list[tuple[str, str]]:
+    if "笔记" in narration or "Obsidian" in narration:
+        return [("N1","N2"), ("N1","N3"), ("N1","N4"), ("N2","N5"), ("N3","N6"), ("N4","N5"), ("N4","N6")]
+    return [("N1","N2"), ("N1","N3"), ("N2","N4"), ("N3","N4"), ("N2","N5"), ("N3","N6"), ("N4","N6")]
 
 
 def capture_native_review_frames(timeline_dir: Path, frames: int = 7) -> dict[str, Any]:

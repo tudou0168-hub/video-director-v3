@@ -214,3 +214,31 @@
 - 端到端 P3.3 demo 验证（`p33_demo_preview`）：6 句短文案命中 4 种新 seed（`framework_quadrant / metric_dashboard / decision_tree / checklist_cta`）
 - 真实 5s smoke render：`outputs/demo_v3_preview/rendered_smoke/final_video_smoke.mp4` `PASS`，`duration=5.00s`
 - `sync_report.json`：`status=PASS`，`max_drift=0.0s`
+
+### P3.4 Template Library Expansion（批次 9）
+
+- 8 个新 seed 模板全部完成（独立 id + 独立 render_template）：
+  - `scene.hook.countdown_strike` → `countdown_strike`（3-2-1 倒数 + GO 按钮）
+  - `scene.hook.keyword_punchline` → `keyword_punchline`（超大关键词 + 金句）
+  - `scene.pain.data_dense_table` → `data_dense_table`（4 行状态表 + 状态色）
+  - `scene.method.step_ladder` → `step_ladder`（4 步阶梯渐变 + 圆形编号）
+  - `scene.method.concept_layers` → `concept_layers`（L1/L2/L3 概念分层 + 渐变宽度）
+  - `scene.evidence.progress_tracker` → `progress_tracker`（3 条 8 周进度条 + delta %）
+  - `scene.proof.knowledge_graph` → `knowledge_graph`（6 节点 + 7 边 + 中心节点）
+  - `scene.cta.quote_close` → `quote_close`（金句大卡 + attribution + action）
+- 全部 8 个新模板在 `_TEMPLATES / _CSS_FUNCTIONS / _GSAP_FUNCTIONS` 三个 registry 注册。
+- 协议层补全：`MOTION_PRESETS` 9 个（`kinetic_title_burst / marker_sweep / card_stagger / count_up / flow_draw / table_stream / node_pulse / graph_rise / quote_reveal`）；`TRANSITIONS` 13 个（`glow_shift / fade_slide_bridge / scan_reveal / slide_bridge / soft_wipe / line_draw_bridge / panel_slide_bridge / final_hold_fade / cards_to_flow / flow_to_table / metric_to_compare / radial_focus_shift / zoom_through`）。
+- `ROLE_DEFAULT_TEMPLATE` 显式覆盖 8 个新角色：`countdown / punchline / table / ladder / layers / progress / graph / close`。
+- `ROLE_NARRATION_OVERRIDE` 扩展 8 个新 seed 的 keyword 路由表（含 hook / pain / method / evidence / proof / cta 全部家族）。
+- `narration_planner.classify_role` keyword 扩展：HOOK/METHOD/EVIDENCE/PROOF/CTA 全部加新关键词，让 8 个新 seed 在真实脚本上可达。
+- 新增 8 个 narrative-aware 数据生成 helper（`_countdown_steps_from_narration / _keyword_punchline_from_narration / _data_dense_rows_from_narration` 等）。
+- 端到端 demo 验证：`demo_v3_preview` S06 "用双向链接组织笔记...形成知识网络" 命中 `scene.proof.knowledge_graph`（route 真实跑通）。
+
+### 本轮验证（批次 9）
+
+- `PYTHONPATH=src .venv/bin/python3 -m pytest tests/ -q`：`73 passed in 122.30s`（从 56 → 73，新增 17 个：routing 8 + render-distinct 1 + data-helper 1 + protocol 4 + classify_role 3）
+- `PYTHONPATH=src .venv/bin/python3 -m compileall -q src tests`：通过
+- `git diff --check`：通过
+- 真实 preview（`demo_v3_preview`）：`READY`，`can_approve_preview=true`，12 scene 中 S06 已成功路由到 `knowledge_graph` 新 seed
+- 真实 5s smoke render：`outputs/demo_v3_preview/rendered_smoke/final_video_smoke.mp4` `PASS`，`duration=5.00s`
+- `sync_report.json`：`status=PASS`，`max_drift=0.0s`

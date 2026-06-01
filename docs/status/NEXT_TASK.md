@@ -2,19 +2,19 @@
 
 ## 当前任务
 
-**V3-P3.3 Template Registry MVP（批次 8）** — 已完成并验证。
+**V3-P3.4 Template Library Expansion（批次 9）** — 已完成并验证。
 
 路线图：`docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md`
 
 ## 下一任务
 
-**V3-P3.4 Template Library Expansion**（P3.3 完成后）
+**V3-P3.5 Template Library Complete**
 
 目标：
-1. 把 12 个 seed 扩展到 20 个场景框架（+8），覆盖 5 类内容：AI 工具、职场效率、知识管理、自媒体方法、复盘清单。
-2. 增加动效预设从 3 到 9，语义转场从 3 到 7。
-3. 保持现有 routing 逻辑（narration 关键词 + role 兜底）覆盖全部新 seed。
-4. 优化 `narration_planner.classify_role` 让 method/evidence/proof 角色更准确（减少 explain 兜底）。
+1. 把 20 个 seed 扩展到 30 个场景框架（+10），达到路线图 56 资产目标。
+2. 动效预设扩展到 14，语义转场扩展到 12。
+3. 覆盖 5 类内容（AI 工具 / 职场效率 / 知识管理 / 自媒体方法 / 复盘清单）每类 ≥5 变体。
+4. 保持现有 routing 逻辑（narration 关键词 + role 兜底 + explain fallback）覆盖全部新 seed。
 5. 保持 P3.1 的自然语速、Native Preview、显式音频 mux 和 `<= 1.0s` 同步 gate。
 
 ## P3.2 批次 7 验收证据
@@ -36,8 +36,7 @@
 
 ## 后续阶段
 
-- `V3-P3.4 Template Library Expansion`（P3.3 完成后）
-- `V3-P3.5 Template Library Complete`
+- `V3-P3.5 Template Library Complete`（P3.4 完成后）
 - `V3-P3.6 Viral QA Loop`
 
 ## 不允许

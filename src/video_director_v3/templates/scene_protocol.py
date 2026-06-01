@@ -269,6 +269,211 @@ PROOF_COMMENT_QUESTION: dict[str, Any] = {
 }
 
 
+# ─── P3.4 — 8 new seed templates ───────────────────────────────────────
+
+HOOK_COUNTDOWN_STRIKE: dict[str, Any] = {
+    "id": "scene.hook.countdown_strike",
+    "kind": "scene_framework",
+    "render_template": "countdown_strike",
+    "semantic_roles": ["hook", "pain"],
+    "content_shapes": ["countdown", "count_down", "urgency"],
+    "density": "high",
+    "variables": ["headline", "countdown_steps", "final_label", "accent"],
+    "motion_preset": "count_up",
+    "compatible_transitions": ["transition.scan_reveal", "transition.glow_shift"],
+    "preview_fixture": {
+        "headline": "你只剩 3 天",
+        "countdown_steps": [{"num": "03", "label": "找到入口"}, {"num": "02", "label": "跑通最小"}, {"num": "01", "label": "开始输出"}],
+        "final_label": "GO / NOW",
+        "accent": "#FF4757",
+    },
+}
+
+HOOK_KEYWORD_PUNCHLINE: dict[str, Any] = {
+    "id": "scene.hook.keyword_punchline",
+    "kind": "scene_framework",
+    "render_template": "keyword_punchline",
+    "semantic_roles": ["hook", "pain"],
+    "content_shapes": ["keyword", "single_phrase", "punch"],
+    "density": "medium",
+    "variables": ["keyword", "punchline", "accent"],
+    "motion_preset": "kinetic_title_burst",
+    "compatible_transitions": ["transition.glow_shift", "transition.soft_wipe"],
+    "preview_fixture": {
+        "keyword": "记住",
+        "punchline": "不是多一个工具，而是把链路接通",
+        "accent": "#FF6B35",
+    },
+}
+
+PAIN_DATA_DENSE_TABLE: dict[str, Any] = {
+    "id": "scene.pain.data_dense_table",
+    "kind": "scene_framework",
+    "render_template": "data_dense_table",
+    "semantic_roles": ["pain", "input"],
+    "content_shapes": ["dense_rows", "table", "status_grid"],
+    "density": "high",
+    "variables": ["headline", "rows", "summary", "accent"],
+    "motion_preset": "table_stream",
+    "compatible_transitions": ["transition.scan_reveal", "transition.glow_shift"],
+    "preview_fixture": {
+        "headline": "输入流汇聚状态",
+        "rows": [
+            {"label": "微信读书笔记", "status": "SYNC", "value": "1,234"},
+            {"label": "网页剪藏", "status": "SYNC", "value": "568"},
+            {"label": "语音转写", "status": "PENDING", "value": "21"},
+            {"label": "视频笔记", "status": "STALE", "value": "12"},
+        ],
+        "summary": "87% 已同步，13% 待处理",
+        "accent": "#FBBF24",
+    },
+}
+
+METHOD_STEP_LADDER: dict[str, Any] = {
+    "id": "scene.method.step_ladder",
+    "kind": "scene_framework",
+    "render_template": "step_ladder",
+    "semantic_roles": ["method", "explain"],
+    "content_shapes": ["ladder", "step_progression", "vertical_rungs"],
+    "density": "high",
+    "variables": ["headline", "steps", "top_label", "accent"],
+    "motion_preset": "node_pulse",
+    "compatible_transitions": ["transition.line_draw_bridge", "transition.panel_slide_bridge"],
+    "preview_fixture": {
+        "headline": "从 0 到可用",
+        "steps": [
+            {"label": "1. 入口", "text": "Obsidian 库"},
+            {"label": "2. 链接", "text": "双向链接"},
+            {"label": "3. 检索", "text": "AI 提问"},
+            {"label": "4. 输出", "text": "草稿 + 复盘"},
+        ],
+        "top_label": "MILESTONE",
+        "accent": "#2ED573",
+    },
+}
+
+METHOD_CONCEPT_LAYERS: dict[str, Any] = {
+    "id": "scene.method.concept_layers",
+    "kind": "scene_framework",
+    "render_template": "concept_layers",
+    "semantic_roles": ["method", "explain"],
+    "content_shapes": ["layered_concepts", "pyramid", "abstraction_levels"],
+    "density": "medium",
+    "variables": ["headline", "layers", "accent"],
+    "motion_preset": "graph_rise",
+    "compatible_transitions": ["transition.panel_slide_bridge", "transition.glow_shift"],
+    "preview_fixture": {
+        "headline": "三个层次递进",
+        "layers": [
+            {"level": "L1", "text": "收集：素材进库"},
+            {"level": "L2", "text": "结构：双向链接"},
+            {"level": "L3", "text": "调用：AI 提问"},
+        ],
+        "accent": "#A855F7",
+    },
+}
+
+EVIDENCE_PROGRESS_TRACKER: dict[str, Any] = {
+    "id": "scene.evidence.progress_tracker",
+    "kind": "scene_framework",
+    "render_template": "progress_tracker",
+    "semantic_roles": ["evidence", "proof"],
+    "content_shapes": ["progress_bars", "multi_track", "weekly_trend"],
+    "density": "high",
+    "variables": ["headline", "tracks", "caption", "accent"],
+    "motion_preset": "graph_rise",
+    "compatible_transitions": ["transition.scan_reveal", "transition.glow_shift"],
+    "preview_fixture": {
+        "headline": "8 周能力曲线",
+        "tracks": [
+            {"label": "输入", "weeks": [20, 35, 50, 60, 70, 78, 85, 90]},
+            {"label": "检索", "weeks": [10, 25, 45, 60, 72, 80, 88, 93]},
+            {"label": "输出", "weeks": [5, 18, 35, 50, 62, 75, 85, 92]},
+        ],
+        "caption": "8 周跑通最小闭环后，三条曲线同步进入加速段",
+        "accent": "#4D9FFF",
+    },
+}
+
+PROOF_KNOWLEDGE_GRAPH: dict[str, Any] = {
+    "id": "scene.proof.knowledge_graph",
+    "kind": "scene_framework",
+    "render_template": "knowledge_graph",
+    "semantic_roles": ["proof", "summary"],
+    "content_shapes": ["node_graph", "relation_map", "centrality"],
+    "density": "high",
+    "variables": ["headline", "nodes", "edges", "central_node", "accent"],
+    "motion_preset": "graph_rise",
+    "compatible_transitions": ["transition.soft_wipe", "transition.glow_shift"],
+    "preview_fixture": {
+        "headline": "三个月后你的知识网络",
+        "nodes": [
+            {"id": "N1", "label": "时间管理", "x": 540, "y": 800},
+            {"id": "N2", "label": "GTD", "x": 250, "y": 500},
+            {"id": "N3", "label": "番茄钟", "x": 830, "y": 500},
+            {"id": "N4", "label": "Obsidian", "x": 540, "y": 400},
+            {"id": "N5", "label": "AI 提问", "x": 250, "y": 1100},
+            {"id": "N6", "label": "写作复盘", "x": 830, "y": 1100},
+        ],
+        "edges": [("N1","N2"), ("N1","N3"), ("N1","N4"), ("N2","N5"), ("N3","N6"), ("N4","N5"), ("N4","N6")],
+        "central_node": "N1",
+        "accent": "#A855F7",
+    },
+}
+
+CTA_QUOTE_CLOSE: dict[str, Any] = {
+    "id": "scene.cta.quote_close",
+    "kind": "scene_framework",
+    "render_template": "quote_close",
+    "semantic_roles": ["cta", "ready", "summary"],
+    "content_shapes": ["quote_card", "single_phrase", "closing"],
+    "density": "low",
+    "variables": ["quote", "attribution", "action", "accent"],
+    "motion_preset": "quote_reveal",
+    "compatible_transitions": ["transition.final_hold_fade", "transition.soft_wipe"],
+    "preview_fixture": {
+        "quote": "记住，是把素材变成自己的过程。",
+        "attribution": "— 第二大脑实践 90 天",
+        "action": "先跑通最小闭环，评论区告诉我你的第一步",
+        "accent": "#34D399",
+    },
+}
+
+
+# ─── P3.4 — 6 new motion presets + 4 new transitions ───────────────────
+
+# Motion presets (used by scene variables) — protocol only; actual GSAP
+# strings live in publish_templates._GSAP_FUNCTIONS.
+MOTION_PRESETS: dict[str, dict[str, str]] = {
+    "kinetic_title_burst": {"kind": "burst", "intensity": "high", "trigger": "scene_enter"},
+    "marker_sweep": {"kind": "sweep", "intensity": "medium", "trigger": "key_word"},
+    "card_stagger": {"kind": "stagger", "intensity": "medium", "trigger": "scene_enter"},
+    "count_up": {"kind": "counter", "intensity": "high", "trigger": "metric_reveal"},
+    "flow_draw": {"kind": "draw", "intensity": "medium", "trigger": "node_connect"},
+    "table_stream": {"kind": "stream", "intensity": "medium", "trigger": "row_reveal"},
+    "node_pulse": {"kind": "pulse", "intensity": "high", "trigger": "step_reveal"},
+    "graph_rise": {"kind": "rise", "intensity": "medium", "trigger": "bar_reveal"},
+    "quote_reveal": {"kind": "reveal", "intensity": "low", "trigger": "phrase_reveal"},
+}
+
+# Transition catalog (referenced by scene.compatible_transitions).
+TRANSITIONS: dict[str, dict[str, str]] = {
+    "transition.glow_shift": {"kind": "crossfade", "duration": "0.4s"},
+    "transition.fade_slide_bridge": {"kind": "bridge", "duration": "0.5s"},
+    "transition.scan_reveal": {"kind": "wipe", "duration": "0.3s"},
+    "transition.slide_bridge": {"kind": "bridge", "duration": "0.4s"},
+    "transition.soft_wipe": {"kind": "wipe", "duration": "0.5s"},
+    "transition.line_draw_bridge": {"kind": "draw", "duration": "0.4s"},
+    "transition.panel_slide_bridge": {"kind": "bridge", "duration": "0.45s"},
+    "transition.final_hold_fade": {"kind": "hold_fade", "duration": "0.6s"},
+    "transition.cards_to_flow": {"kind": "morph", "duration": "0.4s"},
+    "transition.flow_to_table": {"kind": "morph", "duration": "0.4s"},
+    "transition.metric_to_compare": {"kind": "morph", "duration": "0.4s"},
+    "transition.radial_focus_shift": {"kind": "focus", "duration": "0.5s"},
+    "transition.zoom_through": {"kind": "zoom", "duration": "0.4s"},
+}
+
+
 SEED_TEMPLATES: list[dict[str, Any]] = [
     HOOK_HERO_CENTER,
     DENSE_DATA_TABLE,
@@ -282,6 +487,14 @@ SEED_TEMPLATES: list[dict[str, Any]] = [
     EVIDENCE_CASE_STUDY_CARD,
     PROOF_SECTION_BOARD,
     PROOF_COMMENT_QUESTION,
+    HOOK_COUNTDOWN_STRIKE,
+    HOOK_KEYWORD_PUNCHLINE,
+    PAIN_DATA_DENSE_TABLE,
+    METHOD_STEP_LADDER,
+    METHOD_CONCEPT_LAYERS,
+    EVIDENCE_PROGRESS_TRACKER,
+    PROOF_KNOWLEDGE_GRAPH,
+    CTA_QUOTE_CLOSE,
 ]
 
 TEMPLATE_BY_ID: dict[str, dict[str, Any]] = {
@@ -310,6 +523,15 @@ ROLE_DEFAULT_TEMPLATE: dict[str, str] = {
     "example": EVIDENCE_CASE_STUDY_CARD["id"],
     "board": PROOF_SECTION_BOARD["id"],
     "comment": PROOF_COMMENT_QUESTION["id"],
+    # P3.4 — new seed overrides
+    "countdown": HOOK_COUNTDOWN_STRIKE["id"],
+    "punchline": HOOK_KEYWORD_PUNCHLINE["id"],
+    "table": PAIN_DATA_DENSE_TABLE["id"],
+    "ladder": METHOD_STEP_LADDER["id"],
+    "layers": METHOD_CONCEPT_LAYERS["id"],
+    "progress": EVIDENCE_PROGRESS_TRACKER["id"],
+    "graph": PROOF_KNOWLEDGE_GRAPH["id"],
+    "close": CTA_QUOTE_CLOSE["id"],
 }
 
 

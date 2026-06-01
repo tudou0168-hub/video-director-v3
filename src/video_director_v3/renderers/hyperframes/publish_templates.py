@@ -1376,6 +1376,424 @@ tl_{sid}.fromTo('[data-scene-id="{sid}"] [data-motion-target="scene-bg"] .bg-gri
 
 
 # ─────────────────────────────────────────────────────────────────
+# P3.4 — 8 new seed renderers
+# countdown_strike / keyword_punchline / data_dense_table /
+# step_ladder / concept_layers / progress_tracker /
+# knowledge_graph / quote_close
+# All reuse existing HUD card / scanline / accent palette.
+# ─────────────────────────────────────────────────────────────────
+
+def _template_countdown_strike(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    headline = scene.get("headline", scene.get("narration", "你只剩 3 天")[:30] or "你只剩 3 天")
+    steps = scene.get("countdown_steps", [
+        {"num": "03", "label": "找到入口"},
+        {"num": "02", "label": "跑通最小"},
+        {"num": "01", "label": "开始输出"},
+    ])
+    final_label = scene.get("final_label", "GO / NOW")
+    rows = []
+    for idx, step in enumerate(steps):
+        y = 500 + idx * 220
+        rows.append(f"""
+        <div class="countdown-row" style="position:absolute;top:{y}px;left:120px;width:840px;display:flex;align-items:center;gap:32px;padding:20px 28px;background:rgba(255,71,87,0.08);border:2px solid {acc};border-radius:24px;box-shadow:0 0 28px {acc}22;">
+            <div style="font-size:96px;font-weight:900;color:{acc};line-height:0.9;letter-spacing:-2px;text-shadow:0 0 32px {acc}66;">{step.get('num', '')}</div>
+            <div style="flex:1;font-size:38px;font-weight:700;color:#fff;line-height:1.2;">{step.get('label', '')}</div>
+        </div>
+        """)
+    return f"""
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(180deg,#0A1628 0%,#1A0A0A 60%,#0A1628 100%);">
+      <div class="bg-grid"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,{acc}22 0%,transparent 70%);"></div>
+    </div>
+    <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(255,71,87,0.12);border:1px solid {acc}66;color:{acc};font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">COUNTDOWN / STRIKE</div>
+      <div style="font-size:64px;font-weight:900;color:#fff;line-height:1.1;letter-spacing:-1.4px;">{headline}</div>
+    </div>
+    {''.join(rows)}
+    <div style="position:absolute;top:1230px;left:0;right:0;text-align:center;">
+      <div style="display:inline-flex;padding:18px 42px;border-radius:22px;background:{acc};color:#0A1628;font-size:42px;font-weight:900;letter-spacing:-0.6px;box-shadow:0 0 48px {acc}66;">▶ {final_label}</div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _css_countdown_strike(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    return f"""
+.{sid.lower()}-bg-grid {{ position:absolute; inset:0; pointer-events:none; background-image:linear-gradient({acc}06 1px,transparent 1px),linear-gradient(90deg,{acc}06 1px,transparent 1px); background-size:72px 72px; animation:grid-drift 18s linear infinite; }}
+@keyframes grid-drift {{ 0%{{background-position:0 0;}} 100%{{background-position:72px 72px;}} }}
+"""
+
+
+def _gsap_countdown_strike(sid: str, role: str, scene: dict[str, Any], start: float, duration: float) -> str:
+    return f"""
+const tl_{sid}=gsap.timeline({{paused:true}});
+window.__timelines['{sid}']=tl_{sid};
+tl_{sid}.fromTo('[data-scene-id="{sid}"] .countdown-row',{{x:80,opacity:0}},{{x:0,opacity:1,duration:0.5,stagger:0.2,ease:'back.out(1.2)'}},0);
+"""
+
+
+def _template_keyword_punchline(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    keyword = scene.get("keyword", "记住")
+    punchline = scene.get("punchline", scene.get("narration", "不是多一个工具，而是把链路接通")[:30] or "不是多一个工具")
+    return f"""
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(160deg,#0A1628 0%,#1A0A0A 50%,#0A1628 100%);">
+      <div class="bg-grid"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,{acc}28 0%,transparent 70%);"></div>
+    </div>
+    <div style="position:absolute;top:200px;left:0;right:0;text-align:center;">
+      <div style="font-size:18px;letter-spacing:0.32em;color:rgba(255,255,255,0.5);margin-bottom:16px;">KEYWORD / PUNCH</div>
+    </div>
+    <div style="position:absolute;top:280px;left:0;right:0;text-align:center;">
+      <div style="display:inline-flex;padding:32px 80px;border-radius:36px;background:linear-gradient(135deg,{acc},rgba(255,107,53,0.8));box-shadow:0 0 64px {acc}66;">
+        <div style="font-size:180px;font-weight:900;color:#0A1628;letter-spacing:-6px;line-height:0.9;">{keyword}</div>
+      </div>
+    </div>
+    <div style="position:absolute;top:760px;left:120px;right:120px;text-align:center;">
+      <div style="font-size:46px;font-weight:700;color:#fff;line-height:1.32;letter-spacing:-0.4px;">{punchline}</div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _css_keyword_punchline(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    return f"""
+.{sid.lower()}-bg-grid {{ position:absolute; inset:0; pointer-events:none; background-image:linear-gradient({acc}06 1px,transparent 1px),linear-gradient(90deg,{acc}06 1px,transparent 1px); background-size:72px 72px; animation:grid-drift 18s linear infinite; }}
+@keyframes grid-drift {{ 0%{{background-position:0 0;}} 100%{{background-position:72px 72px;}} }}
+"""
+
+
+def _gsap_keyword_punchline(sid: str, role: str, scene: dict[str, Any], start: float, duration: float) -> str:
+    return f"""
+const tl_{sid}=gsap.timeline({{paused:true}});
+window.__timelines['{sid}']=tl_{sid};
+tl_{sid}.fromTo('[data-scene-id="{sid}"] [data-motion-target="scene-bg"] .bg-grid',{{opacity:0}},{{opacity:1,duration:0.8}},0);
+"""
+
+
+def _template_data_dense_table(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    headline = scene.get("headline", scene.get("narration", "输入流汇聚状态")[:30] or "输入流汇聚状态")
+    rows = scene.get("rows", [
+        {"label": "微信读书笔记", "status": "SYNC", "value": "1,234"},
+        {"label": "网页剪藏", "status": "SYNC", "value": "568"},
+        {"label": "语音转写", "status": "PENDING", "value": "21"},
+        {"label": "视频笔记", "status": "STALE", "value": "12"},
+    ])
+    summary = scene.get("summary", "87% 已同步，13% 待处理")
+    status_color = {"SYNC": "#2ED573", "PENDING": "#FBBF24", "STALE": "#FF4757", "OK": "#2ED573", "FAIL": "#FF4757"}
+    row_htmls = []
+    for idx, row in enumerate(rows):
+        y = 460 + idx * 130
+        sc = status_color.get(row.get("status", "OK"), acc)
+        row_htmls.append(f"""
+        <div class="data-row" style="position:absolute;top:{y}px;left:72px;right:72px;height:100px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);border-left:4px solid {sc};border-radius:14px;padding:20px 28px;display:flex;align-items:center;gap:24px;">
+            <div style="font-size:30px;font-weight:700;color:#fff;flex:1;">{row.get('label', '')}</div>
+            <div style="font-size:34px;font-weight:900;color:{sc};padding:6px 18px;border-radius:10px;background:{sc}22;letter-spacing:0.06em;">{row.get('status', '')}</div>
+            <div style="font-size:32px;font-weight:900;color:rgba(255,255,255,0.85);width:140px;text-align:right;">{row.get('value', '')}</div>
+        </div>
+        """)
+    return f"""
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:{_bg(role)};">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:220px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(251,191,36,0.12);border:1px solid {acc}66;color:{acc};font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">DATA / DENSE</div>
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">{headline}</div>
+    </div>
+    {''.join(row_htmls)}
+    <div style="position:absolute;top:1280px;left:120px;right:120px;padding:18px 24px;border-top:1px solid rgba(255,255,255,0.18);text-align:center;font-size:24px;color:rgba(255,255,255,0.7);">{summary}</div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _css_data_dense_table(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    return f"""
+.{sid.lower()}-bg-grid {{ position:absolute; inset:0; pointer-events:none; background-image:linear-gradient({acc}06 1px,transparent 1px),linear-gradient(90deg,{acc}06 1px,transparent 1px); background-size:72px 72px; animation:grid-drift 18s linear infinite; }}
+@keyframes grid-drift {{ 0%{{background-position:0 0;}} 100%{{background-position:72px 72px;}} }}
+"""
+
+
+def _gsap_data_dense_table(sid: str, role: str, scene: dict[str, Any], start: float, duration: float) -> str:
+    return f"""
+const tl_{sid}=gsap.timeline({{paused:true}});
+window.__timelines['{sid}']=tl_{sid};
+tl_{sid}.fromTo('[data-scene-id="{sid}"] .data-row',{{x:60,opacity:0}},{{x:0,opacity:1,duration:0.45,stagger:0.12,ease:'power2.out'}},0);
+"""
+
+
+def _template_step_ladder(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    headline = scene.get("headline", scene.get("narration", "从 0 到可用")[:30] or "从 0 到可用")
+    steps = scene.get("steps", [
+        {"label": "1. 入口", "text": "Obsidian 库"},
+        {"label": "2. 链接", "text": "双向链接"},
+        {"label": "3. 检索", "text": "AI 提问"},
+        {"label": "4. 输出", "text": "草稿 + 复盘"},
+    ])
+    top_label = scene.get("top_label", "MILESTONE")
+    rung_htmls = []
+    for idx, step in enumerate(steps):
+        y = 460 + idx * 200
+        indent = idx * 40
+        rung_htmls.append(f"""
+        <div class="ladder-rung" style="position:absolute;top:{y}px;left:{120 + indent}px;right:{120 - indent}px;height:140px;background:linear-gradient(90deg,rgba(46,213,115,0.18),rgba(46,213,115,0.04));border:2px solid {acc};border-radius:18px;padding:24px 32px;display:flex;align-items:center;gap:24px;box-shadow:0 0 24px {acc}18;">
+            <div style="width:80px;height:80px;border-radius:50%;background:{acc};display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;color:#0A1628;flex-shrink:0;">{idx+1}</div>
+            <div style="flex:1;">
+                <div style="font-size:24px;letter-spacing:0.16em;color:rgba(255,255,255,0.6);margin-bottom:6px;">{step.get('label', '')}</div>
+                <div style="font-size:36px;font-weight:800;color:#fff;line-height:1.2;">{step.get('text', '')}</div>
+            </div>
+        </div>
+        """)
+    return f"""
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(180deg,#0A1628 0%,#0A1A28 60%,#082016 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:220px;left:0;right:0;text-align:center;">
+      <div style="font-size:18px;letter-spacing:0.32em;color:{acc};margin-bottom:14px;">{top_label}</div>
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">{headline}</div>
+    </div>
+    {''.join(rung_htmls)}
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _css_step_ladder(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    return f"""
+.{sid.lower()}-bg-grid {{ position:absolute; inset:0; pointer-events:none; background-image:linear-gradient({acc}06 1px,transparent 1px),linear-gradient(90deg,{acc}06 1px,transparent 1px); background-size:72px 72px; animation:grid-drift 18s linear infinite; }}
+@keyframes grid-drift {{ 0%{{background-position:0 0;}} 100%{{background-position:72px 72px;}} }}
+"""
+
+
+def _gsap_step_ladder(sid: str, role: str, scene: dict[str, Any], start: float, duration: float) -> str:
+    return f"""
+const tl_{sid}=gsap.timeline({{paused:true}});
+window.__timelines['{sid}']=tl_{sid};
+tl_{sid}.fromTo('[data-scene-id="{sid}"] .ladder-rung',{{y:60,opacity:0}},{{y:0,opacity:1,duration:0.5,stagger:0.2,ease:'back.out(1.1)'}},0);
+"""
+
+
+def _template_concept_layers(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    headline = scene.get("headline", scene.get("narration", "三个层次递进")[:30] or "三个层次递进")
+    layers = scene.get("layers", [
+        {"level": "L1", "text": "收集：素材进库"},
+        {"level": "L2", "text": "结构：双向链接"},
+        {"level": "L3", "text": "调用：AI 提问"},
+    ])
+    widths = [840, 720, 600]
+    colors = [acc, "#7C3AED", "#A855F7"]
+    layer_htmls = []
+    for idx, (layer, w, c) in enumerate(zip(layers, widths, colors)):
+        y = 480 + idx * 240
+        x = (1080 - w) // 2
+        layer_htmls.append(f"""
+        <div class="layer-bar" style="position:absolute;top:{y}px;left:{x}px;width:{w}px;height:180px;background:linear-gradient(90deg,{c}26,rgba(255,255,255,0.04));border:2px solid {c};border-radius:24px;padding:24px 32px;display:flex;align-items:center;gap:24px;box-shadow:0 0 32px {c}22;">
+            <div style="width:90px;height:90px;border-radius:18px;background:{c};display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:900;color:#0A1628;flex-shrink:0;">{layer.get('level', '')}</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.18;">{layer.get('text', '')}</div>
+            </div>
+        </div>
+        """)
+    return f"""
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(180deg,#0A1628 0%,#0F0820 60%,#0A1628 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">{headline}</div>
+    </div>
+    {''.join(layer_htmls)}
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _css_concept_layers(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    return f"""
+.{sid.lower()}-bg-grid {{ position:absolute; inset:0; pointer-events:none; background-image:linear-gradient({acc}06 1px,transparent 1px),linear-gradient(90deg,{acc}06 1px,transparent 1px); background-size:72px 72px; animation:grid-drift 18s linear infinite; }}
+@keyframes grid-drift {{ 0%{{background-position:0 0;}} 100%{{background-position:72px 72px;}} }}
+"""
+
+
+def _gsap_concept_layers(sid: str, role: str, scene: dict[str, Any], start: float, duration: float) -> str:
+    return f"""
+const tl_{sid}=gsap.timeline({{paused:true}});
+window.__timelines['{sid}']=tl_{sid};
+tl_{sid}.fromTo('[data-scene-id="{sid}"] .layer-bar',{{y:80,opacity:0}},{{y:0,opacity:1,duration:0.55,stagger:0.18,ease:'power2.out'}},0);
+"""
+
+
+def _template_progress_tracker(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    headline = scene.get("headline", scene.get("narration", "8 周能力曲线")[:30] or "8 周能力曲线")
+    tracks = scene.get("tracks", [
+        {"label": "输入", "weeks": [20, 35, 50, 60, 70, 78, 85, 90]},
+        {"label": "检索", "weeks": [10, 25, 45, 60, 72, 80, 88, 93]},
+        {"label": "输出", "weeks": [5, 18, 35, 50, 62, 75, 85, 92]},
+    ])
+    caption = scene.get("caption", "8 周跑通最小闭环后，三条曲线同步进入加速段")
+    track_colors = [acc, "#2ED573", "#FF6B35"]
+    bar_y = [490, 720, 950]
+    bar_max_w = 800
+    week_labels = ["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8"]
+    track_htmls = []
+    for idx, (track, color, y) in enumerate(zip(tracks, track_colors, bar_y)):
+        weeks = track.get("weeks", [])
+        bar_w = int(bar_max_w * (weeks[-1] if weeks else 0) / 100)
+        bar_w = max(40, bar_w)
+        track_htmls.append(f"""
+        <div class="progress-track" style="position:absolute;top:{y}px;left:200px;width:800px;">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;">
+                <div style="font-size:24px;letter-spacing:0.16em;color:rgba(255,255,255,0.7);font-weight:700;">{track.get('label', '')}</div>
+                <div style="font-size:32px;font-weight:900;color:{color};">{weeks[-1] if weeks else 0}<span style="font-size:18px;color:rgba(255,255,255,0.5);">%</span></div>
+            </div>
+            <div style="width:100%;height:36px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;position:relative;">
+                <div class="progress-bar" style="position:absolute;left:0;top:0;bottom:0;width:{bar_w}px;background:linear-gradient(90deg,{color},rgba(255,255,255,0.3));border-radius:999px;box-shadow:0 0 18px {color}66;"></div>
+                <div style="position:absolute;left:0;right:0;top:0;bottom:0;display:flex;justify-content:space-between;align-items:center;padding:0 14px;font-size:14px;color:rgba(255,255,255,0.45);font-family:monospace;">{''.join(f'<span>{w}</span>' for w in week_labels)}</div>
+            </div>
+        </div>
+        """)
+    return f"""
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(135deg,#0A1428 0%,#0A1A28 60%,#082016 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:200px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(77,159,255,0.12);border:1px solid {acc}66;color:{acc};font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">PROGRESS / TRACKER</div>
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">{headline}</div>
+    </div>
+    {''.join(track_htmls)}
+    <div style="position:absolute;top:1200px;left:120px;right:120px;padding:18px 24px;border-top:1px solid rgba(255,255,255,0.18);text-align:center;font-size:24px;color:rgba(255,255,255,0.7);">{caption}</div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _css_progress_tracker(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    return f"""
+.{sid.lower()}-bg-grid {{ position:absolute; inset:0; pointer-events:none; background-image:linear-gradient({acc}06 1px,transparent 1px),linear-gradient(90deg,{acc}06 1px,transparent 1px); background-size:72px 72px; animation:grid-drift 18s linear infinite; }}
+@keyframes grid-drift {{ 0%{{background-position:0 0;}} 100%{{background-position:72px 72px;}} }}
+"""
+
+
+def _gsap_progress_tracker(sid: str, role: str, scene: dict[str, Any], start: float, duration: float) -> str:
+    return f"""
+const tl_{sid}=gsap.timeline({{paused:true}});
+window.__timelines['{sid}']=tl_{sid};
+tl_{sid}.fromTo('[data-scene-id="{sid}"] .progress-bar',{{scaleX:0,transformOrigin:'left center'}},{{scaleX:1,duration:1.0,stagger:0.2,ease:'power2.out'}},0);
+"""
+
+
+def _template_knowledge_graph(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    headline = scene.get("headline", scene.get("narration", "你的知识网络")[:30] or "你的知识网络")
+    nodes = scene.get("nodes", [
+        {"id": "N1", "label": "时间管理", "x": 540, "y": 800},
+        {"id": "N2", "label": "GTD", "x": 250, "y": 500},
+        {"id": "N3", "label": "番茄钟", "x": 830, "y": 500},
+        {"id": "N4", "label": "Obsidian", "x": 540, "y": 400},
+        {"id": "N5", "label": "AI 提问", "x": 250, "y": 1100},
+        {"id": "N6", "label": "写作复盘", "x": 830, "y": 1100},
+    ])
+    edges = scene.get("edges", [("N1","N2"), ("N1","N3"), ("N1","N4"), ("N2","N5"), ("N3","N6"), ("N4","N5"), ("N4","N6")])
+    central_node = scene.get("central_node", "N1")
+    nodes_by_id = {n["id"]: n for n in nodes}
+    edge_htmls = []
+    for src_id, dst_id in edges:
+        if src_id in nodes_by_id and dst_id in nodes_by_id:
+            src = nodes_by_id[src_id]
+            dst = nodes_by_id[dst_id]
+            x1, y1 = src["x"] + 60, src["y"] + 40
+            x2, y2 = dst["x"] + 60, dst["y"] + 40
+            edge_htmls.append(f"""
+            <div class="kg-edge" style="position:absolute;left:{x1}px;top:{y1}px;width:{max(abs(x2-x1), 1)}px;height:2px;background:linear-gradient(90deg,{acc}66,rgba(255,255,255,0.2));transform-origin:0 0;transform:rotate({(y2-y1)/(x2-x1+0.0001) * 57.3 if x2 != x1 else 90}deg);"></div>
+            """)
+    node_htmls = []
+    for n in nodes:
+        is_central = n["id"] == central_node
+        r = 70 if is_central else 56
+        bg = acc if is_central else "rgba(37,216,255,0.18)"
+        text_color = "#0A1628" if is_central else "#fff"
+        node_htmls.append(f"""
+        <div class="kg-node" style="position:absolute;left:{n['x']}px;top:{n['y']}px;width:120px;height:80px;border-radius:14px;background:{bg};border:2px solid {acc};display:flex;align-items:center;justify-content:center;text-align:center;padding:6px 10px;box-shadow:0 0 22px {acc}44;">
+            <div style="font-size:{18 if is_central else 16}px;font-weight:800;color:{text_color};line-height:1.15;">{n.get('label', '')}</div>
+        </div>
+        """)
+    return f"""
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(160deg,#0A1628 0%,#0F0820 60%,#0A1628 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:200px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(168,85,247,0.12);border:1px solid {acc}66;color:{acc};font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">KNOWLEDGE / GRAPH</div>
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">{headline}</div>
+    </div>
+    {''.join(edge_htmls)}
+    {''.join(node_htmls)}
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _css_knowledge_graph(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    return f"""
+.{sid.lower()}-bg-grid {{ position:absolute; inset:0; pointer-events:none; background-image:linear-gradient({acc}06 1px,transparent 1px),linear-gradient(90deg,{acc}06 1px,transparent 1px); background-size:72px 72px; animation:grid-drift 18s linear infinite; }}
+@keyframes grid-drift {{ 0%{{background-position:0 0;}} 100%{{background-position:72px 72px;}} }}
+"""
+
+
+def _gsap_knowledge_graph(sid: str, role: str, scene: dict[str, Any], start: float, duration: float) -> str:
+    return f"""
+const tl_{sid}=gsap.timeline({{paused:true}});
+window.__timelines['{sid}']=tl_{sid};
+tl_{sid}.fromTo('[data-scene-id="{sid}"] .kg-node',{{scale:0.4,opacity:0}},{{scale:1,opacity:1,duration:0.5,stagger:0.1,ease:'back.out(1.3)'}},0);
+tl_{sid}.fromTo('[data-scene-id="{sid}"] .kg-edge',{{opacity:0}},{{opacity:1,duration:0.5,stagger:0.08}},0.3);
+"""
+
+
+def _template_quote_close(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    quote = scene.get("quote", scene.get("narration", "记住，是把素材变成自己的过程")[:30] or "记住，是把素材变成自己的过程")
+    attribution = scene.get("attribution", "— 第二大脑实践 90 天")
+    action = scene.get("action", "先跑通最小闭环，评论区告诉我你的第一步")
+    return f"""
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(180deg,#0A1628 0%,#082016 50%,#0A1628 100%);">
+      <div class="bg-grid"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,{acc}22 0%,transparent 68%);"></div>
+    </div>
+    <div style="position:absolute;top:140px;left:120px;right:120px;padding:54px 50px;border:2px solid {acc};border-radius:32px;background:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02));box-shadow:0 0 56px {acc}22;text-align:center;">
+        <div style="font-size:18px;letter-spacing:0.32em;color:{acc};margin-bottom:24px;">QUOTE / CLOSE</div>
+        <div style="font-size:64px;font-weight:900;color:#fff;line-height:1.18;letter-spacing:-1.4px;">“{quote}”</div>
+        <div style="margin-top:24px;font-size:24px;color:rgba(255,255,255,0.55);letter-spacing:0.04em;">{attribution}</div>
+    </div>
+    <div style="position:absolute;top:1180px;left:0;right:0;text-align:center;">
+        <div style="font-size:18px;letter-spacing:0.22em;color:rgba(255,255,255,0.5);margin-bottom:14px;">ACTION / 行动</div>
+        <div style="display:inline-flex;padding:16px 36px;border-radius:18px;background:{acc}22;border:1px solid {acc}66;font-size:28px;color:#fff;font-weight:600;">{action}</div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _css_quote_close(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    return f"""
+.{sid.lower()}-bg-grid {{ position:absolute; inset:0; pointer-events:none; background-image:linear-gradient({acc}06 1px,transparent 1px),linear-gradient(90deg,{acc}06 1px,transparent 1px); background-size:72px 72px; animation:grid-drift 18s linear infinite; }}
+@keyframes grid-drift {{ 0%{{background-position:0 0;}} 100%{{background-position:72px 72px;}} }}
+"""
+
+
+def _gsap_quote_close(sid: str, role: str, scene: dict[str, Any], start: float, duration: float) -> str:
+    return f"""
+const tl_{sid}=gsap.timeline({{paused:true}});
+window.__timelines['{sid}']=tl_{sid};
+tl_{sid}.fromTo('[data-scene-id="{sid}"] [data-motion-target="scene-bg"] .bg-grid',{{opacity:0}},{{opacity:1,duration:0.8}},0);
+"""
+
+
+# ─────────────────────────────────────────────────────────────────
 # FALLBACK — old role-based template (default)
 # ─────────────────────────────────────────────────────────────────
 
@@ -1446,6 +1864,14 @@ _TEMPLATES = {
     "case_study_card": _template_case_study_card,
     "section_board": _template_section_board,
     "comment_question": _template_comment_question,
+    "countdown_strike": _template_countdown_strike,
+    "keyword_punchline": _template_keyword_punchline,
+    "data_dense_table": _template_data_dense_table,
+    "step_ladder": _template_step_ladder,
+    "concept_layers": _template_concept_layers,
+    "progress_tracker": _template_progress_tracker,
+    "knowledge_graph": _template_knowledge_graph,
+    "quote_close": _template_quote_close,
     # fallback aliases
     "hook_centered": _template_fallback,
     "pain_centered": _template_fallback,
@@ -1468,6 +1894,14 @@ _CSS_FUNCTIONS = {
     "case_study_card": _css_case_study_card,
     "section_board": _css_section_board,
     "comment_question": _css_comment_question,
+    "countdown_strike": _css_countdown_strike,
+    "keyword_punchline": _css_keyword_punchline,
+    "data_dense_table": _css_data_dense_table,
+    "step_ladder": _css_step_ladder,
+    "concept_layers": _css_concept_layers,
+    "progress_tracker": _css_progress_tracker,
+    "knowledge_graph": _css_knowledge_graph,
+    "quote_close": _css_quote_close,
     "hook_centered": _css_fallback,
     "pain_centered": _css_fallback,
     "method_centered": _css_fallback,
@@ -1489,6 +1923,14 @@ _GSAP_FUNCTIONS = {
     "case_study_card": _gsap_case_study_card,
     "section_board": _gsap_section_board,
     "comment_question": _gsap_comment_question,
+    "countdown_strike": _gsap_countdown_strike,
+    "keyword_punchline": _gsap_keyword_punchline,
+    "data_dense_table": _gsap_data_dense_table,
+    "step_ladder": _gsap_step_ladder,
+    "concept_layers": _gsap_concept_layers,
+    "progress_tracker": _gsap_progress_tracker,
+    "knowledge_graph": _gsap_knowledge_graph,
+    "quote_close": _gsap_quote_close,
     "hook_centered": _gsap_fallback,
     "pain_centered": _gsap_fallback,
     "method_centered": _gsap_fallback,
