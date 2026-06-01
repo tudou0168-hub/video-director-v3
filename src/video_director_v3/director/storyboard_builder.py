@@ -10,11 +10,46 @@ import json
 from pathlib import Path
 from typing import Any
 
-from video_director_v3.templates.scene_protocol import pick_template_for_role, register_seed_templates
+from video_director_v3.templates.scene_protocol import (
+    METHOD_FRAMEWORK_QUADRANT,
+    METHOD_DECISION_TREE,
+    EVIDENCE_METRIC_DASHBOARD,
+    EVIDENCE_CASE_STUDY_CARD,
+    PROOF_SECTION_BOARD,
+    PROOF_COMMENT_QUESTION,
+    pick_template_for_role,
+    register_seed_templates,
+)
 
 
 MAX_BODY_SCENE_SECONDS = 7.5
 MIN_SCENE_SECONDS = 1.5
+
+
+# Narration keyword → seed template id for method/evidence/proof families.
+# Lets a single role get visually distinct treatments based on sentence content.
+# NOTE: explain role is also covered because narration_planner often labels
+# "method-like" content as "explain" — falling back to the same override
+# prevents the new seeds from being unreachable on real scripts.
+ROLE_NARRATION_OVERRIDE: dict[str, list[tuple[tuple[str, ...], str]]] = {
+    "method": [
+        (("四象限", "框架", "矩阵", "四个", "quadrant"), METHOD_FRAMEWORK_QUADRANT["id"]),
+        (("要不要", "是否", "决策", "选择", "判断"), METHOD_DECISION_TREE["id"]),
+    ],
+    "explain": [
+        (("四象限", "框架", "矩阵"), METHOD_FRAMEWORK_QUADRANT["id"]),
+        (("要不要", "是否", "决策", "选择", "判断"), METHOD_DECISION_TREE["id"]),
+        (("案例", "学员", "同学", "博主", "账号", "李同学"), EVIDENCE_CASE_STUDY_CARD["id"]),
+    ],
+    "evidence": [
+        (("数据", "指标", "增长", "对比", "提升", "效率", "完播率"), EVIDENCE_METRIC_DASHBOARD["id"]),
+        (("案例", "学员", "同学", "博主", "账号", "李同学"), EVIDENCE_CASE_STUDY_CARD["id"]),
+    ],
+    "proof": [
+        (("维度", "板块", "几个", "三条", "四条", "判断"), PROOF_SECTION_BOARD["id"]),
+        (("评论", "想问", "告诉我", "评论区", "你愿意", "愿不愿意"), PROOF_COMMENT_QUESTION["id"]),
+    ],
+}
 
 
 def _format_scene_id(index: int) -> str:
@@ -127,16 +162,35 @@ def _cluster_sentences(
 
 
 def _assign_visual_templates(scenes: list[dict[str, Any]]) -> None:
-    """Mutate scenes in-place: attach visual_template and accent by role."""
+    """Mutate scenes in-place: attach visual_template and accent by role.
+
+    Routing rules (P3.3):
+      1. Default: role → seed template via ROLE_DEFAULT_TEMPLATE.
+      2. Override: if role ∈ {method, evidence, proof} and the sentence narration
+         contains a recognised keyword cluster, swap to a more specific seed
+         (e.g. method + "四象限" → framework_quadrant).
+    """
     register_seed_templates()
     for scene in scenes:
         role = scene.get("role", "explain")
-        tpl = pick_template_for_role(role)
-        scene["scene_framework"] = tpl.get("id", "")
+        narration = scene.get("narration", "") or ""
+        seed_id = _pick_seed_id(role, narration)
+        from video_director_v3.templates.scene_protocol import get_template
+        tpl = get_template(seed_id) or pick_template_for_role(role)
+        scene["scene_framework"] = tpl.get("id", seed_id)
         scene["visual_template"] = tpl.get("render_template", "hook_big_claim")
         fixture = tpl.get("preview_fixture", {}) or {}
         scene["accent"] = fixture.get("accent", "#25D8FF")
         scene["density"] = tpl.get("density", "medium")
+
+
+def _pick_seed_id(role: str, narration: str) -> str:
+    """Return the seed template id for a given role + narration."""
+    for keyword_tuple, seed_id in ROLE_NARRATION_OVERRIDE.get(role, []):
+        if any(token in narration for token in keyword_tuple):
+            return seed_id
+    tpl = pick_template_for_role(role)
+    return tpl.get("id", "")
 
 
 def build_motion_storyboard(

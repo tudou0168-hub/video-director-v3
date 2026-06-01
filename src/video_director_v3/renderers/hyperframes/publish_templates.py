@@ -1043,6 +1043,339 @@ tl_{sid}.fromTo('[data-scene-id="{sid}"] .cta-metric',{{x:-60,opacity:0}},{{x:0,
 
 
 # ─────────────────────────────────────────────────────────────────
+# P3.3 — 6 new seed template renderers
+# framework_quadrant / decision_tree / metric_dashboard /
+# case_study_card / section_board / comment_question
+# All reuse existing HUD card / scanline / accent palette.
+# ─────────────────────────────────────────────────────────────────
+
+def _template_framework_quadrant(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    headline = scene.get("headline", scene.get("narration", "知识管理四象限")[:30] or "知识管理四象限")
+    quadrants = scene.get("quadrants", [
+        {"label": "Q1 收集", "text": "微信 / 网页 / 语音", "color": "#4D9FFF"},
+        {"label": "Q2 整理", "text": "双向链接 / 主题页", "color": "#2ED573"},
+        {"label": "Q3 检索", "text": "直接问 AI", "color": "#FF6B35"},
+        {"label": "Q4 输出", "text": "写作 / 复盘", "color": "#A855F7"},
+    ])
+    center_label = scene.get("center_label", scene.get("quadrant_center", "Obsidian"))
+    positions = [("top:420px;left:120px;", "Q1"), ("top:420px;right:120px;", "Q2"),
+                 ("top:900px;left:120px;", "Q3"), ("top:900px;right:120px;", "Q4")]
+    quad_htmls = []
+    for pos, qkey, quadrant in zip(positions, ["q1", "q2", "q3", "q4"], quadrants):
+        top_left, _ = pos
+        qcolor = quadrant.get("color", acc)
+        quad_htmls.append(f"""
+        <div class="framework-quad" style="position:absolute;{top_left}width:380px;height:380px;background:rgba(255,255,255,0.05);border:2px solid {qcolor};border-radius:30px;padding:30px 26px;box-shadow:0 0 32px {qcolor}22;">
+            <div style="font-size:20px;letter-spacing:0.18em;color:{qcolor};margin-bottom:10px;">{quadrant.get('label', '')}</div>
+            <div style="font-size:32px;font-weight:800;color:#fff;line-height:1.2;margin-top:6px;">{quadrant.get('text', '')}</div>
+        </div>
+        """)
+    return f"""
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(135deg,#0A1628 0%,#0A1A28 60%,#0A1428 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:220px;left:72px;right:72px;text-align:center;">
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">{headline}</div>
+    </div>
+    {''.join(quad_htmls)}
+    <div style="position:absolute;top:660px;left:430px;width:220px;height:220px;border-radius:50%;background:linear-gradient(135deg,rgba(37,216,255,0.18),rgba(46,213,115,0.18));border:2px solid {acc};display:flex;align-items:center;justify-content:center;">
+        <div style="text-align:center;">
+            <div style="font-size:14px;letter-spacing:0.22em;color:rgba(255,255,255,0.55);">CENTER</div>
+            <div style="font-size:32px;font-weight:900;color:#fff;margin-top:4px;">{center_label}</div>
+        </div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _css_framework_quadrant(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    return f"""
+.{sid.lower()}-bg-grid {{ position:absolute; inset:0; pointer-events:none; background-image:linear-gradient({acc}06 1px,transparent 1px),linear-gradient(90deg,{acc}06 1px,transparent 1px); background-size:72px 72px; animation:grid-drift 18s linear infinite; }}
+@keyframes grid-drift {{ 0%{{background-position:0 0;}} 100%{{background-position:72px 72px;}} }}
+"""
+
+
+def _gsap_framework_quadrant(sid: str, role: str, scene: dict[str, Any], start: float, duration: float) -> str:
+    return f"""
+const tl_{sid}=gsap.timeline({{paused:true}});
+window.__timelines['{sid}']=tl_{sid};
+tl_{sid}.fromTo('[data-scene-id="{sid}"] .framework-quad',{{scale:0.85,opacity:0}},{{scale:1,opacity:1,duration:0.6,stagger:0.15,ease:'back.out(1.1)'}},0);
+tl_{sid}.fromTo('[data-scene-id="{sid}"] [data-motion-target="scene-bg"] .bg-grid',{{opacity:0}},{{opacity:1,duration:0.8}},0);
+"""
+
+
+def _template_decision_tree(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    headline = scene.get("headline", scene.get("narration", "要不要用 Obsidian")[:30] or "要不要用 Obsidian")
+    root_q = scene.get("root_question", scene.get("decision_root", "你素材 > 1000 条？"))
+    branches = scene.get("branches", [
+        {"label": "是", "leads_to": "用 Obsidian 双链管理"},
+        {"label": "否", "leads_to": "先用笔记 App 足够"},
+    ])
+    outcomes = scene.get("outcomes", [
+        {"label": "是", "text": "先搭最小闭环", "color": "#2ED573"},
+        {"label": "否", "text": "先别上系统", "color": "#FF6B35"},
+    ])
+    # Root node at top center
+    return f"""
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(180deg,#0A1A28 0%,#0A1428 60%,#0A1628 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:200px;left:72px;right:72px;text-align:center;">
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">{headline}</div>
+    </div>
+    <div style="position:absolute;top:380px;left:300px;width:480px;height:140px;background:rgba(37,216,255,0.12);border:2px solid {acc};border-radius:24px;padding:20px 24px;text-align:center;box-shadow:0 0 32px {acc}22;">
+        <div style="font-size:16px;letter-spacing:0.2em;color:rgba(255,255,255,0.55);margin-bottom:8px;">DECISION / ROOT</div>
+        <div style="font-size:32px;font-weight:800;color:#fff;line-height:1.2;">{root_q}</div>
+    </div>
+    <div style="position:absolute;top:540px;left:540px;width:2px;height:80px;background:linear-gradient(180deg,{acc},transparent);"></div>
+    <div style="position:absolute;top:620px;left:140px;width:760px;height:2px;background:linear-gradient(90deg,#2ED573 0%,#2ED573 50%,#FF6B35 50%,#FF6B35 100%);"></div>
+    <div style="position:absolute;top:640px;left:200px;width:2px;height:80px;background:#2ED573;"></div>
+    <div style="position:absolute;top:640px;left:840px;width:2px;height:80px;background:#FF6B35;"></div>
+    <div style="position:absolute;top:720px;left:60px;width:340px;background:rgba(46,213,115,0.12);border:2px solid #2ED573;border-radius:22px;padding:20px 22px;">
+        <div style="font-size:16px;letter-spacing:0.2em;color:#2ED573;margin-bottom:6px;">是 / YES</div>
+        <div style="font-size:24px;font-weight:800;color:#fff;line-height:1.3;">{branches[0].get('leads_to', '') if branches else ''}</div>
+    </div>
+    <div style="position:absolute;top:720px;right:60px;width:340px;background:rgba(255,107,53,0.12);border:2px solid #FF6B35;border-radius:22px;padding:20px 22px;text-align:right;">
+        <div style="font-size:16px;letter-spacing:0.2em;color:#FF6B35;margin-bottom:6px;">否 / NO</div>
+        <div style="font-size:24px;font-weight:800;color:#fff;line-height:1.3;">{branches[1].get('leads_to', '') if len(branches) > 1 else ''}</div>
+    </div>
+    <div style="position:absolute;top:1000px;left:80px;width:380px;background:rgba(46,213,115,0.08);border:1px solid rgba(46,213,115,0.3);border-radius:18px;padding:18px 20px;">
+        <div style="font-size:14px;letter-spacing:0.18em;color:rgba(255,255,255,0.55);margin-bottom:6px;">OUTCOME 1</div>
+        <div style="font-size:26px;font-weight:800;color:#2ED573;line-height:1.3;">{outcomes[0].get('text', '') if outcomes else ''}</div>
+    </div>
+    <div style="position:absolute;top:1000px;right:80px;width:380px;background:rgba(255,107,53,0.08);border:1px solid rgba(255,107,53,0.3);border-radius:18px;padding:18px 20px;">
+        <div style="font-size:14px;letter-spacing:0.18em;color:rgba(255,255,255,0.55);margin-bottom:6px;">OUTCOME 2</div>
+        <div style="font-size:26px;font-weight:800;color:#FF6B35;line-height:1.3;">{outcomes[1].get('text', '') if len(outcomes) > 1 else ''}</div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _css_decision_tree(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    return f"""
+.{sid.lower()}-bg-grid {{ position:absolute; inset:0; pointer-events:none; background-image:linear-gradient({acc}06 1px,transparent 1px),linear-gradient(90deg,{acc}06 1px,transparent 1px); background-size:72px 72px; animation:grid-drift 18s linear infinite; }}
+@keyframes grid-drift {{ 0%{{background-position:0 0;}} 100%{{background-position:72px 72px;}} }}
+"""
+
+
+def _gsap_decision_tree(sid: str, role: str, scene: dict[str, Any], start: float, duration: float) -> str:
+    return f"""
+const tl_{sid}=gsap.timeline({{paused:true}});
+window.__timelines['{sid}']=tl_{sid};
+tl_{sid}.fromTo('[data-scene-id="{sid}"] [data-motion-target="scene-bg"] .bg-grid',{{opacity:0}},{{opacity:1,duration:0.8}},0);
+"""
+
+
+def _template_metric_dashboard(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    headline = scene.get("headline", scene.get("narration", "三个月后的实际数据")[:30] or "三个月后的实际数据")
+    metrics = scene.get("metrics", [
+        {"label": "日均输出", "value": "3.2 篇", "delta": "+40%"},
+        {"label": "素材利用率", "value": "78%", "delta": "+52%"},
+        {"label": "检索响应", "value": "12s", "delta": "-65%"},
+        {"label": "完播率", "value": "61%", "delta": "+18%"},
+    ])
+    trend_caption = scene.get("trend_caption", "3 个月持续跑通最小闭环")
+    positions = [("top:480px;left:72px;", 0), ("top:480px;right:72px;", 1),
+                 ("top:920px;left:72px;", 2), ("top:920px;right:72px;", 3)]
+    metric_htmls = []
+    for top_left, idx in positions:
+        m = metrics[idx] if idx < len(metrics) else {"label": "—", "value": "—", "delta": "—"}
+        delta_color = "#2ED573" if (m.get("delta", "").startswith("+") or m.get("delta", "").startswith("-") and "65" in m.get("delta", "")) else "#FF6B35"
+        metric_htmls.append(f"""
+        <div class="metric-tile" style="position:absolute;{top_left}width:432px;height:380px;background:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.14);border-radius:28px;padding:30px 28px;box-shadow:0 0 28px rgba(37,216,255,0.08);">
+            <div style="font-size:18px;letter-spacing:0.2em;color:rgba(255,255,255,0.55);margin-bottom:14px;">{m.get('label', '')}</div>
+            <div style="font-size:80px;font-weight:900;color:{acc};line-height:0.95;letter-spacing:-2px;">{m.get('value', '')}</div>
+            <div style="display:inline-flex;margin-top:14px;padding:6px 14px;border-radius:999px;background:{delta_color}22;border:1px solid {delta_color}66;font-size:22px;color:{delta_color};font-weight:700;">{m.get('delta', '')}</div>
+        </div>
+        """)
+    return f"""
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(135deg,#0A1428 0%,#0A1A28 60%,#082016 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:210px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(46,213,115,0.12);border:1px solid {acc}66;color:{acc};font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">DATA / DASHBOARD</div>
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">{headline}</div>
+    </div>
+    {''.join(metric_htmls)}
+    <div style="position:absolute;top:1340px;left:140px;right:140px;padding:18px 24px;border-top:1px solid rgba(255,255,255,0.18);text-align:center;font-size:24px;color:rgba(255,255,255,0.7);">{trend_caption}</div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _css_metric_dashboard(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    return f"""
+.{sid.lower()}-bg-grid {{ position:absolute; inset:0; pointer-events:none; background-image:linear-gradient({acc}06 1px,transparent 1px),linear-gradient(90deg,{acc}06 1px,transparent 1px); background-size:72px 72px; animation:grid-drift 18s linear infinite; }}
+@keyframes grid-drift {{ 0%{{background-position:0 0;}} 100%{{background-position:72px 72px;}} }}
+"""
+
+
+def _gsap_metric_dashboard(sid: str, role: str, scene: dict[str, Any], start: float, duration: float) -> str:
+    return f"""
+const tl_{sid}=gsap.timeline({{paused:true}});
+window.__timelines['{sid}']=tl_{sid};
+tl_{sid}.fromTo('[data-scene-id="{sid}"] .metric-tile',{{y:60,opacity:0}},{{y:0,opacity:1,duration:0.55,stagger:0.18,ease:'power2.out'}},0);
+tl_{sid}.fromTo('[data-scene-id="{sid}"] [data-motion-target="scene-bg"] .bg-grid',{{opacity:0}},{{opacity:1,duration:0.8}},0);
+"""
+
+
+def _template_case_study_card(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    headline = scene.get("headline", scene.get("narration", "真实案例")[:30] or "真实案例")
+    case_subject = scene.get("case_subject", scene.get("case_label", "李同学 · 知识管理 90 天"))
+    before = scene.get("before", "笔记散 5 个 App，写一篇要 6 小时")
+    after = scene.get("after", "统一到 Obsidian + AI，1.5 小时成稿")
+    highlights = scene.get("highlights", ["整理耗时下降 75%", "素材复用率 3.4×", "AI 草稿接受率 80%"])
+    highlight_htmls = "".join(
+        f"""
+        <div class="cs-highlight" style="display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:999px;background:rgba(46,213,115,0.12);border:1px solid {acc}66;font-size:24px;color:#fff;margin-right:12px;margin-bottom:12px;">
+            <span style="color:{acc};font-size:22px;">●</span> {h}
+        </div>
+        """
+        for h in highlights
+    )
+    return f"""
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(160deg,#0A1628 0%,#0A1A28 60%,#101B32 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:220px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(77,159,255,0.12);border:1px solid {acc}66;color:{acc};font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">CASE / STUDY</div>
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">{headline}</div>
+      <div style="font-size:24px;color:rgba(255,255,255,0.65);margin-top:8px;">{case_subject}</div>
+    </div>
+    <div style="position:absolute;top:520px;left:72px;width:432px;background:linear-gradient(180deg,rgba(255,71,87,0.12),rgba(255,255,255,0.04));border:2px solid #FF4757;border-radius:24px;padding:28px 26px;">
+        <div style="font-size:18px;letter-spacing:0.2em;color:#FF4757;margin-bottom:10px;">BEFORE / 之前</div>
+        <div style="font-size:28px;font-weight:700;color:#fff;line-height:1.4;">{before}</div>
+    </div>
+    <div style="position:absolute;top:520px;right:72px;width:432px;background:linear-gradient(180deg,rgba(46,213,115,0.12),rgba(255,255,255,0.04));border:2px solid #2ED573;border-radius:24px;padding:28px 26px;">
+        <div style="font-size:18px;letter-spacing:0.2em;color:#2ED573;margin-bottom:10px;">AFTER / 之后</div>
+        <div style="font-size:28px;font-weight:700;color:#fff;line-height:1.4;">{after}</div>
+    </div>
+    <div style="position:absolute;top:1100px;left:72px;right:72px;text-align:center;">{highlight_htmls}</div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _css_case_study_card(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    return f"""
+.{sid.lower()}-bg-grid {{ position:absolute; inset:0; pointer-events:none; background-image:linear-gradient({acc}06 1px,transparent 1px),linear-gradient(90deg,{acc}06 1px,transparent 1px); background-size:72px 72px; animation:grid-drift 18s linear infinite; }}
+@keyframes grid-drift {{ 0%{{background-position:0 0;}} 100%{{background-position:72px 72px;}} }}
+"""
+
+
+def _gsap_case_study_card(sid: str, role: str, scene: dict[str, Any], start: float, duration: float) -> str:
+    return f"""
+const tl_{sid}=gsap.timeline({{paused:true}});
+window.__timelines['{sid}']=tl_{sid};
+tl_{sid}.fromTo('[data-scene-id="{sid}"] [data-motion-target="scene-bg"] .bg-grid',{{opacity:0}},{{opacity:1,duration:0.8}},0);
+"""
+
+
+def _template_section_board(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    headline = scene.get("headline", scene.get("narration", "四个判断维度")[:30] or "四个判断维度")
+    sections = scene.get("sections", [
+        {"label": "获得感", "text": "学到至少 1 个能用的方法"},
+        {"label": "收藏价值", "text": "可以复用的检查清单"},
+        {"label": "评论触发", "text": "可执行的下一步动作"},
+        {"label": "复看理由", "text": "信息密度足够高"},
+    ])
+    positions = [(72, 480), (548, 480), (72, 940), (548, 940)]
+    section_htmls = []
+    for idx, (s, (x, y)) in enumerate(zip(sections, positions), start=1):
+        section_htmls.append(f"""
+        <div class="board-section" style="position:absolute;top:{y}px;left:{x}px;width:444px;height:380px;background:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.16);border-radius:28px;padding:30px 28px;box-shadow:0 0 28px rgba(0,0,0,0.18);">
+            <div style="display:flex;align-items:center;gap:18px;margin-bottom:18px;">
+                <div style="width:64px;height:64px;border-radius:16px;background:{acc}22;border:1px solid {acc}66;display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:{acc};">0{idx}</div>
+                <div style="font-size:24px;letter-spacing:0.16em;color:rgba(255,255,255,0.7);font-weight:700;">{s.get('label', '')}</div>
+            </div>
+            <div style="font-size:30px;font-weight:700;color:#fff;line-height:1.4;">{s.get('text', '')}</div>
+        </div>
+        """)
+    return f"""
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(160deg,#1A0A0A 0%,#0A1428 50%,#0A1A28 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:230px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(255,107,53,0.12);border:1px solid {acc}66;color:{acc};font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">SECTION / BOARD</div>
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">{headline}</div>
+    </div>
+    {''.join(section_htmls)}
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _css_section_board(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    return f"""
+.{sid.lower()}-bg-grid {{ position:absolute; inset:0; pointer-events:none; background-image:linear-gradient({acc}06 1px,transparent 1px),linear-gradient(90deg,{acc}06 1px,transparent 1px); background-size:72px 72px; animation:grid-drift 18s linear infinite; }}
+@keyframes grid-drift {{ 0%{{background-position:0 0;}} 100%{{background-position:72px 72px;}} }}
+"""
+
+
+def _gsap_section_board(sid: str, role: str, scene: dict[str, Any], start: float, duration: float) -> str:
+    return f"""
+const tl_{sid}=gsap.timeline({{paused:true}});
+window.__timelines['{sid}']=tl_{sid};
+tl_{sid}.fromTo('[data-scene-id="{sid}"] .board-section',{{y:50,opacity:0}},{{y:0,opacity:1,duration:0.5,stagger:0.18,ease:'power2.out'}},0);
+tl_{sid}.fromTo('[data-scene-id="{sid}"] [data-motion-target="scene-bg"] .bg-grid',{{opacity:0}},{{opacity:1,duration:0.8}},0);
+"""
+
+
+def _template_comment_question(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    headline = scene.get("headline", scene.get("narration", "你想先跑通哪一步？")[:30] or "你想先跑通哪一步？")
+    fake_comment = scene.get("fake_comment", "“我之前用过 3 个笔记 App，最后都放弃了”")
+    guide_q = scene.get("guide_question", "你愿意先只保留一个入口吗？评论区告诉我")
+    return f"""
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(180deg,#0A1628 0%,#1A0A0A 60%,#0A1428 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(255,71,87,0.12);border:1px solid {acc}66;color:{acc};font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">COMMENT / ASK</div>
+      <div style="font-size:56px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.4px;">{headline}</div>
+    </div>
+    <div class="comment-bubble" style="position:absolute;top:540px;left:120px;right:120px;background:linear-gradient(180deg,rgba(255,255,255,0.08),rgba(255,255,255,0.04));border:2px solid rgba(255,71,87,0.4);border-radius:28px;padding:36px 32px;box-shadow:0 0 36px rgba(255,71,87,0.14);">
+        <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px;">
+            <div style="width:60px;height:60px;border-radius:50%;background:linear-gradient(135deg,#FF4757,#FF6B35);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#fff;">U</div>
+            <div>
+                <div style="font-size:18px;letter-spacing:0.18em;color:rgba(255,255,255,0.55);">REAL USER</div>
+                <div style="font-size:14px;color:rgba(255,255,255,0.4);margin-top:2px;">读者评论</div>
+            </div>
+        </div>
+        <div style="font-size:36px;font-weight:700;color:#fff;line-height:1.32;letter-spacing:-0.4px;">{fake_comment}</div>
+    </div>
+    <div style="position:absolute;top:1080px;left:120px;right:120px;background:linear-gradient(135deg,rgba(37,216,255,0.18),rgba(77,159,255,0.12));border:2px solid {acc};border-radius:24px;padding:26px 28px;text-align:center;">
+        <div style="font-size:18px;letter-spacing:0.2em;color:rgba(255,255,255,0.7);margin-bottom:8px;">ASK / 引导</div>
+        <div style="font-size:32px;font-weight:800;color:#fff;line-height:1.32;">{guide_q}</div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _css_comment_question(sid: str, role: str, scene: dict[str, Any]) -> str:
+    acc = _accent(role)
+    return f"""
+.{sid.lower()}-bg-grid {{ position:absolute; inset:0; pointer-events:none; background-image:linear-gradient({acc}06 1px,transparent 1px),linear-gradient(90deg,{acc}06 1px,transparent 1px); background-size:72px 72px; animation:grid-drift 18s linear infinite; }}
+@keyframes grid-drift {{ 0%{{background-position:0 0;}} 100%{{background-position:72px 72px;}} }}
+"""
+
+
+def _gsap_comment_question(sid: str, role: str, scene: dict[str, Any], start: float, duration: float) -> str:
+    return f"""
+const tl_{sid}=gsap.timeline({{paused:true}});
+window.__timelines['{sid}']=tl_{sid};
+tl_{sid}.fromTo('[data-scene-id="{sid}"] [data-motion-target="scene-bg"] .bg-grid',{{opacity:0}},{{opacity:1,duration:0.8}},0);
+"""
+
+
+# ─────────────────────────────────────────────────────────────────
 # FALLBACK — old role-based template (default)
 # ─────────────────────────────────────────────────────────────────
 
@@ -1107,6 +1440,12 @@ _TEMPLATES = {
     "tool_chain_three_cols": _template_tool_chain_three_cols,
     "before_after_compare": _template_before_after_compare,
     "checklist_cta": _template_checklist_cta,
+    "framework_quadrant": _template_framework_quadrant,
+    "decision_tree": _template_decision_tree,
+    "metric_dashboard": _template_metric_dashboard,
+    "case_study_card": _template_case_study_card,
+    "section_board": _template_section_board,
+    "comment_question": _template_comment_question,
     # fallback aliases
     "hook_centered": _template_fallback,
     "pain_centered": _template_fallback,
@@ -1123,6 +1462,12 @@ _CSS_FUNCTIONS = {
     "tool_chain_three_cols": _css_tool_chain_three_cols,
     "before_after_compare": _css_before_after_compare,
     "checklist_cta": _css_checklist_cta,
+    "framework_quadrant": _css_framework_quadrant,
+    "decision_tree": _css_decision_tree,
+    "metric_dashboard": _css_metric_dashboard,
+    "case_study_card": _css_case_study_card,
+    "section_board": _css_section_board,
+    "comment_question": _css_comment_question,
     "hook_centered": _css_fallback,
     "pain_centered": _css_fallback,
     "method_centered": _css_fallback,
@@ -1138,6 +1483,12 @@ _GSAP_FUNCTIONS = {
     "tool_chain_three_cols": _gsap_tool_chain_three_cols,
     "before_after_compare": _gsap_before_after_compare,
     "checklist_cta": _gsap_checklist_cta,
+    "framework_quadrant": _gsap_framework_quadrant,
+    "decision_tree": _gsap_decision_tree,
+    "metric_dashboard": _gsap_metric_dashboard,
+    "case_study_card": _gsap_case_study_card,
+    "section_board": _gsap_section_board,
+    "comment_question": _gsap_comment_question,
     "hook_centered": _gsap_fallback,
     "pain_centered": _gsap_fallback,
     "method_centered": _gsap_fallback,

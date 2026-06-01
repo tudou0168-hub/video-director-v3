@@ -47,7 +47,8 @@
 | 2026-06-01 | V3-P3.2 Template Semantic Data Refinement Batch 3 | DONE |
 | 2026-06-01 | V3-P3.2 Visual Differentiation Batch 4 | DONE |
 | 2026-06-01 | V3-P3.2 CTA Routing + GSAP Evaluation | DONE | 4 layout_variants (checklist_steps / button_banner / end_score_goodbye / scorecard); GSAP 评估为"接入但未触发"，保留接口不注入 Native Preview；47 tests pass, max_drift 0.0s |
-| 2026-06-01 | V3-P3.3 Template Registry MVP | NEXT | 12+ seed templates, 扩 CTA / Method / Evidence / Proof 资产 |
+| 2026-06-01 | V3-P3.3 Template Registry MVP | DONE | 12 seed templates (6 旧 + 6 新：framework_quadrant/decision_tree/metric_dashboard/case_study_card/section_board/comment_question); narration keyword routing + explain fallback; 56 tests pass, max_drift 0.0s |
+| 2026-06-01 | V3-P3.4 Template Library Expansion | NEXT | 12 → 20 scene frameworks, 动效 3 → 9, 转场 3 → 7 |
 
 ---
 最后更新：2026-06-01

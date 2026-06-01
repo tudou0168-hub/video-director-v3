@@ -191,6 +191,32 @@ def _hud_scene_config(scene: dict[str, Any], index: int, narration: str) -> dict
             config.setdefault("next_teaser", "下期讲：把检索真正接进 AI 流程")
         elif layout_variant == "scorecard":
             config.setdefault("scorecard_metrics", _cta_scorecard_metrics_from_narration(narration))
+    elif template == "framework_quadrant":
+        config.setdefault("headline", narration[:30] or "知识管理的四象限")
+        config.setdefault("quadrants", _framework_quadrant_data_from_narration(narration))
+        config.setdefault("center_label", _framework_quadrant_center_from_narration(narration))
+    elif template == "decision_tree":
+        config.setdefault("headline", narration[:30] or "你要不要用 Obsidian")
+        config.setdefault("root_question", _decision_root_from_narration(narration))
+        config.setdefault("branches", _decision_branches_from_narration(narration))
+        config.setdefault("outcomes", _decision_outcomes_from_narration(narration))
+    elif template == "metric_dashboard":
+        config.setdefault("headline", narration[:30] or "三个月后的实际数据")
+        config.setdefault("metrics", _metric_dashboard_data_from_narration(narration))
+        config.setdefault("trend_caption", "持续跑通最小闭环后，看实际数字")
+    elif template == "case_study_card":
+        config.setdefault("headline", narration[:30] or "真实案例")
+        config.setdefault("case_subject", _case_subject_from_narration(narration))
+        config.setdefault("before", _case_before_from_narration(narration))
+        config.setdefault("after", _case_after_from_narration(narration))
+        config.setdefault("highlights", _case_highlights_from_narration(narration))
+    elif template == "section_board":
+        config.setdefault("headline", narration[:30] or "四个判断维度")
+        config.setdefault("sections", _section_board_data_from_narration(narration))
+    elif template == "comment_question":
+        config.setdefault("headline", narration[:30] or "你想先跑通哪一步？")
+        config.setdefault("fake_comment", _comment_question_fake_comment(narration))
+        config.setdefault("guide_question", _comment_question_guide_question(narration))
     return config
 
 
@@ -489,6 +515,140 @@ def _cta_scorecard_metrics_from_narration(narration: str) -> list[dict[str, str]
         {"label": "结构成立", "value": "OK", "color": "#4D9FFF"},
         {"label": "下一步", "value": "GO", "color": "#FF6B35"},
     ]
+
+
+# ─── P3.3 — 6 new seed template data helpers ──────────────────────────
+
+def _framework_quadrant_data_from_narration(narration: str) -> list[dict[str, str]]:
+    if "四象限" in narration or "收集" in narration:
+        return [
+            {"label": "Q1 收集", "text": "微信 / 网页 / 语音", "color": "#4D9FFF"},
+            {"label": "Q2 整理", "text": "双向链接 / 主题页", "color": "#2ED573"},
+            {"label": "Q3 检索", "text": "直接问 AI", "color": "#FF6B35"},
+            {"label": "Q4 输出", "text": "写作 / 复盘", "color": "#A855F7"},
+        ]
+    return [
+        {"label": "Q1 输入", "text": "统一入口", "color": "#4D9FFF"},
+        {"label": "Q2 结构", "text": "组织整理", "color": "#2ED573"},
+        {"label": "Q3 检索", "text": "按需调用", "color": "#FF6B35"},
+        {"label": "Q4 输出", "text": "持续产出", "color": "#A855F7"},
+    ]
+
+
+def _framework_quadrant_center_from_narration(narration: str) -> str:
+    if "Obsidian" in narration:
+        return "Obsidian"
+    if "AI" in narration:
+        return "AI"
+    return "Hub"
+
+
+def _decision_root_from_narration(narration: str) -> str:
+    if "Obsidian" in narration:
+        return "你素材 > 1000 条？"
+    if "笔记" in narration:
+        return "你现在有统一入口吗？"
+    return "值得现在就开始吗？"
+
+
+def _decision_branches_from_narration(narration: str) -> list[dict[str, str]]:
+    if "Obsidian" in narration:
+        return [
+            {"label": "是", "leads_to": "用 Obsidian 双链管理"},
+            {"label": "否", "leads_to": "先用笔记 App 足够"},
+        ]
+    return [
+        {"label": "是", "leads_to": "先搭最小闭环"},
+        {"label": "否", "leads_to": "保持现状就行"},
+    ]
+
+
+def _decision_outcomes_from_narration(narration: str) -> list[dict[str, str]]:
+    if "Obsidian" in narration:
+        return [
+            {"label": "是", "text": "先搭最小闭环", "color": "#2ED573"},
+            {"label": "否", "text": "先别上系统", "color": "#FF6B35"},
+        ]
+    return [
+        {"label": "是", "text": "开始动手", "color": "#2ED573"},
+        {"label": "否", "text": "继续观察", "color": "#FF6B35"},
+    ]
+
+
+def _metric_dashboard_data_from_narration(narration: str) -> list[dict[str, str]]:
+    if "40%" in narration or "提升" in narration:
+        return [
+            {"label": "日均输出", "value": "3.2 篇", "delta": "+40%"},
+            {"label": "素材利用率", "value": "78%", "delta": "+52%"},
+            {"label": "检索响应", "value": "12s", "delta": "-65%"},
+            {"label": "完播率", "value": "61%", "delta": "+18%"},
+        ]
+    return [
+        {"label": "启动", "value": "READY", "delta": "+OK"},
+        {"label": "闭环", "value": "RUN", "delta": "+OK"},
+        {"label": "输出", "value": "ON", "delta": "+GO"},
+        {"label": "复盘", "value": "DAILY", "delta": "+GO"},
+    ]
+
+
+def _case_subject_from_narration(narration: str) -> str:
+    if "同学" in narration:
+        return "李同学 · 知识管理 90 天"
+    if "博主" in narration:
+        return "某博主 · 内容生产 30 天"
+    return "真实案例 · 90 天实践"
+
+
+def _case_before_from_narration(narration: str) -> str:
+    if "笔记" in narration or "App" in narration:
+        return "笔记散 5 个 App，写一篇要 6 小时"
+    if "素材" in narration:
+        return "素材散在多个 App，写作前先找半天"
+    return "旧流程：信息散落，输出靠人肉拼接"
+
+
+def _case_after_from_narration(narration: str) -> str:
+    if "笔记" in narration or "App" in narration:
+        return "统一到 Obsidian + AI，1.5 小时成稿"
+    if "素材" in narration:
+        return "30 秒拿到素材包，输出可复用"
+    return "新流程：统一入口，结构先出来"
+
+
+def _case_highlights_from_narration(narration: str) -> list[str]:
+    if "笔记" in narration or "App" in narration:
+        return ["整理耗时下降 75%", "素材复用率 3.4×", "AI 草稿接受率 80%"]
+    return ["找到素材更快", "草稿质量提升", "复盘变得简单"]
+
+
+def _section_board_data_from_narration(narration: str) -> list[dict[str, str]]:
+    if "维度" in narration or "判断" in narration:
+        return [
+            {"label": "获得感", "text": "学到至少 1 个能用的方法"},
+            {"label": "收藏价值", "text": "可以复用的检查清单"},
+            {"label": "评论触发", "text": "可执行的下一步动作"},
+            {"label": "复看理由", "text": "信息密度足够高"},
+        ]
+    return [
+        {"label": "内容", "text": "是否提供真实可复用的东西"},
+        {"label": "节奏", "text": "前 6 秒是否命中 Hook"},
+        {"label": "互动", "text": "是否有自然的评论问题"},
+        {"label": "结构", "text": "分镜是否服务于信息表达"},
+    ]
+
+
+def _comment_question_fake_comment(narration: str) -> str:
+    if "笔记" in narration or "App" in narration:
+        return "“我之前用过 3 个笔记 App，最后都放弃了”"
+    if "素材" in narration:
+        return "“我素材都在 5 个 App，每次找半天”"
+    return "“听起来很好，但真的能跑通吗？”"
+
+
+def _comment_question_guide_question(narration: str) -> str:
+    if "笔记" in narration or "App" in narration:
+        return "你愿意先只保留一个入口吗？评论区告诉我"
+    return "你打算先做哪一步？评论区说说你现在的状态"
 
 
 def capture_native_review_frames(timeline_dir: Path, frames: int = 7) -> dict[str, Any]:

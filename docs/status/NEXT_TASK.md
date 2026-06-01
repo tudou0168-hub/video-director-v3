@@ -2,19 +2,20 @@
 
 ## 当前任务
 
-**V3-P3.2 CTA 路由融合 + GSAP 评估（批次 7）** — 已完成并验证。
+**V3-P3.3 Template Registry MVP（批次 8）** — 已完成并验证。
 
 路线图：`docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md`
 
 ## 下一任务
 
-**V3-P3.3 Template Registry MVP**
+**V3-P3.4 Template Library Expansion**（P3.3 完成后）
 
 目标：
-1. 引入 6 个新的 CTA / Method / Evidence / Proof 模板资产（共 12 个 seed），扩大视觉多样性。
-2. 保持 `checklist_cta` 当前的 4 个 layout_variant（`checklist_steps / button_banner / end_score_goodbye / scorecard`）作为可复用基础。
-3. 让 `_hud_scene_config` 在 12+ 个 seed 之间按角色与 narration 关键词自动路由。
-4. 保持 P3.1 的自然语速、Native Preview、显式音频 mux 和 `<= 1.0s` 同步 gate。
+1. 把 12 个 seed 扩展到 20 个场景框架（+8），覆盖 5 类内容：AI 工具、职场效率、知识管理、自媒体方法、复盘清单。
+2. 增加动效预设从 3 到 9，语义转场从 3 到 7。
+3. 保持现有 routing 逻辑（narration 关键词 + role 兜底）覆盖全部新 seed。
+4. 优化 `narration_planner.classify_role` 让 method/evidence/proof 角色更准确（减少 explain 兜底）。
+5. 保持 P3.1 的自然语速、Native Preview、显式音频 mux 和 `<= 1.0s` 同步 gate。
 
 ## P3.2 批次 7 验收证据
 
@@ -35,8 +36,7 @@
 
 ## 后续阶段
 
-- `V3-P3.3 Template Registry MVP`
-- `V3-P3.4 Template Library Expansion`
+- `V3-P3.4 Template Library Expansion`（P3.3 完成后）
 - `V3-P3.5 Template Library Complete`
 - `V3-P3.6 Viral QA Loop`
 

@@ -1,9 +1,9 @@
 {
   "project": "video-director-v3",
   "project_path": "<PROJECT_ROOT>",
-  "last_updated": "2026-06-01 17:30:00",
-  "current_stage": "V3-P3.2 CTA routing variants + GSAP evaluation batch 7 verified",
-  "next_task": "V3-P3.3 Template Registry MVP (12 seed templates → 12+ cta/method/evidence variants)",
+  "last_updated": "2026-06-01 18:30:00",
+  "current_stage": "V3-P3.3 Template Registry MVP batch 8 verified",
+  "next_task": "V3-P3.4 Template Library Expansion (extend 12 → 20 scene frameworks)",
   "last_preview_project_id": "demo_v3_preview",
   "key_outputs": {
     "hyperframes_timeline": "exists (dynamic preview, 12 scenes, semantic scene config + layout variants persisted, S01/S03/S04 switched to new variants)",
@@ -26,7 +26,8 @@
     "V3-P3.2_visual_differentiation_batch_4": "PASS",
     "V3-P3.2_explain_evidence_proof_routing_batch_5": "PASS",
     "V3-P3.2_hook_method_explain_visual_differentiation_batch_6": "PASS",
-    "V3-P3.2_cta_routing_variants_batch_7": "PASS"
+    "V3-P3.2_cta_routing_variants_batch_7": "PASS",
+    "V3-P3.3_template_registry_mvp_batch_8": "PASS"
   },
   "known_bugs": [
     "P2: debug/probe JS files need separate cleanup before a production commit",

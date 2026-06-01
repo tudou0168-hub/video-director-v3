@@ -189,3 +189,28 @@
 - 真实 smoke render：`outputs/demo_v3_preview/rendered_smoke/final_video_smoke.mp4` `PASS`，`duration=5.00s`，视频流 / 音频流存在
 - `outputs/demo_v3_preview/rendered_smoke/sync_report.json`：`status=PASS`，`max_drift=0.0s`
 - CTA 路由验证：构造 4 类 narration 触发 4 种 layout_variant，单元测试 + 真实路径双重确认
+
+### P3.3 Template Registry MVP（批次 8）
+
+- 6 个新 seed 模板全部完成（独立 id + 独立 render_template）：
+  - `scene.method.framework_quadrant` → `framework_quadrant`（2x2 四象限 + 中心 Hub）
+  - `scene.method.decision_tree` → `decision_tree`（Y/N 决策树 + outcomes）
+  - `scene.evidence.metric_dashboard` → `metric_dashboard`（4 指标 + delta）
+  - `scene.evidence.case_study_card` → `case_study_card`（before/after + highlights）
+  - `scene.proof.section_board` → `section_board`（4 维度板块）
+  - `scene.proof.comment_question` → `comment_question`（评论卡 + 引导问题）
+- 全部 6 个新模板在 `_TEMPLATES / _CSS_FUNCTIONS / _GSAP_FUNCTIONS` 三个 registry 全部注册。
+- `ROLE_DEFAULT_TEMPLATE` 显式覆盖 6 个新角色：`framework / decision / metric / example / board / comment`。
+- 新增 `ROLE_NARRATION_OVERRIDE` 路由表 + `_pick_seed_id` 函数：按 narration 关键词在 method/evidence/proof/explain 角色下路由到 6 个新 seed。
+- 新增 12 个 helper 函数（`_framework_quadrant_data_from_narration` 等）为 6 个新模板生成 narrative-aware 数据。
+- 端到端 P3.3 demo 验证：构造含"四象限/效率提升/三个维度/你愿意告诉我"关键词的短文案，6 个新 seed 全部命中。
+
+### 本轮验证（批次 8）
+
+- `PYTHONPATH=src .venv/bin/python3 -m pytest tests/ -q`：`56 passed in 119.99s`（从 47 → 56）
+- `PYTHONPATH=src .venv/bin/python3 -m compileall -q src tests`：通过
+- `git diff --check`：通过
+- 真实 preview（`demo_v3_preview` 现有 demo 文案）：`READY`，`can_approve_preview=true`，12 scene 路由保持稳定
+- 端到端 P3.3 demo 验证（`p33_demo_preview`）：6 句短文案命中 4 种新 seed（`framework_quadrant / metric_dashboard / decision_tree / checklist_cta`）
+- 真实 5s smoke render：`outputs/demo_v3_preview/rendered_smoke/final_video_smoke.mp4` `PASS`，`duration=5.00s`
+- `sync_report.json`：`status=PASS`，`max_drift=0.0s`
