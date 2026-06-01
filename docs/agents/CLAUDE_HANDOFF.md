@@ -33,23 +33,27 @@ video-director-v3 是一个**已经有实际运行产出**的项目：
 - 不自研视频引擎
 - 不重构 HyperFrames Studio native
 - 不接 CapCut / 素材库
+- 不在用户确认前 render MP4
+- 不把旧路线当主线入口
 
-## 当前只修音频 mux
+## 当前只做入口整理和清理盘点
 
-**当前任务**：V3-D2.0-A Fix Final MP4 Audio Mux
+**当前任务**：V3-P2.8 Docs and Repo Cleanup Plan
 
-修复完成后，才做：
-- V3-D2.1 Clean Render Mode（隐藏调试控件）
-- V3-D2.2 Motion Validation
+当前只做：
+- README / AGENTS / docs 统一口径
+- repo 清理盘点
+- A/B/C/D 分类
+- 等人工确认后再执行清理
 
 ## 接手步骤
 
 1. 读 `docs/status/PROJECT_STATE.md`
 2. 读 `docs/status/NEXT_TASK.md`
 3. 读 `docs/status/CURRENT_BUGS.md`
-4. 运行诊断命令确认问题
-5. 修改
-6. 重新渲染验证
+4. 读 `docs/cleanup-plan.md`
+5. 运行诊断命令确认问题
+6. 修改
 7. 更新记忆文件
 
 ## 修改后必须更新这些文件
@@ -62,4 +66,4 @@ video-director-v3 是一个**已经有实际运行产出**的项目：
 
 ---
 
-最后更新：2026-05-30
+最后更新：2026-06-01

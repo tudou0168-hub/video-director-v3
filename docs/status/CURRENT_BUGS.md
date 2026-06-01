@@ -92,6 +92,16 @@
 
 ---
 
+## P2 — 文档和仓库清理盘点已应用
+
+**问题**：历史参考已归档，缓存已清理，仍有 D 类文件待人工确认。
+
+**影响**：如果不确认 D 类，新 agent 仍可能被少量旧文档和旧代码路径干扰。
+
+**状态**：🟢 已应用。当前不删除、不 render，等待人工确认 D 类处理方式。
+
+---
+
 ## 低优先级（不阻塞主线）
 
 | 问题 | 涉及文件 | 修复方向 | 状态 |
@@ -100,6 +110,7 @@
 | 动画流畅度 | 各 scene spring config | 调整 damping/stiffness | 低优先级 |
 | 107 个调试 JS 未与产品代码隔离 | repo 根目录 | 单独归档或清理 | P2 |
 | `get_scene_gsap` 当前仅被废弃 `combined_html_builder` 消费 | `publish_templates.py` | 保留接口作为未来扩展点；不接入 Native Preview（保护 0.0s 漂移） | P3 |
+| 文档入口和清理边界尚未统一 | README / AGENTS / status docs | 已在 cleanup plan 中统一，待人工确认后执行清理 | P2 |
 
 ---
 最后更新：2026-06-01

@@ -52,7 +52,7 @@
 | 2026-06-01 | V3-P3.5 Template Library Complete | DONE | 30 seed (20 → 30 +10: myth_bust/before_after_flash/timeline_pain/timeline_path/tool_stack/case_study/evidence_cards/score_panel/next_step_board/comment_invite); 14 动效; 13 转场; 达成 57 资产超 56 目标; 85 tests pass; max_drift 0.0s |
 | 2026-06-01 | V3-P3.6 Viral QA Loop | DONE | viral_qa_evaluator: 6 维评分 (hook/promise/saveable_value/comment_trigger/visual_rhythm/sync_reliability) + A/B manifest; pipeline_runner 自动生成 viral_quality_report.json; 评分不冒充平台算法; 110 tests pass; max_drift 0.0s |
 | 2026-06-01 | V3 Retrospective + Cleanup | DONE | 112 调试 JS 归档到 tests/manual_archive/ + gitignore 隔离; 9 正式资产 add; V3_RETROSPECTIVE.md (6 阶段判断/教训/V4 建议) + V3_CAPABILITY_INDEX.md (63 资产盘点); scripts/ 删; 110 tests pass; 0 回归; max_drift 0.0s |
-| 2026-06-01 | V4 入口 | NEXT | 待用户明确方向 (V4.0 真实数据 / V4.1 跨平台 / V4.2 内容反向工程) |
+| 2026-06-01 | V3-P2.8 Docs and Repo Cleanup Apply | PASS | README / AGENTS / docs/runbooks / status docs 统一唯一主线；B 类历史参考已归档到 docs/archive/ 与 outputs/archive/；C 类缓存已清理；D 类保持待确认；未 render MP4 |
 
 ---
 最后更新：2026-06-01

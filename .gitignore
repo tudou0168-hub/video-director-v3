@@ -35,14 +35,15 @@ package-lock.json
 *.jpeg
 *.webp
 *.gif
+!outputs/**/hyperframes_timeline/assets/voiceover.mp3
 
-# Outputs - V3 uses outputs/ and test_outputs/ only
-outputs/
+# Outputs - keep mainline hyperframes_timeline files visible, ignore noisy generated fragments
 test_outputs/
 render_tmp/
 hf_cache/
 cache/
 tmp/
+debug/
 
 # Secrets / credentials
 *.pem
@@ -67,10 +68,27 @@ id_ed25519
 # Temporary
 *.tmp
 *.log
+*.trace
 
 # Playwright
 .playwright/
 .gstack/
+playwright-report/
+test-results/
+
+# Coverage / local test tooling
+.coverage.*
+coverage.xml
+.hypothesis/
+
+# Outputs generated fragments
+outputs/**/snapshots/
+outputs/**/frames/
+outputs/**/contact-sheet*.jpg
+
+# Archive outputs are historical reference only
+outputs/archive/*
+!outputs/archive/README.md
 
 # V3 Retrospective cleanup (P3.6 final stage)
 # Debug JS probes from P3.0-P3.1 era — archived in tests/manual_archive/, kept out of git
@@ -91,4 +109,3 @@ _chatgpt_handoff/
 # P3.0-P3.1 planning documents superseded by docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md
 task_plan.md
 findings.md
-

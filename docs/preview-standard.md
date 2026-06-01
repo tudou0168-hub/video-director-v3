@@ -104,6 +104,7 @@ http://localhost:3002/#project/<project_id>
 2. `--approved` flag 已设置
 3. 项目目录 `hyperframes_timeline/` 结构完整
 4. 所有 data 文件存在
+5. 用户已明确确认可以进入 render
 
 ## 新 Claude 接手时必须遵守的预览路线
 
@@ -112,11 +113,14 @@ http://localhost:3002/#project/<project_id>
 3. 不能用 autoplay / JS 强制 play 绕过 Studio
 4. combined/index.html 不属于 V3 当前主线
 5. 所有产物必须是可以被 HyperFrames Studio 加载的原生项目结构
+6. 不允许在用户确认前进入 render_mp4
 
 ## 废弃路线（不应再使用）
 
 - ❌ `combined/index.html` — V3 早期实验性输出，已废弃
 - ❌ `file://` 协议打开 HTML — 不是 Studio 原生项目
+- ❌ Remotion 主线 / CapCut 主流程
+- ❌ 中间阶段 render MP4
 - ❌ 自定义 GSAP 时间轴架构作为主线
 - ❌ 普通静态 HTML 页面作为验收物
 - ❌ `open outputs/.../combined/index.html` 命令

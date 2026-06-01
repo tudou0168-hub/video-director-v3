@@ -1,9 +1,9 @@
 {
   "project": "video-director-v3",
   "project_path": "<PROJECT_ROOT>",
-  "last_updated": "2026-06-01 22:30:00",
-  "current_stage": "V3 Retrospective + Cleanup batch 12 verified — V3 6 phases PASS + 63 assets + cleanup 0 regression",
-  "next_task": "V4 entry: real playback data / cross-platform distribution / content reverse-engineering",
+  "last_updated": "2026-06-02 00:10:00",
+  "current_stage": "V3-P2.8 Repo Cleanup Apply (historical refs archived; caches cleaned; D class pending)",
+  "next_task": "Await human confirmation of docs/cleanup-status.md before any D-class action",
   "last_preview_project_id": "demo_v3_preview",
   "key_outputs": {
     "hyperframes_timeline": "exists (dynamic preview, 12 scenes, semantic scene config + layout variants persisted, S01/S03/S04 switched to new variants)",
@@ -35,7 +35,7 @@
   },
   "known_bugs": [
     "P2: debug/probe JS files need separate cleanup before a production commit",
-    "P3: get_scene_gsap exists in publish_templates but is only consumed by deprecated combined_html_builder; native preview is intentionally GSAP-free to preserve 0.0s drift"
+    "P2: docs and repo cleanup plan is not yet applied; legacy route references are still present in historical docs and a small amount of legacy code"
   ],
   "do_not_do": [
     "Don't reintroduce 38-43s duration gates",
@@ -43,6 +43,7 @@
     "Don't approve preview when a required stage failed",
     "Don't speed up TTS to hit duration targets",
     "Don't commit outputs/ to git",
+    "Don't render MP4 before human approval",
     "Don't inject GSAP timelines into native preview HTML (would break 0.0s sync drift baseline)"
   ],
   "commands": {

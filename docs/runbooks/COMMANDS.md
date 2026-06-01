@@ -9,6 +9,8 @@ P3.1 已完成。当前主线：
 - 长文先提炼：目标 `<=120s`，硬上限 `<=150s`；禁止通过加速 TTS 命中时长。
 - 视觉基线沿用原 HUD 科技风。
 - `render_mp4 --approved` 从 HyperFrames Studio Native 项目渲染，并生成 `sync_report.json`。
+- `render_mp4` 只能在用户确认后执行，不允许中间阶段渲染。
+- 如果是在做 cleanup 盘点，先产出 `docs/cleanup-plan.md`，不要直接删除。
 
 新路线图：`docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md`
 
@@ -36,6 +38,8 @@ PYTHONPATH=src .venv/bin/python3 -m video_director_v3.cli \
   --no-allow-mock-audio
 ```
 
+这条命令只负责生成 `hyperframes_preview`，不生成 final MP4。
+
 ## HyperFrames Studio Native Preview
 
 标准预览入口：
@@ -57,10 +61,11 @@ Studio 审查标准：
 6. visual beats 是否随时间切换
 7. 是否无黑屏
 8. 是否无内部调试词
+9. 是否没有在用户确认前进入 render 阶段
 
 ## Smoke Render
 
-前置条件：HyperFrames Studio 原生预览通过。
+前置条件：HyperFrames Studio 原生预览通过，且用户已确认可以进入渲染。
 
 ```bash
 PYTHONPATH=src .venv/bin/python3 -m video_director_v3.cli \
@@ -73,7 +78,7 @@ PYTHONPATH=src .venv/bin/python3 -m video_director_v3.cli \
 
 ## Full Render
 
-前置条件：HyperFrames Studio 原生预览通过，`--approved` 已确认。
+前置条件：HyperFrames Studio 原生预览通过，`--approved` 已确认，且用户已确认可以进入渲染。
 
 ```bash
 PYTHONPATH=src .venv/bin/python3 -m video_director_v3.cli \
@@ -162,6 +167,17 @@ git commit -m "description"
 # Push
 git push
 ```
+
+## Cleanup Plan
+
+如果当前工作是清理盘点：
+
+1. 先写 `docs/cleanup-plan.md`
+2. 先写 `docs/archive/README.md`
+3. 先做 A/B/C/D 分类
+4. 等人工确认后，再进入清理执行阶段
+
+不要在这个阶段直接删除文件。
 
 ---
 

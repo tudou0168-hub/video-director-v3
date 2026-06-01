@@ -28,8 +28,9 @@
 
 完整路线图：`docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md`
 
-当前阶段：`V3 Retrospective + Cleanup（批次 12）已完成 — V3 路线图全 6 阶段 PASS + 全面清理`
-下一任务：`V4 入口：真实播放数据接入 / 跨平台分发 / 内容反向工程`
+当前阶段：`V3-P2.8 Repo Cleanup Apply（历史参考已归档、缓存已清理、D 类待确认）`
+下一任务：`等待人工确认 cleanup-status 后，再决定是否处理 D 类文件`
+当前工作：`仅做文档整理与仓库盘点，不删除、不 render`
 
 ## 项目目标
 

@@ -3,9 +3,14 @@
 ## V3 项目定位（唯一产品主线）
 
 ```
-中文文案
-  → AI 导演解析（narration_planner + classify_role）
-  → 视觉设计规范（scene_protocol + 30 模板库）
+文案
+  → script.json
+  → 男声 TTS
+  → 读取音频真实时长
+  → caption_beats.json
+  → director_timeline.json
+  → visual_beats.json
+  → transition_map.json
   → HyperFrames Studio 原生项目（studio_native_project_builder）
   → 用户确认（浏览器人眼验收 hyperframes_timeline/index.html）
   → MP4 视频（render_mp4 + audio mux）
@@ -17,6 +22,8 @@
 - 先回到这条主线的某一步
 - 不要发明并列链路（不要"另一套管线"、"另一种渲染方式"）
 - 不要绕过"用户确认"（未经用户人眼验收就生成 MP4 是禁止的）
+- 不要在中间阶段 render MP4
+- 不要把 `combined/index.html`、`file://`、Remotion 主线、CapCut 主流程、静态 HTML 预览、JS/GSAP 自定义页面当成当前主线
 
 ## 2026-06-01 P3 产品基线覆盖
 
@@ -44,6 +51,7 @@
 4. `docs/status/LAST_KNOWN_GOOD.md`
 5. `docs/runbooks/COMMANDS.md`
 6. `docs/decisions/DECISION_LOG.md`
+7. `docs/cleanup-plan.md`
 
 **如果这些文件和聊天记录冲突，以这些文件为准。**
 
@@ -52,6 +60,8 @@
 - 不允许只看 README 就开始改
 - 不允许没有读 NEXT_TASK 就做功能
 - 不允许跳过验收标准
+- 不允许在用户确认前 render MP4
+- 不允许把旧路线当成主线入口
 
 ---
 

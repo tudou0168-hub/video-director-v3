@@ -1,18 +1,40 @@
 # Video Director V3
 
-中文文案自动生成 HyperFrames Studio 原生项目预览，并在确认后自动渲染 MP4。
+中文文案先进入 `script.json`、男声 TTS、真实音频时长、`caption_beats.json`、`director_timeline.json`、`visual_beats.json`、`transition_map.json`，再生成 HyperFrames Studio 原生项目预览。只有用户人眼确认后，才允许 `render_mp4` 输出最终 MP4。
 
 ## 项目定位
 
 V3 唯一主线：
 ```
-中文文案 → AI 导演解析 → 视觉设计规范 → HyperFrames Studio 原生项目 → 用户确认 → MP4 视频
+文案
+→ script.json
+→ 男声 TTS
+→ 读取音频真实时长
+→ caption_beats.json
+→ director_timeline.json
+→ visual_beats.json
+→ transition_map.json
+→ HyperFrames Studio 原生 HTML 预览
+→ 人工审查
+→ 用户确认后才 render MP4
 ```
 
 **当前不是：**
-- talking-head overlay 系统
-- CapCut draft 系统
-- content_pack 工具
+- `combined/index.html` 静态预览系统
+- `file://` 普通 HTML 验收
+- Remotion 主流程
+- CapCut 主流程
+- 中间阶段 render MP4
+- JS/GSAP 自定义页面作为主线
+- 静态图 concat 视频
+
+## 新用户和新 Agent 从哪里开始
+
+1. 先读 `AGENTS.md`
+2. 再读 `docs/agents/ANY_AGENT_START_HERE.md`
+3. 然后读 `docs/status/PROJECT_STATE.md`、`docs/status/NEXT_TASK.md`、`docs/status/CURRENT_BUGS.md`
+4. 如果是在做清理盘点，先看 `docs/cleanup-plan.md`
+5. 如果是在做主线预览，直接跑下面的 `hyperframes_preview`
 
 ## 快速开始
 
@@ -43,6 +65,8 @@ python3 -m video_director_v3.cli \
   --no-allow-mock-audio
 ```
 
+这只是示例预览命令，`--target-duration 40` 不是产品约束。
+
 ### 查看预览
 
 **唯一预览路线**：HyperFrames Studio 原生项目预览。
@@ -63,6 +87,8 @@ Studio 审查标准：
 - 是否无内部调试词
 
 ### 审批后渲染 MP4
+
+只有用户确认预览通过后，才允许执行。
 
 ```bash
 python3 -m video_director_v3.cli \
@@ -88,7 +114,9 @@ video-director-v3/
 │ ├── quickstart-preview-to-mp4.md
 │ ├── migration-from-v2.md
 │ ├── design-system.md
-│ └── testing.md
+│ ├── testing.md
+│ ├── cleanup-plan.md
+│ └── archive/
 ├── samples/scripts/
 │ └── minimal_obsidian_codex_hermes.md
 ├── src/video_director_v3/
@@ -120,7 +148,7 @@ video-director-v3/
 │ ├── renderers/
 │ │ ├── hyperframes/
 │ │ │ ├── html_renderer.py
-│ │ │ ├── combined_html_builder.py
+│ │ │ ├── combined_html_builder.py (deprecated)
 │ │ │ └── scene_layout_director.py
 │ │ └── browser/
 │ │ ├── review_frame_capturer.py
@@ -150,16 +178,18 @@ video-director-v3/
 ### hyperframes_preview
 
 生成 HTML 动画预览，包含：
-- combined/index.html（V3 早期实验性输出，已废弃）
+- `hyperframes_timeline/` 原生项目目录
 - review_frames/
 - approval_required.json
 - quality_report.json
 
-**禁止**生成 final_video.mp4。
+**禁止**生成 final_video.mp4，也禁止在中间阶段渲染 MP4。
 
 ### render_mp4
 
 必须有 `--approved` flag。从 HyperFrames Studio 原生预览通过的项目渲染 MP4。
+
+**不允许**在 preview 之后、用户确认之前直接进入 MP4 渲染。
 
 ## 常见问题
 
@@ -177,6 +207,33 @@ video-director-v3/
 
 ### Studio 原生预览
 V3 使用 HyperFrames Studio 原生项目预览作为唯一审查路线。
+
+## 已废弃路线
+
+以下路线只应出现在历史记录、废弃说明或清理清单中，不应作为当前主线入口：
+
+- `combined/index.html`
+- `file://`
+- fallback
+- 普通静态 HTML 预览
+- Remotion 主线
+- CapCut 主流程
+- 中间阶段 render MP4
+- R9 / R16 历史调试路线
+- JS / GSAP 自定义页面作为主线
+- mute-blocker / patch `HTMLMediaElement.prototype`
+- 固定 18 秒 smoke
+- 静态图 concat 视频
+
+## 接手说明
+
+如果你是新 agent：
+
+1. 先读 `AGENTS.md`
+2. 再读 `docs/agents/ANY_AGENT_START_HERE.md`
+3. 再读 `docs/cleanup-plan.md`
+4. 然后按 `docs/runbooks/COMMANDS.md` 跑主线命令
+5. 不要在用户确认前执行 `render_mp4`
 
 ## 设计技能融合
 
@@ -200,6 +257,7 @@ Claude Code 重启后不会自动记住项目历史。
 - `docs/agents/ANY_AGENT_START_HERE.md` — 通用接手步骤
 - `docs/status/PROJECT_STATE.md` — 项目当前状态
 - `docs/status/NEXT_TASK.md` — 当前任务和禁止事项
+- `docs/cleanup-plan.md` — 清理盘点与后续执行边界
 
 **启动新会话前运行：**
 ```bash

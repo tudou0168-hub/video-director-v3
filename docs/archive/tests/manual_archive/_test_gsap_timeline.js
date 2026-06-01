@@ -1,0 +1,46 @@
+const { chromium } = require('playwright');
+
+(async () => {
+  const browser = await chromium.launch();
+  const page = await browser.newPage();
+  await page.setViewportSize({ width: 1280, height: 900 });
+
+  await page.goto('http://localhost:3002/#project/hyperframes_timeline?v=1&t=5&tab=design&rc=1&tv=1');
+  await page.waitForTimeout(3000);
+
+  const info = await page.evaluate(() => {
+    const iframe = document.querySelector('iframe');
+    if (!iframe) return { error: 'no iframe' };
+    const iframeWin = iframe.contentWindow;
+    if (!iframeWin) return { error: 'no iframeWin' };
+    const iframeDoc = iframeWin.document;
+    if (!iframeDoc) return { error: 'no iframeDoc' };
+    const audio = iframeDoc.querySelector('audio#voiceover');
+    if (!audio) return { error: 'no audio' };
+    const player = iframeWin.__player;
+    if (!player) return { error: 'no player' };
+
+    const hasGSAP = typeof iframeWin.gsap !== 'undefined';
+    const timelineKeys = Object.keys(iframeWin.__timelines || {});
+    const compKeys = Object.keys(iframeWin.__compositions || {});
+
+    const src = player.play.toString();
+    const trackRefs = src.match(/data-track-index/g) || [];
+    const dataStartRefs = src.match(/data-start/g) || [];
+    const dataDurationRefs = src.match(/data-duration/g) || [];
+
+    return {
+      hasGSAP,
+      timelineKeys,
+      compKeys,
+      trackRefs,
+      dataStartRefs,
+      dataDurationRefs,
+      playerSrcFirst500: src.slice(0, 500)
+    };
+  });
+  console.log('INFO:', JSON.stringify(info, null, 2));
+
+  await browser.close();
+  console.log('DONE');
+})().catch(e => { console.error('ERROR:', e.message, e.stack); process.exit(1); });
