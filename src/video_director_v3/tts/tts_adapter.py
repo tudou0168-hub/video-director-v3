@@ -4,13 +4,12 @@ from __future__ import annotations
 
 import json
 import os
-import re
-import shutil
 import subprocess
 import uuid
 from pathlib import Path
 from typing import Any
 
+from video_director_v3.config import MAX_NARRATION_SECONDS
 
 def _this_run_id() -> str:
     return os.environ.get("VD_RUN_ID") or str(uuid.uuid4())[:8]
@@ -42,35 +41,6 @@ def ffprobe_duration(path: Path) -> float | None:
         return round(float(completed.stdout.strip()), 2)
     except ValueError:
         return None
-
-
-def is_audio_too_long_error(error_message: str) -> bool:
-    return "AUDIO_TOO_LONG" in (error_message or "") or "too long" in (error_message or "").lower()
-
-
-def compress_narration_text(narration_plan: dict[str, Any], target_chars: int = 200) -> dict[str, Any]:
-    sentences = narration_plan.get("sentence_list", [])
-    if not sentences:
-        return narration_plan
-    compressed_sentences = []
-    for i, sent in enumerate(sentences):
-        text = sent.get("text", "")
-        chinese_chars = len(re.findall(r"[一-鿿]", text))
-        if i == 0:
-            compact = text
-        elif i == len(sentences) - 1:
-            compact = text
-        elif chinese_chars <= 22:
-            compact = text
-        else:
-            clauses = [c.strip() for c in re.split(r"[，,、]", text) if c.strip()]
-            compact = clauses[0] if clauses else text[:30]
-            if len(compact) < 10:
-                compact = text[:28]
-        compressed_sentences.append({**sent, "text": compact})
-    if compressed_sentences and compressed_sentences[-1] != sentences[-1]:
-        compressed_sentences.append(sentences[-1])
-    return {**narration_plan, "sentence_list": compressed_sentences}
 
 
 def render_edge_tts(text: str, output_path: Path, voice: str,
@@ -149,15 +119,15 @@ def scale_timeline_to_real(timeline: dict[str, Any], real_duration: float) -> di
     return {"total_duration": real_duration, "sentence_timings": timings}
 
 
-def _check_duration_contract(audio_path: Path, target_duration: float) -> tuple[bool, str, float | None]:
+def _check_duration_contract(audio_path: Path) -> tuple[bool, str, float | None]:
     real_dur = ffprobe_duration(audio_path)
     if real_dur is None:
-        return True, "ffprobe unavailable", None
-    min_dur = target_duration * 0.95
-    max_dur = 43.0
-    ok = min_dur <= real_dur <= max_dur
-    reason = f"{real_dur:.2f}s vs contract {min_dur:.1f}-{max_dur:.1f}s" if not ok else "ok"
-    return ok, reason, real_dur
+        return False, "ffprobe could not read audio duration", None
+    if real_dur <= 0:
+        return False, f"invalid audio duration: {real_dur:.2f}s", real_dur
+    if real_dur > MAX_NARRATION_SECONDS:
+        return False, f"natural-rate narration exceeds {MAX_NARRATION_SECONDS:.0f}s: {real_dur:.2f}s", real_dur
+    return True, "ok", real_dur
 
 
 def run_tts(
@@ -165,7 +135,7 @@ def run_tts(
     project_dir: Path,
     mode: str = "edge_tts",
     edge_voice: str = "zh-CN-YunxiNeural",
-    edge_rate: str = "+8%",
+    edge_rate: str = "+0%",
     edge_pitch: str = "-2Hz",
     allow_mock_audio: bool = False,
     run_id: str | None = None,
@@ -180,8 +150,6 @@ def run_tts(
     write_json(audio_dir / "audio_timeline.json", original_timeline)
     write_json(project_dir / "audio_timeline.json", original_timeline)
 
-    target_duration = narration_plan.get("target_duration", 40.0)
-
     if mode == "mock":
         result = {"mode": "mock", "status": "ok", "audio_path": None, "timeline": original_timeline,
                   "generated_this_run": True, "run_id": run_id, "message": "mock mode"}
@@ -190,14 +158,11 @@ def run_tts(
 
     # Build text from sentences
     text_primary = "\n".join(s.get("text", "") for s in narration_plan.get("sentence_list", []))
-    chinese_chars_0 = len(re.findall(r"[一-鿿]", text_primary))
-    estimated_0 = round(max(1.8, chinese_chars_0 / 5.8), 2)
-
     if mode == "edge_tts":
         target_1 = audio_dir / "voiceover.mp3"
-        ok_1, msg_1, _ = render_edge_tts(text_primary, target_1, edge_voice, "+15%", edge_pitch)
+        ok_1, msg_1, _ = render_edge_tts(text_primary, target_1, edge_voice, edge_rate, edge_pitch)
         if ok_1 and target_1.exists():
-            ok_contract, reason_1, real_dur_1 = _check_duration_contract(target_1, target_duration)
+            ok_contract, reason_1, real_dur_1 = _check_duration_contract(target_1)
             if ok_contract:
                 mark_audio_as_generated(target_1, run_id)
                 timeline = scale_timeline_to_real(original_timeline, real_dur_1) if real_dur_1 else original_timeline
@@ -205,38 +170,19 @@ def run_tts(
                 write_json(project_dir / "audio_timeline.json", timeline)
                 result = {"mode": "edge_tts", "status": "ok", "audio_path": str(target_1),
                           "timeline": timeline, "real_duration": real_dur_1,
-                          "generated_this_run": True, "run_id": run_id, "message": "edge_tts ok"}
+                          "speaking_rate": edge_rate, "generated_this_run": True, "run_id": run_id,
+                          "message": "edge_tts natural-rate ok"}
                 write_json(audio_dir / "tts_result.json", result)
                 return result
-            # Audio generated but failed duration check (too long) — compress and retry with faster rate
-        elif ok_1 and target_1.exists():
-            if is_audio_too_long_error(msg_1) or real_dur_1 > 43.0:
-                compressed = compress_narration_text(narration_plan, 160)
-                text_2 = "\n".join(s.get("text", "") for s in compressed.get("sentence_list", []))
-                target_2 = audio_dir / "voiceover.mp3"
-                ok_2, msg_2, _ = render_edge_tts(text_2, target_2, edge_voice, "+30%", edge_pitch)
-                if ok_2 and target_2.exists():
-                    ok_contract, reason_2, real_dur_2 = _check_duration_contract(target_2, target_duration)
-                    if ok_contract:
-                        mark_audio_as_generated(target_2, run_id)
-                        timeline = scale_timeline_to_real(original_timeline, real_dur_2) if real_dur_2 else original_timeline
-                        write_json(audio_dir / "audio_timeline.json", timeline)
-                        write_json(project_dir / "audio_timeline.json", timeline)
-                        result = {"mode": "edge_tts+15%", "status": "ok", "audio_path": str(target_2),
-                                  "timeline": timeline, "real_duration": real_dur_2,
-                                  "generated_this_run": True, "run_id": run_id,
-                                  "message": f"compressed TTS ok"}
-                        write_json(audio_dir / "tts_result.json", result)
-                        return result
 
-        # Attempt 3: system_say fallback (always tried last)
-        for rate_arg in ["", "-r 200"]:
+        # Fallback stays at the platform default speaking rate.
+        for rate_arg in [""]:
                 suffix = "_r200" if rate_arg else ""
                 target_fb = audio_dir / f"voiceover{suffix}.aiff"
                 ok_fb, msg_fb, _ = render_system_say(text_primary, target_fb, rate_arg)
                 if ok_fb and target_fb.exists():
                     real_dur_fb = ffprobe_duration(target_fb)
-                    ok_contract, reason_fb, _ = _check_duration_contract(target_fb, target_duration)
+                    ok_contract, reason_fb, _ = _check_duration_contract(target_fb)
                     if ok_contract:
                         mp3_path = audio_dir / "voiceover.mp3"
                         try:
@@ -269,13 +215,13 @@ def run_tts(
         return result
 
     if mode == "system_say":
-        for rate_arg in ["", "-r 200"]:
+        for rate_arg in [""]:
             suffix = "_r200" if rate_arg else ""
             target = audio_dir / f"voiceover{suffix}.aiff"
             ok, msg, _ = render_system_say(text_primary, target, rate_arg)
             if ok and target.exists():
                 real_dur = ffprobe_duration(target)
-                ok_contract, _, real_dur = _check_duration_contract(target, target_duration)
+                ok_contract, _, real_dur = _check_duration_contract(target)
                 if ok_contract:
                     mp3_path = audio_dir / "voiceover.mp3"
                     try:

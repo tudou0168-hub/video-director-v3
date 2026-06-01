@@ -14,36 +14,28 @@ def generate_caption_beats(
     sentence_timings = audio_timeline.get("sentence_timings", [])
 
     beats = []
-    for scene in scenes:
-        sid = scene.get("scene_id", "S01")
-        scene_start = float(scene.get("start", 0))
-        scene_duration = float(scene.get("duration", 0))
-        narration = scene.get("narration", "").strip()
-
-        if not narration:
-            # Use sentence timings to find matching narration
-            scene_end = scene_start + scene_duration
-            for st in sentence_timings:
-                t_start = float(st.get("start", 0))
-                t_end = float(st.get("end", 0))
-                if t_start < scene_end and t_end > scene_start:
-                    if not narration:
-                        narration = st.get("text", "")
-
-        if not narration:
+    for timing in sentence_timings:
+        sentence_start = float(timing.get("start", 0))
+        sentence_end = float(timing.get("end", sentence_start))
+        sentence_duration = max(sentence_end - sentence_start, 0)
+        narration = timing.get("text", "").strip()
+        if not narration or sentence_duration <= 0:
             continue
-
-        # Split into 2 caption beats per scene
-        text_parts = _split_text(narration, 2)
+        scene = next(
+            (item for item in scenes if float(item.get("start", 0)) <= sentence_start < float(item.get("start", 0)) + float(item.get("duration", 0))),
+            scenes[-1] if scenes else {},
+        )
+        sid = scene.get("scene_id", "S01")
+        text_parts = _split_text(narration, 2 if len(narration) > 26 else 1)
         beat_count = len(text_parts)
-        beat_duration = scene_duration / beat_count if beat_count > 0 else scene_duration
+        beat_duration = sentence_duration / beat_count if beat_count > 0 else sentence_duration
 
         for i, text in enumerate(text_parts):
-            caption_id = f"{sid}_C{i+1:02d}"
-            beat_start = scene_start + (i * beat_duration)
+            caption_id = f"{timing.get('sentence_id', sid)}_C{i+1:02d}"
+            beat_start = sentence_start + (i * beat_duration)
             beat_duration_actual = beat_duration
             if i == beat_count - 1:
-                beat_duration_actual = (scene_start + scene_duration) - beat_start
+                beat_duration_actual = sentence_end - beat_start
 
             beats.append({
                 "scene_id": sid,
@@ -67,29 +59,37 @@ def _split_text(text: str, min_parts: int = 2) -> list[str]:
     """Split text into caption-ready parts."""
     import re
     chinese_chars = len(re.findall(r"[一-鿿]", text))
-    # Target ~20 chars per beat
-    target_per_beat = max(15, chinese_chars // min_parts)
+    target_per_beat = max(12, chinese_chars // max(min_parts, 1))
 
     parts = []
-    sentences = re.split(r"[，,。；;]", text)
+    chunks = [chunk.strip() for chunk in re.split(r"[，,。；;：:、]", text) if chunk.strip()]
     current = ""
     current_chars = 0
 
-    for sent in sentences:
-        sent_chars = len(re.findall(r"[一-鿿]", sent))
-        if current_chars + sent_chars > target_per_beat and current:
+    for chunk in chunks:
+        chunk_chars = len(re.findall(r"[一-鿿]", chunk))
+        if current_chars + chunk_chars > target_per_beat and current:
             parts.append(current.strip())
-            current = sent
-            current_chars = sent_chars
+            current = chunk
+            current_chars = chunk_chars
         else:
-            current += " " + sent if current else sent
-            current_chars += sent_chars
+            current += " " + chunk if current else chunk
+            current_chars += chunk_chars
 
     if current.strip():
         parts.append(current.strip())
 
-    # Ensure minimum parts
-    while len(parts) < min_parts:
-        parts.append(parts[-1] if parts else text[:20])
+    if not parts:
+        return [text.strip()]
 
-    return parts[:min_parts]
+    if len(parts) == 1 and min_parts > 1 and chinese_chars >= 18:
+        midpoint = max(1, len(text) // 2)
+        split_at = max(text.rfind("，", 0, midpoint), text.rfind("：", 0, midpoint), text.rfind(" ", 0, midpoint))
+        if split_at <= 0:
+            split_at = midpoint
+        left = text[:split_at].strip(" ，：")
+        right = text[split_at:].strip(" ，：")
+        if left and right and left != right:
+            return [left, right]
+
+    return [part for part in parts[:max(min_parts, len(parts))] if part]

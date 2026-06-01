@@ -13,8 +13,8 @@ pytest tests/ -v
 |------|---------|
 | test_paths.py | Verify outputs go to outputs/ or test_outputs/, never src/outputs |
 | test_input_relevance.py | Verify sample script input_relevance_score >= 0.7 |
-| test_tts_contract.py | Verify audio duration is 38-43 seconds |
-| test_preview_pipeline.py | Run minimal preview, check hyperframes_timeline/ exists with audio |
+| test_tts_contract.py | Verify audio-first defaults, long-script distillation, and dynamic storyboard timing |
+| test_preview_pipeline.py | Verify preview structure, fail-closed approval, dynamic transitions, visual beats, and caption splitting |
 | test_render_gate.py | Verify render_mp4 without --approved fails |
 
 ## Smoke Test
@@ -34,4 +34,15 @@ python3 -m video_director_v3.cli \
   --motion-intensity 6 \
   --visual-density 8 \
   --no-allow-mock-audio
+```
+
+Then verify smoke render:
+
+```bash
+python3 -m video_director_v3.cli \
+  --project-id smoke_test \
+  --output-mode render_mp4 \
+  --approved \
+  --render-smoke-seconds 5 \
+  --fps 25
 ```

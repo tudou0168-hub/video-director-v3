@@ -1,95 +1,64 @@
-"""Semantic transition planner — V3."""
+"""Semantic transition planner — dynamic scene-to-scene transitions."""
+from __future__ import annotations
+
 from typing import Any
 
 
-SEMANTIC_TRANSITIONS = [
-    {
-        "transition_id": "T01",
-        "from_scene": "S01",
-        "to_scene": "S02",
-        "transition_type": "hook_to_problem",
-        "duration": 0.4,
-        "semantic_label": "从Hook到问题揭示",
-        "gsap_code": "",
-    },
-    {
-        "transition_id": "T02",
-        "from_scene": "S02",
-        "to_scene": "S03",
-        "transition_type": "problem_to_method",
-        "duration": 0.4,
-        "semantic_label": "从问题到解决方案",
-        "gsap_code": "",
-    },
-    {
-        "transition_id": "T03",
-        "from_scene": "S03",
-        "to_scene": "S04",
-        "transition_type": "method_expand",
-        "duration": 0.4,
-        "semantic_label": "方法扩展",
-        "gsap_code": "",
-    },
-    {
-        "transition_id": "T04",
-        "from_scene": "S04",
-        "to_scene": "S05",
-        "transition_type": "method_steps",
-        "duration": 0.4,
-        "semantic_label": "步骤展示",
-        "gsap_code": "",
-    },
-    {
-        "transition_id": "T05",
-        "from_scene": "S05",
-        "to_scene": "S06",
-        "transition_type": "steps_to_proof",
-        "duration": 0.4,
-        "semantic_label": "效果验证",
-        "gsap_code": "",
-    },
-    {
-        "transition_id": "T06",
-        "from_scene": "S06",
-        "to_scene": "S07",
-        "transition_type": "proof_to_cta",
-        "duration": 0.4,
-        "semantic_label": "到行动号召",
-        "gsap_code": "",
-    },
-]
+ROLE_PAIR_TRANSITIONS: dict[tuple[str, str], tuple[str, str, str]] = {
+    ("hook", "pain"): ("hook_to_problem", "scan_reveal", "从 Hook 到问题揭示"),
+    ("pain", "method"): ("problem_to_method", "cards_to_flow", "从问题到解决方案"),
+    ("method", "method"): ("method_expand", "line_draw_bridge", "方法递进"),
+    ("method", "evidence"): ("method_to_evidence", "flow_to_table", "从方法到证据"),
+    ("evidence", "proof"): ("evidence_to_proof", "metric_to_compare", "从证据到结果"),
+    ("proof", "cta"): ("proof_to_cta", "final_hold_fade", "从结果到行动号召"),
+}
+
+ROLE_DEFAULTS: dict[str, tuple[str, str, str]] = {
+    "hook": ("hook_shift", "scan_reveal", "Hook 切换"),
+    "pain": ("pain_shift", "glow_crossfade", "痛点切换"),
+    "method": ("method_shift", "cards_to_flow", "方法切换"),
+    "evidence": ("evidence_shift", "flow_to_table", "证据切换"),
+    "proof": ("proof_shift", "metric_to_compare", "结果切换"),
+    "cta": ("cta_shift", "final_hold_fade", "CTA 切换"),
+}
 
 
-def all_transitions():
-    return SEMANTIC_TRANSITIONS
+def all_transitions() -> list[tuple[str, str, str]]:
+    return list(ROLE_PAIR_TRANSITIONS.values())
+
+
+def _pick_transition(from_role: str, to_role: str) -> tuple[str, str, str]:
+    return (
+        ROLE_PAIR_TRANSITIONS.get((from_role, to_role))
+        or ROLE_DEFAULTS.get(to_role)
+        or ("scene_bridge", "soft_wipe", "自然过渡")
+    )
 
 
 def build_semantic_transitions(storyboard_scenes: list[dict[str, Any]], target_duration: float) -> dict[str, Any]:
-    """Build semantic_transitions.json from storyboard scenes."""
+    """Build semantic_transitions.json from adjacent storyboard scenes."""
     scenes = storyboard_scenes
     transitions_list = []
 
-    for idx, t in enumerate(SEMANTIC_TRANSITIONS):
-        from_sid = t.get("from_scene", "")
-        to_sid = t.get("to_scene", "")
-
-        # Find start time from scene timing
-        start_time = 0.0
-        from_scene = next((s for s in scenes if s.get("scene_id") == from_sid), None)
-        if from_scene:
-            start_time = float(from_scene.get("start", 0)) + float(from_scene.get("duration", 0)) - t.get("duration", 0.4)
+    for idx, (from_scene, to_scene) in enumerate(zip(scenes, scenes[1:]), start=1):
+        from_role = from_scene.get("role", "explain")
+        to_role = to_scene.get("role", "explain")
+        transition_type, visual_action, semantic_label = _pick_transition(from_role, to_role)
+        duration = 0.32 if from_role == "hook" else 0.4
+        from_end = float(from_scene.get("end", float(from_scene.get("start", 0)) + float(from_scene.get("duration", 0))))
+        start_time = max(float(from_scene.get("start", 0)), from_end - duration)
 
         transitions_list.append({
-            "transition_id": t["transition_id"],
-            "from_scene": from_sid,
-            "to_scene": to_sid,
-            "type": t.get("transition_type", ""),
+            "transition_id": f"T{idx:02d}",
+            "from_scene": from_scene.get("scene_id", ""),
+            "to_scene": to_scene.get("scene_id", ""),
+            "type": transition_type,
             "start": round(start_time, 2),
-            "duration": t.get("duration", 0.4),
-            "visual_action": "fade_slide_bridge",
-            "semantic_label": t.get("semantic_label", ""),
+            "duration": duration,
+            "visual_action": visual_action,
+            "semantic_label": semantic_label,
             "binding_status": "bound",
-            "gsap_code": t.get("gsap_code", ""),
+            "gsap_code": "",
         })
 
     return {

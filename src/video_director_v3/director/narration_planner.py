@@ -7,18 +7,20 @@ import re
 from pathlib import Path
 from typing import Any
 
+from video_director_v3.director.viral_script_distiller import distill_for_short_video
 
-ROLE_KEYWORDS = {
-    "hook": ["为什么", "有没有发现", "真正", "不是"],
-    "pain": ["问题", "卡", "焦虑", "累", "效率"],
-    "method": ["第一", "第二", "第三", "先", "再", "最后", "步骤"],
-    "quote": ["记住", "本质", "不是", "而是"],
-    "cta": ["收藏", "关注", "流程", "下一步", "闭环"],
-}
+HOOK_KEYWORDS = ["为什么", "有没有", "你有没有", "有没有发现", "真正的问题", "你是不是"]
+PAIN_KEYWORDS = ["问题", "卡", "焦虑", "累", "翻遍", "记不住", "想不起来", "从零开始", "之前也是"]
+METHOD_KEYWORDS = ["第一步", "第二步", "第三步", "步骤", "先", "再", "最后", "需要素材时"]
+EVIDENCE_KEYWORDS = ["30 秒", "只需要", "以前", "现在", "效率", "拿到素材包", "不到 10 本", "不到 1 本"]
+PROOF_KEYWORDS = ["你才能", "这样你", "把记住", "交给第二大脑", "真正的创造", "形成闭环"]
+CTA_KEYWORDS = ["收藏", "关注", "照着搭", "跑一遍", "最小闭环", "下一步"]
+EXPLAIN_KEYWORDS = ["简单讲", "本质", "不是", "而是", "负责", "系统"]
 
 
 def clean_text(raw_script: str) -> str:
-    text = re.sub(r"```.*?```", "", raw_script, flags=re.S)
+    text = re.sub(r"\A---\s*\n.*?\n---\s*\n", "", raw_script, flags=re.S)
+    text = re.sub(r"```.*?```", "", text, flags=re.S)
     text = re.sub(r"^#+\s*", "", text, flags=re.M)
     text = re.sub(r"\[[^\]]+\]", "", text)
     return text.strip()
@@ -54,77 +56,29 @@ def estimate_duration(text: str, speed: float = 5.8) -> float:
     return round(max(1.8, chinese_chars / speed), 2)
 
 
-def compress_narration_to_duration(
-    sentences: list[str],
-    target_duration: float,
-    rate: float = 5.8,
-) -> list[str]:
-    """Select and scale sentences to produce ~38-43s of narration.
-
-    Strategy:
-    1. Drop lowest-priority sentences until total fits within budget
-    2. Proportionally scale remaining sentences only if needed to reach 38s floor
-    """
-    min_duration = 38.0
-    ideal_chars = int(target_duration * rate)
-    min_chars = int(min_duration * rate)
-
-    current_chars = sum(len(s) for s in sentences)
-    if current_chars <= ideal_chars:
-        return sentences
-
-    role_order = {"hook": 5, "cta": 5, "pain": 4, "method": 3, "evidence": 3, "quote": 2, "explain": 1}
-    scored = []
-    for i, s in enumerate(sentences):
-        role = classify_role(s, i, len(sentences))
-        priority = role_order.get(role, 1)
-        scored.append((i, s, priority, len(s)))
-
-    scored.sort(key=lambda x: -x[2])
-
-    # Step 1: Greedily select by priority until we fit
-    selected = []
-    chars_kept = 0
-    for idx, text, priority, length in scored:
-        if chars_kept + length <= ideal_chars:
-            selected.append((idx, text, priority, length))
-            chars_kept += length
-        elif chars_kept < min_chars and chars_kept + length <= min_chars + 30:
-            selected.append((idx, text, priority, length))
-            chars_kept += length
-
-    # Step 2: If still under min_chars, proportionally fill remaining budget
-    if chars_kept < min_chars:
-        remaining = ideal_chars - chars_kept
-        # Add next-highest sentences to fill remaining budget
-        for idx, text, priority, length in scored:
-            if (idx, text, priority, length) not in selected:
-                if chars_kept + length <= ideal_chars:
-                    selected.append((idx, text, priority, length))
-                    chars_kept += length
-                if chars_kept >= min_chars:
-                    break
-
-    selected.sort(key=lambda x: x[0])
-    result = [s for _, s, _, _ in selected]
-
-    # Step 3: If total still exceeds budget, scale proportionally
-    current = sum(len(s) for s in result)
-    if current > ideal_chars:
-        scale = ideal_chars / current
-        result = [s[:max(12, int(len(s) * scale))] for s in result]
-
-    return result
-
-
 def classify_role(text: str, index: int, total: int) -> str:
+    normalized = text.strip()
     if index == 0:
         return "hook"
     if index == total - 1:
         return "cta"
-    for role, keywords in ROLE_KEYWORDS.items():
-        if any(kw in text for kw in keywords):
-            return role
+
+    if any(keyword in normalized for keyword in CTA_KEYWORDS):
+        return "cta"
+    if any(keyword in normalized for keyword in PROOF_KEYWORDS):
+        return "proof"
+    if "以前" in normalized and "现在" in normalized:
+        return "evidence"
+    if any(keyword in normalized for keyword in PAIN_KEYWORDS):
+        return "pain"
+    if any(keyword in normalized for keyword in EVIDENCE_KEYWORDS):
+        return "evidence"
+    if any(keyword in normalized for keyword in METHOD_KEYWORDS):
+        return "method"
+    if any(keyword in normalized for keyword in EXPLAIN_KEYWORDS):
+        return "explain"
+    if any(keyword in normalized for keyword in HOOK_KEYWORDS):
+        return "hook"
     return "explain"
 
 
@@ -137,12 +91,8 @@ def build_narration_plan(
 ) -> dict[str, Any]:
     cleaned = clean_text(raw_script)
     sentences_raw = split_sentences(cleaned)
-
-    # V2-style: compress to fit target duration
-    max_chars = int(target_duration * 5.8)
-    total_chars = sum(len(s) for s in sentences_raw)
-    if total_chars > max_chars:
-        sentences_raw = compress_narration_to_duration(sentences_raw, target_duration)
+    distillation = distill_for_short_video(sentences_raw)
+    sentences_raw = distillation["sentences"]
 
     sentences = []
     for i, text in enumerate(sentences_raw):
@@ -167,6 +117,7 @@ def build_narration_plan(
         "sentence_count": len(sentences),
         "total_chinese_chars": sum(len(re.findall(r"[一-鿿]", s["text"])) for s in sentences),
         "estimated_total_duration": round(total_estimated, 2),
+        "distillation": distillation,
         "sentence_list": sentences,
         "director_output": {
             "scenes": _build_scenes_from_sentences(sentences, target_duration),

@@ -1,5 +1,21 @@
 # V3 AI Agent 行为规范
 
+## 2026-06-01 P3 产品基线覆盖
+
+以下规则覆盖本文后续仍保留的旧版固定 40 秒 P0 Gate：
+
+- 不再限制视频为 38-43 秒。
+- 长文先提炼为短视频口播：目标 `<= 120s`，硬上限 `<= 150s`。
+- 不允许为了命中时长加速 TTS；超长时必须删减次要信息并重新生成。
+- 使用自然语速男声，真实音频时长决定视频总时长。
+- 默认视觉基线复用原有 HUD 科技风：深色网格、扫描线、HUD 边框、数据卡、流程节点、对比卡和 CTA 清单。
+- 分镜数由内容动态决定，不固定为 6、7、8。
+- 字幕、分镜、转场与最终 MP4 音频同步误差必须 `<= 1.0s`。
+- 最终 MP4 必须通过 `ffprobe` 验证音频流。
+- 分阶段建设 50-60 个模板资产。
+
+完整路线图：`docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md`
+
 ## Agent 接手须知
 
 **所有智能体接手本项目，必须先读以下文件：**
@@ -75,16 +91,17 @@ hyperframes_preview 必须通过：
 
 - `input_relevance_score >= 0.7`
 - TTS ok
-- audio duration 38-43s
+- `ffprobe` 可读取真实 audio duration
 - hyperframes_timeline/ 有 audio
 - scene body inserted
 - S01 headline visible 且 >=72px
-- caption_beats_count >= scene_count * 2
+- caption beats 覆盖完整口播，尾点与音频尾点偏差 `<= 1.0s`
+- scenes 覆盖完整口播，尾点与音频尾点偏差 `<= 1.0s`
 - semantic_transitions 存在
 - preview_report 存在
 - approval_required.json 存在
 
-render_mp4 必须有 `--approved` 才允许渲染。
+render_mp4 必须有 `--approved` 才允许渲染，并验证最终 MP4 含视频流、音频流，时长偏差 `<= 1.0s`。
 
 ## 禁止事项
 

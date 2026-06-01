@@ -10,6 +10,7 @@ from video_director_v3.pipeline.project_paths import (
     get_audio_dir,
     get_review_frames_dir,
     get_rendered_dir,
+    get_hyperframes_timeline_dir,
 )
 
 
@@ -53,3 +54,9 @@ def test_no_src_outputs_in_path():
     path_str = str(result)
     assert "src/outputs" not in path_str, f"Found src/outputs in {path_str}"
     assert "src" not in result.parts or "outputs" not in result.parts, f"Found src/outputs in {result}"
+
+
+def test_hyperframes_timeline_dir_in_project():
+    result = get_hyperframes_timeline_dir("my_project", test_mode=False)
+    assert result.name == "hyperframes_timeline"
+    assert "my_project" in result.parts

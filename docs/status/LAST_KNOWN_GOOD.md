@@ -1,5 +1,18 @@
 # LAST KNOWN GOOD
 
+## V3-P3.1 HUD Audio-First Preview
+
+| Item | Status | Notes |
+|------|--------|-------|
+| Preview project | PASS | `outputs/obsidian_second_brain_p31_preview/hyperframes_timeline/` |
+| Distilled voiceover | PASS | 76 句提炼为 12 句、419 字，自然语速 `81.10s` |
+| HUD review frames | PASS | `outputs/obsidian_second_brain_p31_preview/review_frames/` |
+| Native lint | PASS | `0 errors` |
+| Audio smoke | PASS | `outputs/obsidian_second_brain_p31_preview/rendered_smoke/final_video_smoke.mp4` |
+| Sync report | PASS | 最大漂移 `0.0s`，`h264 + aac` |
+
+---
+
 ## V3-P2.5 HUD Style System Upgrade
 
 | 能力 | 状态 | 备注 |

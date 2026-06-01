@@ -72,12 +72,12 @@ def test_render_smoke_rejects_when_approval_not_ready():
     assert result.returncode in (0, 1)  # either rendered or correctly rejected
 
 
-def test_render_checks_combined_html():
-    """render_mp4 must fail if combined/index.html missing."""
+def test_render_checks_studio_native_timeline():
+    """render_mp4 must fail if the Studio Native timeline is missing."""
     result = subprocess.run(
         [
             sys.executable, "-m", "video_director_v3.cli",
-            "--project-id", "this_project_has_no_combined_html",
+            "--project-id", "this_project_has_no_native_timeline",
             "--output-mode", "render_mp4",
             "--approved",
         ],
@@ -211,7 +211,8 @@ def test_render_report_exists_after_smoke():
         pytest.skip("Smoke render not yet run")
 
     data = json.loads(report.read_text(encoding="utf-8"))
-    assert data.get("frames_generated", 0) > 0, "render_report shows no frames generated"
     assert data.get("final_video_has_video_stream") is True, "render_report missing video stream flag"
     assert data.get("final_video_has_audio_stream") is True, "render_report missing audio stream flag"
-    assert data.get("render_status") in ("PASS", "WARNING"), f"Bad render status: {data.get('render_status')}"
+    assert data.get("render_status") == "PASS", f"Bad render status: {data.get('render_status')}"
+    sync_report = json.loads((rendered_smoke / "sync_report.json").read_text(encoding="utf-8"))
+    assert sync_report.get("status") == "PASS", f"Bad sync status: {sync_report}"

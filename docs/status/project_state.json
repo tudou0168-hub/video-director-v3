@@ -1,15 +1,15 @@
 {
   "project": "video-director-v3",
   "project_path": "<PROJECT_ROOT>",
-  "last_updated": "2026-05-30 10:47:54",
-  "current_stage": "V3-D2 full render (audio mux issue)",
-  "next_task": "V3-D2.0-A Fix Final MP4 Audio Mux",
+  "last_updated": "2026-06-01 16:45:00",
+  "current_stage": "V3-P3.2 hook / method / explain visual differentiation batch 6 verified",
+  "next_task": "V3-P3.2 cta routing and gsap evaluation",
   "last_preview_project_id": "demo_v3_preview",
   "key_outputs": {
-    "combined_index": "exists (44260 bytes)",
-    "voiceover_mp3": "exists (duration=40.920000s)",
-    "final_video": "exists (1178126 bytes)",
-    "approval_required": "status=READY, can_approve=True"
+    "hyperframes_timeline": "exists (dynamic preview, 12 scenes, semantic scene config + layout variants persisted, S01/S03/S04 switched to new variants)",
+    "voiceover_mp3": "exists (duration=81.10s)",
+    "final_video_smoke": "exists (5.00s, h264+aac)",
+    "approval_required": "status=READY, can_approve=True, required stages recorded"
   },
   "stage_status": {
     "V3-A_project_structure": "PASS",
@@ -17,30 +17,31 @@
     "V3-C1_hyperframes_preview": "PASS",
     "V3-C1.1_review_frames": "PASS",
     "V3-D1_smoke_render": "PASS",
-    "V3-D2_full_render_tech": "TECH_PASS",
-    "V3-D2_full_render_product": "FAIL (audio mux issue)"
+    "V3-D2_full_render_tech": "PASS",
+    "V3-D2_full_render_product": "PASS",
+    "V3-P3.1_audio_first": "PASS",
+    "V3-P3.2_dynamic_storyboard_batch_1": "PASS",
+    "V3-P3.2_dynamic_storyboard_batch_2": "PASS",
+    "V3-P3.2_template_semantic_data_refinement_batch_3": "PASS",
+    "V3-P3.2_visual_differentiation_batch_4": "PASS",
+    "V3-P3.2_explain_evidence_proof_routing_batch_5": "PASS",
+    "V3-P3.2_hook_method_explain_visual_differentiation_batch_6": "PASS"
   },
   "known_bugs": [
-    "P0: final_video.mp4 has no sound (audio mux issue)",
-    "P1: Debug controls visible in final_video.mp4",
-    "P1: Captions are cropped",
-    "P1: Frame cache (1023 images) not cleaned up",
-    "P2: Motion is weak (static frames)"
+    "P1: cta still needs the same level of semantic routing as hook/method/explain/evidence/proof",
+    "P2: debug/probe JS files need separate cleanup before a production commit"
   ],
   "do_not_do": [
-    "Don't fix video rendering logic",
-    "Don't fix TTS",
-    "Don't fix combined_html_builder",
-    "Don't fix browser_mp4_renderer mux logic",
-    "Don't add visual components",
-    "Don't continue D2.1",
-    "Don't enter content_pack, CapCut, HyperFrames Studio native",
+    "Don't reintroduce 38-43s duration gates",
+    "Don't fall back to combined/index.html or file:// preview acceptance",
+    "Don't approve preview when a required stage failed",
+    "Don't speed up TTS to hit duration targets",
     "Don't commit outputs/ to git"
   ],
   "commands": {
     "preview": "PYTHONPATH=src .venv/bin/python3 -m video_director_v3.cli --script samples/scripts/minimal_obsidian_codex_hermes.md --platform douyin --target-duration 40 --project-id demo_v3_preview --output-mode hyperframes_preview --tts-mode edge_tts --tts-fallback system_say --design-variance 7 --motion-intensity 6 --visual-density 8 --no-allow-mock-audio",
     "smoke_render": "PYTHONPATH=src .venv/bin/python3 -m video_director_v3.cli --project-id demo_v3_preview --output-mode render_mp4 --approved --render-smoke-seconds 5 --fps 25",
     "full_render": "PYTHONPATH=src .venv/bin/python3 -m video_director_v3.cli --project-id demo_v3_preview --output-mode render_mp4 --approved --fps 25",
-    "tests": "PYTHONPATH=src .venv/bin/python3 -m pytest tests/ -v"
+    "tests": "PYTHONPATH=src .venv/bin/python3 -m pytest tests/ -q"
   }
 }

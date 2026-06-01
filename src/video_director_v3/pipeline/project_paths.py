@@ -19,6 +19,11 @@ def get_combined_index(project_id: str, test_mode: bool = False) -> Path:
     return get_project_dir(project_id, test_mode) / "combined" / "index.html"
 
 
+def get_hyperframes_timeline_dir(project_id: str, test_mode: bool = False) -> Path:
+    """Get the Studio-native HyperFrames project directory."""
+    return get_project_dir(project_id, test_mode) / "hyperframes_timeline"
+
+
 def get_audio_dir(project_id: str, test_mode: bool = False) -> Path:
     """Get the audio directory."""
     return get_project_dir(project_id, test_mode) / "audio"
@@ -43,7 +48,6 @@ def ensure_dirs(project_id: str, test_mode: bool = False) -> None:
     """Ensure all required directories exist for a project."""
     project_dir = get_project_dir(project_id, test_mode)
     (project_dir / "audio").mkdir(parents=True, exist_ok=True)
-    (project_dir / "combined").mkdir(parents=True, exist_ok=True)
-    (project_dir / "combined" / "assets").mkdir(parents=True, exist_ok=True)
+    (project_dir / "hyperframes_timeline" / "assets").mkdir(parents=True, exist_ok=True)
     (project_dir / "review_frames").mkdir(parents=True, exist_ok=True)
     (project_dir / "rendered" / "frames").mkdir(parents=True, exist_ok=True)

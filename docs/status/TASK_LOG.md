@@ -27,6 +27,13 @@
 | 2026-05-30 | V3-P2.2 Remotion Visual Upgrade | **PASS** | 6 个 scene 视觉增强，6/6 smoke frames PASS |
 | 2026-05-30 | V3-P2.5 HUD Style System Upgrade Smoke | **SMOKE PASS, PENDING HUMAN REVIEW** | 新增 HudExplainerSmoke composition (18s, 450f)，新增 HudPrimitives.tsx，6 个 scene 改造为 HUD 信息系统风，smoke_18s.mp4 生成，6 张 review frames 待人工审查 |
 | 2026-05-31 | V3-P2.7 Docs Native Only Cleanup | **PASS** | 清理所有文档中的 combined/index.html / file:// / 自定义 GSAP 旧路线描述，统一为 HyperFrames Studio 原生预览 |
+| 2026-06-01 | V3-P3.1 Audio-First + HUD Distillation | **PASS** | 指定长文 76 句提炼为 12 句、419 字；自然语速 81.10s；HUD Native lint 0 errors；21 条句级字幕；5s MP4 smoke 含 h264+aac；最大同步漂移 0.0s；28 tests passed |
+| 2026-06-01 | V3-P3.2 Dynamic Storyboard Batch 1 | **PASS** | 修复 storyboard compile 阻塞；preview approval fail-closed；接通 audio_timeline 驱动；`demo_v3_preview` 生成 12 scene / 11 transition / 26 caption；5s smoke render PASS；41 tests passed |
+| 2026-06-01 | V3-P3.2 Dynamic Storyboard Batch 2 | **PASS** | 细化 narration role 判定；`demo_v3_preview` 角色序列调整为更自然的 `hook → pain → method/explain → evidence → proof → cta`；preview 与 5s smoke 持续 PASS |
+| 2026-06-01 | V3-P3.2 Template Semantic Data Refinement Batch 3 | **PASS** | Native Builder 按句子语义生成更具体的 template data，并把实际 scene config 持久化到 `director_timeline.json`；新增持久化测试；preview 与 5s smoke 持续 PASS |
+| 2026-06-01 | V3-P3.2 Visual Differentiation Batch 4 | **PASS** | `tool_chain_three_cols` 新增 4 种语义布局变体；`S05/S06/S07` 从同构三列拆成汇聚中枢 / 知识三角 / 纵向步骤流；preview 与 5s smoke 持续 PASS |
+| 2026-06-01 | V3-P3.2 Explain / Evidence / Proof Routing Batch 5 | **PASS** | 复用现有 HUD 卡片和对比骨架，为 `broken_chain` 接入 `responsibility_split / binary_choice_split`，为 `before_after_compare` 接入 `dashboard_mobile / symptom_panel`；`S04/S08/S09/S11` 真实切换；preview 与 5s smoke 持续 PASS |
+| 2026-06-01 | V3-P3.2 Hook / Method Visual Differentiation Batch 6 | **PASS** | `hook_big_claim` 增加 `quote_punch / big_number_left`，`tool_chain_three_cols` 增加 `intro_offset`，`S01/S03/S04` 从同类居中双卡改成封面式 / 导语式 / 对撞式；preview 与 5s smoke 持续 PASS |
 
 ---
 
@@ -34,8 +41,12 @@
 
 | Date | Stage | Status |
 |------|-------|--------|
-| 2026-05-31 | V3-P2.7-Docs-Native-Only-Cleanup | DONE |
-| 2026-05-31 | V3-P2.7-G2-R9-Native-Fix | PENDING — 等待人工审查 V3-P2.5 关键帧后启动 |
+| 2026-06-01 | V3-P3.1 Audio-First | DONE |
+| 2026-06-01 | V3-P3.2 Dynamic Storyboard Batch 1 | DONE |
+| 2026-06-01 | V3-P3.2 Dynamic Storyboard Batch 2 | DONE |
+| 2026-06-01 | V3-P3.2 Template Semantic Data Refinement Batch 3 | DONE |
+| 2026-06-01 | V3-P3.2 Visual Differentiation Batch 4 | DONE |
+| 2026-06-01 | V3-P3.2 CTA Routing + GSAP Evaluation | NEXT |
 
 ---
-最后更新：2026-05-31
+最后更新：2026-06-01

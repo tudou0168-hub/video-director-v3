@@ -1,5 +1,17 @@
 # COMMANDS
 
+## P3 迁移提示
+
+P3.1 已完成。当前主线：
+- 不要将 `--target-duration 40` 视为产品约束。
+- 不要使用旧 `combined/index.html` 作为新预览或新渲染验收依据。
+- 使用自然语速男声，真实音频时长驱动 timeline。
+- 长文先提炼：目标 `<=120s`，硬上限 `<=150s`；禁止通过加速 TTS 命中时长。
+- 视觉基线沿用原 HUD 科技风。
+- `render_mp4 --approved` 从 HyperFrames Studio Native 项目渲染，并生成 `sync_report.json`。
+
+新路线图：`docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md`
+
 ## 环境启动
 
 ```bash
@@ -123,7 +135,7 @@ ls -la outputs/demo_v3_preview/rendered/final_video.mp4
 
 ```bash
 cat outputs/demo_v3_preview/rendered/render_report.json
-cat outputs/demo_v3_preview/rendered/full_render_probe.json
+cat outputs/demo_v3_preview/rendered/sync_report.json
 ```
 
 ## Clean frame cache (after render)
@@ -153,4 +165,4 @@ git push
 
 ---
 
-最后更新：2026-05-30
+最后更新：2026-06-01
