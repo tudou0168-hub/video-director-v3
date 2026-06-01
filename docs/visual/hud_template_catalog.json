@@ -1,0 +1,193 @@
+{
+  "version": "2026-06-01",
+  "source_sets": [
+    "src/video_director_v3/renderers/hyperframes/publish_templates.py",
+    "remotion_templates/hud_explainer/src/scenes/*.tsx",
+    "/Users/muzi/Windows共享文件/视频效果分析",
+    "/Users/muzi/LLM_Knowledge2.0/wiki"
+  ],
+  "templates": [
+    {
+      "template_id": "hook.keyword_punchline",
+      "roles": ["hook"],
+      "scene_tags": ["question_conflict", "anti_common_sense", "concept_name"],
+      "layout_family": "left_big_keyword",
+      "best_for": ["反常识开场", "概念命名", "核心方法名"],
+      "motion_cues": ["headline_scale_in", "keyword_glow"]
+    },
+    {
+      "template_id": "hook.comment_quote",
+      "roles": ["hook", "pain"],
+      "scene_tags": ["viewer_comment", "user_quote", "objection"],
+      "layout_family": "quote_card",
+      "best_for": ["评论开场", "质疑引子", "用户原话"],
+      "motion_cues": ["quote_box_slide_in", "keyword_flash"]
+    },
+    {
+      "template_id": "hook.big_number_claim",
+      "roles": ["hook", "evidence"],
+      "scene_tags": ["number_result", "market_size", "efficiency_gain"],
+      "layout_family": "big_metric_plus_micro_chart",
+      "best_for": ["超大数字", "市场规模", "成本节省"],
+      "motion_cues": ["metric_pop", "chart_grow"]
+    },
+    {
+      "template_id": "pain.progress_gap",
+      "roles": ["pain", "evidence"],
+      "scene_tags": ["adoption_gap", "penetration", "capability_gap"],
+      "layout_family": "stacked_progress_bars",
+      "best_for": ["普及率", "使用比例", "认知落差"],
+      "motion_cues": ["bar_fill_stagger"]
+    },
+    {
+      "template_id": "pain.abstract_to_plain",
+      "roles": ["pain", "explain"],
+      "scene_tags": ["translation", "reframing", "make_it_simple"],
+      "layout_family": "left_right_transform",
+      "best_for": ["术语解释", "复杂到通俗", "认知纠偏"],
+      "motion_cues": ["left_card_in", "arrow_reveal", "right_card_in"]
+    },
+    {
+      "template_id": "pain.version_upgrade",
+      "roles": ["pain", "method"],
+      "scene_tags": ["before_after", "version_upgrade", "iteration"],
+      "layout_family": "dual_version_compare",
+      "best_for": ["旧稿到新稿", "AI1到AI2", "方案升级"],
+      "motion_cues": ["left_right_swap", "warning_bar_up"]
+    },
+    {
+      "template_id": "method.step_tabs_paths",
+      "roles": ["method"],
+      "scene_tags": ["path_options", "process_steps", "route_selection"],
+      "layout_family": "numbered_steps_tabs",
+      "best_for": ["三条路径", "流程阶段", "章节路线"],
+      "motion_cues": ["step_highlight", "pill_stagger"]
+    },
+    {
+      "template_id": "method.binary_choice_split",
+      "roles": ["method"],
+      "scene_tags": ["binary_choice", "option_a_b", "manual_vs_auto"],
+      "layout_family": "dual_card_split",
+      "best_for": ["两种方式", "自己做vs对标", "选择题"],
+      "motion_cues": ["dual_card_slide", "or_badge_pop"]
+    },
+    {
+      "template_id": "method.three_principles_cards",
+      "roles": ["method", "explain"],
+      "scene_tags": ["three_points", "three_principles", "three_pillars"],
+      "layout_family": "triple_feature_cards",
+      "best_for": ["三件套", "三原则", "三大模块"],
+      "motion_cues": ["card_stagger"]
+    },
+    {
+      "template_id": "method.vertical_flow",
+      "roles": ["method"],
+      "scene_tags": ["workflow", "pipeline", "execution_steps"],
+      "layout_family": "vertical_nodes",
+      "best_for": ["执行链路", "自动化流程", "脚本到发布"],
+      "motion_cues": ["node_drop", "connector_reveal"]
+    },
+    {
+      "template_id": "method.knowledge_triangle",
+      "roles": ["method", "explain"],
+      "scene_tags": ["relationship", "network", "bridge"],
+      "layout_family": "triangle_graph",
+      "best_for": ["关系网络", "角色桥接", "观点互联"],
+      "motion_cues": ["node_in", "line_draw"]
+    },
+    {
+      "template_id": "method.matrix_glossary_wall",
+      "roles": ["method", "explain"],
+      "scene_tags": ["glossary", "overview", "concept_grid"],
+      "layout_family": "multi_card_matrix",
+      "best_for": ["术语扫盲", "模块总览", "课程一览"],
+      "motion_cues": ["matrix_stagger"]
+    },
+    {
+      "template_id": "evidence.money_ladder",
+      "roles": ["evidence", "proof"],
+      "scene_tags": ["income_ladder", "monetization_path", "stage_growth"],
+      "layout_family": "bars_plus_evidence_card",
+      "best_for": ["变现路径", "收入分层", "阶段升级"],
+      "motion_cues": ["bar_rise", "evidence_card_in"]
+    },
+    {
+      "template_id": "evidence.dual_curve_growth",
+      "roles": ["evidence", "proof"],
+      "scene_tags": ["dual_growth", "traffic_and_product", "compounding"],
+      "layout_family": "dual_line_chart",
+      "best_for": ["双轮增长", "复利上升", "同步提升"],
+      "motion_cues": ["line_draw"]
+    },
+    {
+      "template_id": "evidence.dashboard_mobile",
+      "roles": ["evidence", "proof"],
+      "scene_tags": ["dashboard", "mobile_screenshot", "real_case"],
+      "layout_family": "phone_mockup_plus_headline",
+      "best_for": ["后台截图", "真实监控", "案例证明"],
+      "motion_cues": ["phone_slide_in"]
+    },
+    {
+      "template_id": "evidence.scorecard_sheet",
+      "roles": ["evidence", "proof"],
+      "scene_tags": ["scorecard", "review_sheet", "dimension_rating"],
+      "layout_family": "big_score_plus_table",
+      "best_for": ["质检打分", "评测维度", "评分表"],
+      "motion_cues": ["score_pop", "sheet_fade_in"]
+    },
+    {
+      "template_id": "evidence.parallel_lanes",
+      "roles": ["evidence", "proof"],
+      "scene_tags": ["parallel_agents", "multi_module", "simultaneous_flow"],
+      "layout_family": "parallel_bars",
+      "best_for": ["多Agent并行", "多模块协作", "流水线并发"],
+      "motion_cues": ["bars_fill_parallel"]
+    },
+    {
+      "template_id": "proof.section_board",
+      "roles": ["proof", "explain"],
+      "scene_tags": ["sections", "dimensions", "modules"],
+      "layout_family": "board_panels",
+      "best_for": ["5板块", "9维度", "栏目结构"],
+      "motion_cues": ["panel_group_in"]
+    },
+    {
+      "template_id": "proof.symptom_panel",
+      "roles": ["proof", "pain"],
+      "scene_tags": ["diagnosis", "symptoms", "risk_flags"],
+      "layout_family": "term_and_symptom_panel",
+      "best_for": ["问题诊断", "AI幻觉", "风险说明"],
+      "motion_cues": ["term_fixed", "symptom_rows_reveal"]
+    },
+    {
+      "template_id": "cta.button_banner",
+      "roles": ["cta"],
+      "scene_tags": ["start", "follow", "next_step"],
+      "layout_family": "headline_plus_button",
+      "best_for": ["开始", "行动号召", "下一步"],
+      "motion_cues": ["button_pulse"]
+    },
+    {
+      "template_id": "cta.end_score_goodbye",
+      "roles": ["cta"],
+      "scene_tags": ["series_end", "episode_end", "wrap_up"],
+      "layout_family": "score_and_goodbye",
+      "best_for": ["结尾", "下期再见", "章节结束"],
+      "motion_cues": ["score_hold", "next_episode_pop"]
+    }
+  ],
+  "routing_hints": {
+    "hook.question_conflict": ["hook.keyword_punchline", "hook.comment_quote"],
+    "hook.number_result": ["hook.big_number_claim"],
+    "pain.complexity_gap": ["pain.abstract_to_plain", "pain.progress_gap"],
+    "method.path_or_step": ["method.step_tabs_paths", "method.vertical_flow"],
+    "method.choice": ["method.binary_choice_split"],
+    "method.three_points": ["method.three_principles_cards"],
+    "explain.term_glossary": ["method.matrix_glossary_wall", "proof.symptom_panel"],
+    "evidence.market_or_growth": ["evidence.money_ladder", "evidence.dual_curve_growth", "hook.big_number_claim"],
+    "proof.dashboard_or_case": ["evidence.dashboard_mobile", "evidence.scorecard_sheet"],
+    "proof.parallel_system": ["evidence.parallel_lanes"],
+    "cta.start": ["cta.button_banner"],
+    "cta.series_end": ["cta.end_score_goodbye"]
+  }
+}

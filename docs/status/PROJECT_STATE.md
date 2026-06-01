@@ -28,8 +28,8 @@
 
 完整路线图：`docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md`
 
-当前阶段：`V3-P3.6 Viral QA Loop（批次 11）已验证 — V3 路线图全 6 阶段完成`
-下一任务：`回顾全 V3 路线图 / 清理调试 JS / 评估继续投入方向`
+当前阶段：`V3 Retrospective + Cleanup（批次 12）已完成 — V3 路线图全 6 阶段 PASS + 全面清理`
+下一任务：`V4 入口：真实播放数据接入 / 跨平台分发 / 内容反向工程`
 
 ## 项目目标
 
@@ -84,6 +84,7 @@ script.md
 | **V3-P3.4 Template Library Expansion（批次 9）** | **PASS** | 20 个 seed 模板（+8：`countdown_strike / keyword_punchline / data_dense_table / step_ladder / concept_layers / progress_tracker / knowledge_graph / quote_close`）+ 9 动效预设 + 13 语义转场协议；`classify_role` 扩展 keyword 覆盖；73 个测试基线 `PASS`；demo 真实路径 S06 命中 `knowledge_graph`；preview / smoke 继续 PASS，同步漂移 `0.0s` |
 | **V3-P3.5 Template Library Complete（批次 10）** | **PASS** | 30 个 seed 模板（+10：`myth_bust / before_after_flash / timeline_pain / timeline_path / tool_stack / case_study / evidence_cards / score_panel / next_step_board / comment_invite`）+ 14 动效 + 13 转场协议（达成路线图 56 资产目标，总 57）；85 个测试基线 `PASS`；preview / smoke 继续 PASS，同步漂移 `0.0s` |
 | **V3-P3.6 Viral QA Loop（批次 11）** | **PASS** | `viral_qa_evaluator.py` 实现 6 维内容结构评分（hook / promise / saveable_value / comment_trigger / visual_rhythm / sync_reliability）+ A/B 变体 manifest；pipeline_runner 自动生成 `viral_quality_report.json`；评分基于公开可见的内容质量原则，**不冒充平台算法**；110 个测试基线 `PASS`；demo preview viral score=26/60 FAIL 是评分机制正确识别内容缺点的体现；sync_reliability=10/10（max_drift=0.0s） |
+| **V3 Retrospective + Cleanup（批次 12）** | **PASS** | 112 调试 JS 归档到 `tests/manual_archive/` + gitignore 隔离；129 untracked 文件全部分类（9 个 add，120 个 gitignore）；新增 9 个正式资产（`viral_script_distiller` / `native_mp4_renderer` / HUD 提炼文档 / 路线图 / 2 demo 脚本 / `test_native_sync_report.py`）；新增 `docs/decisions/V3_RETROSPECTIVE.md`（6 阶段判断/教训/统计/V4 建议）；新增 `docs/V3_CAPABILITY_INDEX.md`（63 资产盘点 + 110 测试 + 0.0s drift 基线）；`scripts/` 未用目录删除；110 测试基线 `PASS`；preview / smoke 继续 PASS |
 
 **V3-P2 视觉渲染技术栈**：Remotion → HTML/CSS/React 动画 → MP4
 
@@ -133,7 +134,7 @@ AI 科技解释型 HUD 风格：
 
 ## 测试状态
 
-110 个测试基线保持通过（`tests/test_template_protocol.py` 46 个 + `tests/test_preview_pipeline.py` 27 个 + `tests/test_viral_qa.py` 25 个 + `tests/test_tts_contract.py` + 其他）；P3.6 Viral QA Loop 批次 11 后，新增 25 项 viral_qa + ab_manifest 测试断言全部通过；真实 preview `READY`、5 秒 smoke render `PASS`、`sync_report.json` `max_drift=0.0s`、`viral_quality_report.json` 自动生成（最近运行：2026-06-01）
+110 个测试基线保持通过（`tests/test_template_protocol.py` 46 个 + `tests/test_preview_pipeline.py` 27 个 + `tests/test_viral_qa.py` 25 个 + `tests/test_tts_contract.py` + 其他）；V3 Retrospective 批次 12 后，cleanup 0 回归；真实 preview `READY`、5 秒 smoke render `PASS`、`sync_report.json` `max_drift=0.0s`、`viral_quality_report.json` 自动生成（最近运行：2026-06-01）
 
 ---
 

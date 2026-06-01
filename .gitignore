@@ -71,3 +71,24 @@ id_ed25519
 # Playwright
 .playwright/
 .gstack/
+
+# V3 Retrospective cleanup (P3.6 final stage)
+# Debug JS probes from P3.0-P3.1 era — archived in tests/manual_archive/, kept out of git
+tests/manual_archive/
+
+# Old routes / artifacts retired by V3 mainline
+remotion_templates/
+src/video_director_v3.egg-info/
+docs/visual/HYPERFRAMES_FIRST_PLAN.md
+docs/visual/HYPERFRAMES_HUD_STYLE_BRIEF.md
+docs/visual/HYPERFRAMES_SCENE_PROMPTS.md
+docs/visual/SKILL_ORCHESTRATION_PLAN.md
+
+# ChatGPT / agent handoff scratch spaces
+.learnings/
+_chatgpt_handoff/
+
+# P3.0-P3.1 planning documents superseded by docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md
+task_plan.md
+findings.md
+

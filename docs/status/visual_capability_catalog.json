@@ -1,0 +1,249 @@
+{
+  "components": [
+    {
+      "name": "HudTitleBar",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/motion_design/component_registry.py",
+      "reuse_status": "adapt",
+      "best_for": ["hook", "pain", "method", "proof", "cta"],
+      "notes": "Top title bar with label + title + subtitle. V3 has basic scene-label, V3 should adopt full HudTitleBar with title/subtitle zones"
+    },
+    {
+      "name": "GridBackground",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/motion_design/component_registry.py",
+      "reuse_status": "direct",
+      "best_for": ["all_scenes"],
+      "notes": "Grid overlay with animation. V3's bg-grid is simpler version of this. V3 has this already."
+    },
+    {
+      "name": "ScanOverlay",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/motion_design/component_registry.py",
+      "reuse_status": "no",
+      "best_for": [],
+      "notes": "Screen-edge scan effect. Nice-to-have but not critical for V3."
+    },
+    {
+      "name": "ProgressBar",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/motion_design/component_registry.py",
+      "reuse_status": "direct",
+      "best_for": ["all_scenes"],
+      "notes": "V3 already has #combined-progress but it's debug-style. Should adopt V2's more polished version."
+    },
+    {
+      "name": "MetricRail",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/motion_design/components/metric_rail.py",
+      "reuse_status": "adapt",
+      "best_for": ["proof", "evidence", "method"],
+      "notes": "Left-side vertical scrolling metric display. V3 doesn't have this. Should be ported for data-heavy scenes."
+    },
+    {
+      "name": "MetricCard",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/motion_design/component_registry.py",
+      "reuse_status": "adapt",
+      "best_for": ["proof", "evidence"],
+      "notes": "Individual metric card. V3 has basic metric-card in fallback template. Should upgrade to V2's version."
+    },
+    {
+      "name": "DataCounter",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/motion_design/component_registry.py",
+      "reuse_status": "adapt",
+      "best_for": ["proof", "evidence"],
+      "notes": "Animated count-up number. V3 doesn't have this. Should port for KPI display scenes."
+    },
+    {
+      "name": "CardMatrix",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/motion_design/components/card_matrix.py",
+      "reuse_status": "adapt",
+      "best_for": ["proof", "evidence", "method"],
+      "notes": "3-column mini-card matrix. V3's pain_card_stack is similar but less polished. Should adopt V2's version."
+    },
+    {
+      "name": "ProcessTimeline",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/motion_design/components/process_timeline.py",
+      "reuse_status": "adapt",
+      "best_for": ["method", "proof", "evidence"],
+      "notes": "Horizontal step timeline with nodes and connectors. V3's broken_chain is a primitive version of this. Should upgrade to V2's ProcessTimeline."
+    },
+    {
+      "name": "Checklist",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/motion_design/components/checklist.py",
+      "reuse_status": "adapt",
+      "best_for": ["cta", "method"],
+      "notes": "Numbered action list. V3's checklist_cta is functionally similar but V2's has better hover states and motion."
+    },
+    {
+      "name": "ScorePanel",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/motion_design/components/score_panel.py",
+      "reuse_status": "adapt",
+      "best_for": ["proof", "evidence"],
+      "notes": "Multi-dimensional rating display. V3 doesn't have this. Should port for before/after comparison."
+    },
+    {
+      "name": "TablePanel",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/motion_design/components/table_panel.py",
+      "reuse_status": "adapt",
+      "best_for": ["evidence", "proof"],
+      "notes": "Structured data table. V3 doesn't have a table layout. Should port for comparison scenes."
+    },
+    {
+      "name": "CtaPanel",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/motion_design/components/cta_panel.py",
+      "reuse_status": "adapt",
+      "best_for": ["cta"],
+      "notes": "Call-to-action panel with button states. V3's checklist_cta lacks button-style CTA. Should adopt."
+    },
+    {
+      "name": "BottomCaption",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/motion_design/component_registry.py",
+      "reuse_status": "direct",
+      "best_for": ["all_scenes"],
+      "notes": "Bottom caption/subtitle overlay. V3 has this but V2's has proper motion-target and GSAP binding."
+    },
+    {
+      "name": "Headline",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/motion_design/component_registry.py",
+      "reuse_status": "direct",
+      "best_for": ["all_scenes"],
+      "notes": "Main title text. V3 has this but with less sophisticated motion binding."
+    },
+    {
+      "name": "Subheadline",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/motion_design/component_registry.py",
+      "reuse_status": "adapt",
+      "best_for": ["all_scenes"],
+      "notes": "Subtitle/secondary text. V3 doesn't have a dedicated subheadline component."
+    }
+  ],
+  "effects": [
+    {
+      "name": "grid_drift",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/motion_design/component_registry.py",
+      "reuse_status": "direct",
+      "notes": "Background grid drifts slowly. V3 already has this in combined_html_builder."
+    },
+    {
+      "name": "glow_pulse",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/motion_design/component_registry.py",
+      "reuse_status": "direct",
+      "notes": "Background glow pulses. V3 already has this in combined_html_builder."
+    },
+    {
+      "name": "fade_in_out",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/renderers/hyperframes/transitions/",
+      "reuse_status": "adapt",
+      "notes": "Scene fade in/out. V3 has this in _build_master_timeline but V2's is more sophisticated with crossfade."
+    },
+    {
+      "name": "card_stack_reveal",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/renderers/hyperframes/visual_translator/motion_storyboard_builder.py",
+      "reuse_status": "adapt",
+      "notes": "Cards stack up with stagger reveal. V3's pain_card_stack has basic GSAP but V2's is more polished."
+    },
+    {
+      "name": "node_pop_in",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/motion_design/components/process_timeline.py",
+      "reuse_status": "adapt",
+      "notes": "Timeline nodes pop in with elastic easing. V3's broken_chain uses back.out(1.2) which is similar."
+    }
+  ],
+  "transitions": [
+    {
+      "name": "cards_to_path",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/renderers/hyperframes/transitions/s01_to_s02_cards_to_path.py",
+      "reuse_status": "adapt",
+      "from_scene": "S01",
+      "to_scene": "S02",
+      "notes": "Card stack dissolves into path/chain. V3 doesn't have semantic transitions for scene changes."
+    },
+    {
+      "name": "path_to_broken_flow",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/renderers/hyperframes/transitions/s02_to_s03_path_to_broken_flow.py",
+      "reuse_status": "adapt",
+      "from_scene": "S02",
+      "to_scene": "S03",
+      "notes": "Path transforms into broken chain with visual break effect."
+    },
+    {
+      "name": "timeline_to_cards",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/renderers/hyperframes/transitions/s04_to_s05_timeline_to_cards.py",
+      "reuse_status": "adapt",
+      "from_scene": "S04",
+      "to_scene": "S05",
+      "notes": "Timeline reconstructs into card columns. V3's tool_chain_three_cols should use this transition."
+    },
+    {
+      "name": "table_to_checklist",
+      "source_project": "video-director_CapCut2.0",
+      "source_file": "src/renderers/hyperframes/transitions/s06_to_s07_table_to_checklist.py",
+      "reuse_status": "adapt",
+      "from_scene": "S06",
+      "to_scene": "S07",
+      "notes": "Table dissolves into checklist items. V3 should use this for S07→S08."
+    }
+  ],
+  "caption_styles": [
+    {
+      "name": "bottom_center_caption",
+      "source_project": "video-director_CapCut2.0",
+      "reuse_status": "direct",
+      "best_for": ["all_scenes"],
+      "notes": "Bottom-center caption with rounded background. V3 has this but V2's has proper GSAP binding."
+    },
+    {
+      "name": "side_tag_badge",
+      "source_project": "video-director_CapCut2.0",
+      "reuse_status": "adapt",
+      "best_for": ["hook", "cta"],
+      "notes": "Side tag/badge for scene labels. V3 doesn't have this."
+    }
+  ],
+  "layout_zones": [
+    {
+      "name": "top_progress",
+      "zone_range": "0-120px",
+      "reuse_status": "direct",
+      "notes": "V3 uses this for #combined-progress but as debug bar only."
+    },
+    {
+      "name": "center_panel",
+      "zone_range": "300-1500px",
+      "reuse_status": "adapt",
+      "notes": "V3 has center_panel concept but no zone-based layout system."
+    },
+    {
+      "name": "bottom_caption",
+      "zone_range": "1500-1800px",
+      "reuse_status": "direct",
+      "notes": "V3's caption system uses this zone."
+    },
+    {
+      "name": "left_indicator",
+      "zone_range": "0-300px width",
+      "reuse_status": "adapt",
+      "notes": "V3 doesn't have left indicator rail. MetricRail should use this zone."
+    }
+  ]
+}

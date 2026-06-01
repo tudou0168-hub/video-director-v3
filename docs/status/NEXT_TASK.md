@@ -2,20 +2,24 @@
 
 ## 当前任务
 
-**V3-P3.6 Viral QA Loop（批次 11）** — 已完成并验证。**V3 路线图全 6 阶段完成**。
+**V3 Retrospective + Cleanup（批次 12）** — 已完成。
 
-路线图：`docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md`
+**V3 路线图全 6 阶段 + 复盘清理全部完成**。
 
 ## 下一任务
 
-**V3 Retrospective + Cleanup**
+**V4 入口：真实播放数据接入 + 跨平台分发 + 内容反向工程**
 
-目标：
-1. 写 V3 retrospective：6 个 P3 阶段的产品/工程判断与教训
-2. 清理 107 个调试 JS 与未跟踪文件（产出 `tests/` 与 `samples/scripts/` 正式资产）
-3. 评估 V3 已有能力：30 场景框架 + 14 动效 + 13 转场 + viral QA 6 维评分
-4. 决定 V4 方向：继续扩模板（>30）/ 接入真实播放数据 / 跨平台分发 / 其他
-5. 保持 P3.1 的自然语速、Native Preview、显式音频 mux 和 `<= 1.0s` 同步 gate
+详细方向见 `docs/decisions/V3_RETROSPECTIVE.md` 第 5 节"。
+
+### V4 候选
+- **V4.0（1-2 周）**：接入真实播放数据回灌 + 强化 4 个低分维度（hook/promise/comment/visual_rhythm）
+- **V4.1（1 个月）**：跨平台分发（抖音/视频号/小红书）+ A/B 真渲染 + 模板自动权重
+- **V4.2（季度）**：Hero frame 视觉评测 + 内容反向工程 + 个人风格化
+
+### 暂不开始 V4 — 等待用户明确方向
+
+V3 已是可持续生产系统（63 资产 / 110 测试 / 0.0s drift）。下一步要由用户决定 V4 走哪个方向。
 
 ## P3.2 批次 7 验收证据
 
@@ -36,7 +40,7 @@
 
 ## 后续阶段
 
-- `V3 Retrospective + Cleanup`（P3.6 完成后）
+- V4 入口（待用户明确方向）
 
 ## 不允许
 

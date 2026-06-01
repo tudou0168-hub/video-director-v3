@@ -316,3 +316,23 @@
 | P3.4 Template Library Expansion | PASS | 20 seed templates（+8）|
 | P3.5 Template Library Complete | PASS | 30 seed templates（+10）达成 57 资产 |
 | P3.6 Viral QA Loop | PASS | 6 维评分 + A/B manifest + viral_quality_report |
+
+### V3 Retrospective + Cleanup（批次 12）
+
+- **清理 129 个 untracked 文件**：
+  - 112 个调试 JS（`_check_audio*.js` / `_test_*.js` / `_screenshot*.js` 等）→ `tests/manual_archive/` + gitignore
+  - 9 个正式资产 add 到 git：`viral_script_distiller.py` / `native_mp4_renderer.py` / `test_native_sync_report.py` / 2 demo 脚本 / HUD 提炼文档 / 路线图 / V2 视觉库存
+  - 8 个旧路线文件（`scripts/build_v3_p28_clean_preview.py` / `scripts/v3_to_remotion.py` / `task_plan.md` / `findings.md` / `remotion_templates/` / `src/...egg-info/` / `.learnings/` / `_chatgpt_handoff/`）→ gitignore
+- **V3_RETROSPECTIVE.md**（`docs/decisions/`）：6 阶段判断/教训/统计/V4 方向建议
+  - 关键判断：复用优先 / 协议层分离 / 真实数据驱动 / 解释优先于绕过
+  - V4 候选：V4.0 真实数据 / V4.1 跨平台 / V4.2 内容反向工程
+- **V3_CAPABILITY_INDEX.md**（`docs/`）：63 资产盘点（30 场景 + 14 动效 + 13 转场 + 6 QA）+ 110 测试 + 0.0s drift 基线 + 文件入口
+
+### 本轮验证（批次 12）
+
+- `PYTHONPATH=src .venv/bin/python3 -m pytest tests/ -q`：`110 passed in 120.60s`（cleanup 0 回归）
+- `PYTHONPATH=src .venv/bin/python3 -m compileall -q src tests`：通过
+- `git diff --check`：通过
+- 真实 preview（`demo_v3_preview`）：`READY`，viral_quality_report.json 自动生成
+- 真实 5s smoke render：`PASS`，`duration=5.00s`
+- `sync_report.json`：`max_drift=0.0s`
