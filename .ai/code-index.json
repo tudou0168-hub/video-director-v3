@@ -1,0 +1,67 @@
+{
+  "project": "video-director-v3",
+  "generated_at": "2026-06-02T00:00:00+09:00",
+  "root": ".",
+  "note": "Initial seed index added from repository metadata. Refresh locally with: python3 scripts/index/build_repo_index.py",
+  "ignored_dirs": [
+    ".git",
+    ".venv",
+    ".pytest_cache",
+    "__pycache__",
+    "build",
+    "dist",
+    "node_modules",
+    "outputs",
+    "review_frames",
+    "snapshots",
+    "test_outputs",
+    "tests/manual_archive",
+    "tmp"
+  ],
+  "file_count": 22,
+  "summary": {
+    "by_role": {
+      "agent_rules": 1,
+      "ai_index": 4,
+      "claude_handoff": 1,
+      "documentation": 5,
+      "human_entrypoint": 1,
+      "project_config": 3,
+      "project_state": 1,
+      "runbook": 1,
+      "script": 1,
+      "source": 1,
+      "workflow": 1
+    },
+    "by_language": {
+      "json": 2,
+      "markdown": 12,
+      "python": 2,
+      "toml": 1,
+      "yaml": 1,
+      "unknown": 4
+    }
+  },
+  "files": [
+    {"path": "README.md", "role": "human_entrypoint", "language": "markdown"},
+    {"path": "AGENTS.md", "role": "agent_rules", "language": "markdown"},
+    {"path": "CLAUDE.md", "role": "claude_handoff", "language": "markdown"},
+    {"path": ".ai/repo-index.yml", "role": "ai_index", "language": "yaml"},
+    {"path": ".ai/code-index.json", "role": "ai_index", "language": "json"},
+    {"path": ".ai/agent-rules.md", "role": "ai_index", "language": "markdown"},
+    {"path": ".ai/forbidden-paths.md", "role": "ai_index", "language": "markdown"},
+    {"path": "docs/START_HERE.md", "role": "documentation", "language": "markdown"},
+    {"path": "docs/pipeline/MAINLINE.md", "role": "documentation", "language": "markdown"},
+    {"path": "docs/architecture/SYSTEM_MAP.md", "role": "documentation", "language": "markdown"},
+    {"path": "docs/cleanup/DEPRECATED_FILES.md", "role": "documentation", "language": "markdown"},
+    {"path": "docs/status/PROJECT_STATE.md", "role": "project_state", "language": "markdown"},
+    {"path": "docs/runbooks/COMMANDS.md", "role": "runbook", "language": "markdown"},
+    {"path": "docs/architecture.md", "role": "documentation", "language": "markdown"},
+    {"path": "docs/V3_CAPABILITY_INDEX.md", "role": "documentation", "language": "markdown"},
+    {"path": "scripts/index/build_repo_index.py", "role": "script", "language": "python"},
+    {"path": "src/video_director_v3/cli.py", "role": "source", "language": "python"},
+    {"path": "pyproject.toml", "role": "project_config", "language": "toml"},
+    {"path": "package.json", "role": "project_config", "language": "json"},
+    {"path": "requirements.txt", "role": "project_config", "language": "unknown"}
+  ]
+}
