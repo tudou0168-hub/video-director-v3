@@ -25,6 +25,29 @@
 - 不要在中间阶段 render MP4
 - 不要把 `combined/index.html`、`file://`、Remotion 主线、CapCut 主流程、静态 HTML 预览、JS/GSAP 自定义页面当成当前主线
 
+## AI 索引入口（新增）
+
+所有智能体接手本项目时，优先按以下顺序阅读：
+
+1. `AGENTS.md` — 全局行为规范
+2. `CLAUDE.md` — Claude Code 专用启动/汇报规则
+3. `docs/START_HERE.md` — 人类和 Agent 的项目入口
+4. `.ai/repo-index.yml` — 机器可读项目地图
+5. `.ai/code-index.json` — 文件级索引，可由脚本刷新
+6. `docs/status/PROJECT_STATE.md` — 当前状态
+7. `docs/status/NEXT_TASK.md` — 当前任务，如存在
+8. `docs/status/CURRENT_BUGS.md` — 当前 bug，如存在
+9. `docs/status/LAST_KNOWN_GOOD.md` — 最近可用基线，如存在
+10. `docs/pipeline/MAINLINE.md` — 唯一主线
+11. `docs/runbooks/COMMANDS.md` — 真实命令
+12. `docs/runbooks/INDEXING.md` — 索引刷新说明
+
+索引刷新命令：
+
+```bash
+python3 scripts/index/build_repo_index.py
+```
+
 ## 2026-06-01 P3 产品基线覆盖
 
 以下规则覆盖本文后续仍保留的旧版固定 40 秒 P0 Gate：
@@ -45,13 +68,17 @@
 
 **所有智能体接手本项目，必须先读以下文件：**
 
-1. `docs/status/PROJECT_STATE.md`
-2. `docs/status/NEXT_TASK.md`
-3. `docs/status/CURRENT_BUGS.md`
-4. `docs/status/LAST_KNOWN_GOOD.md`
-5. `docs/runbooks/COMMANDS.md`
-6. `docs/decisions/DECISION_LOG.md`
-7. `docs/cleanup-plan.md`
+1. `AGENTS.md`
+2. `CLAUDE.md`
+3. `docs/START_HERE.md`
+4. `.ai/repo-index.yml`
+5. `.ai/code-index.json`
+6. `docs/status/PROJECT_STATE.md`
+7. `docs/status/NEXT_TASK.md`
+8. `docs/status/CURRENT_BUGS.md`
+9. `docs/status/LAST_KNOWN_GOOD.md`
+10. `docs/runbooks/COMMANDS.md`
+11. `docs/decisions/DECISION_LOG.md`
 
 **如果这些文件和聊天记录冲突，以这些文件为准。**
 

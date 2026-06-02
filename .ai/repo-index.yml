@@ -1,0 +1,121 @@
+project:
+  name: video-director-v3
+  owner: tudou0168-hub
+  repository: tudou0168-hub/video-director-v3
+  default_branch: main
+  purpose: "Chinese script to HyperFrames Studio Native Preview, then approved MP4 render."
+
+mainline:
+  strict: true
+  flow:
+    - chinese_script
+    - structured_spoken_script_or_director_parse
+    - male_tts
+    - real_audio_duration
+    - captions
+    - dynamic_storyboard
+    - visual_beats
+    - semantic_transitions
+    - hyperframes_studio_native_project
+    - human_review
+    - approved_mp4_render
+  text: "中文文案 -> 爆款结构化口播/AI 导演解析 -> 自然语速男声 TTS -> 真实音频时长 -> 动态字幕/动态分镜/自然转场 -> HyperFrames Studio Native Preview -> 用户确认 -> render_mp4 + audio mux -> final_video.mp4"
+
+entrypoints:
+  human:
+    - README.md
+    - docs/START_HERE.md
+  agents:
+    - AGENTS.md
+    - CLAUDE.md
+    - docs/START_HERE.md
+    - .ai/repo-index.yml
+    - .ai/code-index.json
+    - docs/status/PROJECT_STATE.md
+    - docs/pipeline/MAINLINE.md
+    - docs/runbooks/COMMANDS.md
+
+core_paths:
+  source: src/video_director_v3/
+  cli: src/video_director_v3/cli.py
+  pipeline: src/video_director_v3/pipeline/
+  director: src/video_director_v3/director/
+  motion: src/video_director_v3/motion/
+  renderers: src/video_director_v3/renderers/
+  quality: src/video_director_v3/quality/
+  samples: samples/scripts/
+  docs: docs/
+  tests: tests/
+
+important_docs:
+  status: docs/status/PROJECT_STATE.md
+  commands: docs/runbooks/COMMANDS.md
+  architecture_legacy: docs/architecture.md
+  capability_index: docs/V3_CAPABILITY_INDEX.md
+  roadmap: docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md
+  retrospective: docs/decisions/V3_RETROSPECTIVE.md
+
+quality_gates:
+  preview:
+    mode: hyperframes_preview
+    must_generate:
+      - hyperframes_timeline/
+      - approval_required.json
+      - review_frames/
+      - quality_report.json
+    must_not_generate:
+      - final_video.mp4
+  render:
+    mode: render_mp4
+    requires_approved_flag: true
+    final_video_requires_audio_stream: true
+  sync:
+    max_allowed_drift_seconds: 1.0
+  video:
+    canvas: "1080x1920"
+    fps: 25
+  script:
+    target_duration_seconds: 120
+    hard_limit_seconds: 150
+    tts_speedup_allowed: false
+
+protected_rules:
+  - "Do not create a parallel pipeline."
+  - "Do not replace HyperFrames Studio Native Preview as the main review path."
+  - "Do not use the old combined preview as the new mainline."
+  - "Do not run MP4 rendering before user confirmation."
+  - "Do not introduce a new renderer, timeline engine, or director framework without explicit instruction."
+
+ignored_paths:
+  - node_modules/
+  - dist/
+  - build/
+  - .git/
+  - __pycache__/
+  - .pytest_cache/
+  - .venv/
+  - outputs/
+  - test_outputs/
+  - review_frames/
+  - snapshots/
+  - tmp/
+  - tests/manual_archive/
+
+agent_behavior:
+  before_work:
+    - "Read AGENTS.md"
+    - "Read CLAUDE.md when using Claude Code"
+    - "Read docs/START_HERE.md"
+    - "Read .ai/repo-index.yml"
+    - "Read docs/status/PROJECT_STATE.md"
+    - "Read docs/runbooks/COMMANDS.md"
+  prefer:
+    - "small scoped changes"
+    - "reuse existing modules"
+    - "ground commands in existing files"
+    - "HTML/Studio preview before MP4"
+  avoid:
+    - "large rewrites"
+    - "new systems"
+    - "invented commands"
+    - "unreviewed generated artifacts"
