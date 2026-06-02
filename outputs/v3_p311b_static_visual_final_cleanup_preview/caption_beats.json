@@ -1,0 +1,356 @@
+{
+  "caption_beats": [
+    {
+      "scene_id": "S01",
+      "caption_id": "S01_C01",
+      "start": 0.0,
+      "duration": 3.19,
+      "text": "用 Claude Code 写公众号三个月后",
+      "source_sentence": "用 Claude Code 写公众号三个月后",
+      "visible": true
+    },
+    {
+      "scene_id": "S01",
+      "caption_id": "S01_C02",
+      "start": 3.19,
+      "duration": 3.19,
+      "text": "我发现它提升的不只是效率",
+      "source_sentence": "我发现它提升的不只是效率",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S02_C01",
+      "start": 6.63,
+      "duration": 3.93,
+      "text": "用 Claude Code 写公众号三个月了",
+      "source_sentence": "用 Claude Code 写公众号三个月了",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S03_C01",
+      "start": 10.8,
+      "duration": 3.4,
+      "text": "一开始我只是想找个工具帮我写代码",
+      "source_sentence": "一开始我只是想找个工具帮我写代码",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S03_C02",
+      "start": 14.21,
+      "duration": 3.4,
+      "text": "结果用它做自媒体创作比写代码还顺手",
+      "source_sentence": "结果用它做自媒体创作比写代码还顺手",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S04_C01",
+      "start": 17.85,
+      "duration": 2.88,
+      "text": "以前写一篇公众号文章是这样的",
+      "source_sentence": "以前写一篇公众号文章是这样的",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S05_C01",
+      "start": 20.97,
+      "duration": 2.15,
+      "text": "改稿 1 小时",
+      "source_sentence": "改稿 1 小时",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S06_C01",
+      "start": 23.36,
+      "duration": 4.02,
+      "text": "不是 Claude Code 帮我写了文章",
+      "source_sentence": "不是 Claude Code 帮我写了文章",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S06_C02",
+      "start": 27.38,
+      "duration": 4.02,
+      "text": "是它帮我把「想」和「等灵感」的时间压缩到了几乎为零",
+      "source_sentence": "是它帮我把「想」和「等灵感」的时间压缩到了几乎为零",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S07_C01",
+      "start": 31.64,
+      "duration": 2.27,
+      "text": "你有没有这种感觉",
+      "source_sentence": "你有没有这种感觉",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S07_C02",
+      "start": 33.91,
+      "duration": 2.27,
+      "text": "读了很多书 记住了 10% 用到了 1%",
+      "source_sentence": "读了很多书 记住了 10% 用到了 1%",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S08_C01",
+      "start": 36.42,
+      "duration": 2.38,
+      "text": "以前这个过程需要我自己花 1 小时「想」",
+      "source_sentence": "以前这个过程需要我自己花 1 小时「想」",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S08_C02",
+      "start": 38.8,
+      "duration": 2.38,
+      "text": "现在 5 分钟搞定",
+      "source_sentence": "现在 5 分钟搞定",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S09_C01",
+      "start": 41.41,
+      "duration": 2.68,
+      "text": "写文章最难的不是写 是开始写",
+      "source_sentence": "写文章最难的不是写 是开始写",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S10_C01",
+      "start": 44.33,
+      "duration": 1.93,
+      "text": "以前我要「想好写什么」才能开始",
+      "source_sentence": "以前我要「想好写什么」才能开始",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S10_C02",
+      "start": 46.26,
+      "duration": 1.93,
+      "text": "现在只需要说「帮我写」",
+      "source_sentence": "现在只需要说「帮我写」",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S10_C03",
+      "start": 48.18,
+      "duration": 1.93,
+      "text": "它就帮我写了",
+      "source_sentence": "它就帮我写了",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S11_C01",
+      "start": 50.35,
+      "duration": 3.3,
+      "text": "当然 AI 写的不能直接用 还需要我改",
+      "source_sentence": "当然 AI 写的不能直接用 还需要我改",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S11_C02",
+      "start": 53.66,
+      "duration": 3.3,
+      "text": "但它帮我跨过了「开始」这个最大的障碍",
+      "source_sentence": "但它帮我跨过了「开始」这个最大的障碍",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S12_C01",
+      "start": 57.2,
+      "duration": 3.51,
+      "text": "从「有想法」到「有草稿」 可能只需要 10 分钟",
+      "source_sentence": "从「有想法」到「有草稿」 可能只需要 10 分钟",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S13_C01",
+      "start": 60.95,
+      "duration": 3.71,
+      "text": "这个 10 分钟的跨越 是执行力最大的提升",
+      "source_sentence": "这个 10 分钟的跨越 是执行力最大的提升",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S14_C01",
+      "start": 64.9,
+      "duration": 1.86,
+      "text": "第一步",
+      "source_sentence": "第一步",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S14_C02",
+      "start": 66.76,
+      "duration": 1.86,
+      "text": "让 Claude Code 分析这周的读书笔记",
+      "source_sentence": "让 Claude Code 分析这周的读书笔记",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S14_C03",
+      "start": 68.62,
+      "duration": 1.86,
+      "text": "推荐选题",
+      "source_sentence": "推荐选题",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S15_C01",
+      "start": 70.72,
+      "duration": 2.88,
+      "text": "第二步 选一个选题 让它生成草稿",
+      "source_sentence": "第二步 选一个选题 让它生成草稿",
+      "visible": true
+    },
+    {
+      "scene_id": "S14",
+      "caption_id": "S16_C01",
+      "start": 73.84,
+      "duration": 3.51,
+      "text": "第三步 修改草稿 让它评分 根据评分调整",
+      "source_sentence": "第三步 修改草稿 让它评分 根据评分调整",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S17_C01",
+      "start": 77.59,
+      "duration": 2.06,
+      "text": "这个流程大概 40 分钟",
+      "source_sentence": "这个流程大概 40 分钟",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S17_C02",
+      "start": 79.65,
+      "duration": 2.06,
+      "text": "大部分时间是 AI 在跑",
+      "source_sentence": "大部分时间是 AI 在跑",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S17_C03",
+      "start": 81.72,
+      "duration": 2.06,
+      "text": "我只需要做决策和修改",
+      "source_sentence": "我只需要做决策和修改",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S18_C01",
+      "start": 84.02,
+      "duration": 2.27,
+      "text": "不是我变强了 是工具变了",
+      "source_sentence": "不是我变强了 是工具变了",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S19_C01",
+      "start": 86.53,
+      "duration": 2.89,
+      "text": "个人体验和情感是我改稿的时候加进去的",
+      "source_sentence": "个人体验和情感是我改稿的时候加进去的",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S19_C02",
+      "start": 89.42,
+      "duration": 2.89,
+      "text": "不是 AI 写的 是我写的",
+      "source_sentence": "不是 AI 写的 是我写的",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S20_C01",
+      "start": 92.55,
+      "duration": 4.54,
+      "text": "它会学习你的写作风格 而不是输出一个通用的模板",
+      "source_sentence": "它会学习你的写作风格 而不是输出一个通用的模板",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S21_C01",
+      "start": 97.33,
+      "duration": 3.2,
+      "text": "以前写文章最难的是「想好写什么」和「开始写」",
+      "source_sentence": "以前写文章最难的是「想好写什么」和「开始写」",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S21_C02",
+      "start": 100.53,
+      "duration": 3.19,
+      "text": "现在这两件事都可以交给 AI",
+      "source_sentence": "现在这两件事都可以交给 AI",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S22_C01",
+      "start": 103.96,
+      "duration": 2.88,
+      "text": "选题 选 AI 给的建议里最顺眼的",
+      "source_sentence": "选题 选 AI 给的建议里最顺眼的",
+      "visible": true
+    },
+    {
+      "scene_id": "S20",
+      "caption_id": "S23_C01",
+      "start": 107.08,
+      "duration": 3.1,
+      "text": "改稿 把 AI 写的改成我自己的语言",
+      "source_sentence": "改稿 把 AI 写的改成我自己的语言",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S24_C01",
+      "start": 110.42,
+      "duration": 2.77,
+      "text": "这种工作流让我保持了稳定的输出",
+      "source_sentence": "这种工作流让我保持了稳定的输出",
+      "visible": true
+    },
+    {
+      "scene_id": "S21",
+      "caption_id": "S24_C02",
+      "start": 113.19,
+      "duration": 2.78,
+      "text": "从每周一篇变成了每天一篇",
+      "source_sentence": "从每周一篇变成了每天一篇",
+      "visible": true
+    }
+  ],
+  "caption_count": 39
+}

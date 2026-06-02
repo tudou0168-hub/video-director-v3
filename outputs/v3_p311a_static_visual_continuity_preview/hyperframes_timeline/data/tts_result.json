@@ -1,0 +1,123 @@
+{
+  "mode": "edge_tts",
+  "status": "ok",
+  "audio_path": "/Users/muzi/video-director-v3/outputs/v3_p311a_static_visual_continuity_preview/audio/voiceover.mp3",
+  "timeline": {
+    "total_duration": 81.1,
+    "sentence_timings": [
+      {
+        "sentence_id": "S01",
+        "text": "你有没有这种感觉，读了很多书，真正需要的时候，却一句都想不起来？",
+        "start": 0.0,
+        "end": 6.14,
+        "duration": 6.14,
+        "pause_after": 0.25,
+        "emphasis_words": []
+      },
+      {
+        "sentence_id": "S02",
+        "text": "我之前也是。读了 100 本书，能记住的不到 10 本，真正能用上的不到 1 本。",
+        "start": 6.39,
+        "end": 13.18,
+        "duration": 6.79,
+        "pause_after": 0.25,
+        "emphasis_words": []
+      },
+      {
+        "sentence_id": "S03",
+        "text": "后来我把 Obsidian 打造成了第二大脑，再让 AI 帮我找回知识。",
+        "start": 13.43,
+        "end": 20.0,
+        "duration": 6.57,
+        "pause_after": 0.25,
+        "emphasis_words": []
+      },
+      {
+        "sentence_id": "S04",
+        "text": "简单讲，大脑负责思考和创造，第二大脑负责存储和检索。",
+        "start": 20.25,
+        "end": 25.3,
+        "duration": 5.05,
+        "pause_after": 0.25,
+        "emphasis_words": []
+      },
+      {
+        "sentence_id": "S05",
+        "text": "第一步，把输入汇聚到一个地方。微信读书笔记、网页剪藏、语音转写和视频笔记，全部进入 Obsidian。",
+        "start": 25.55,
+        "end": 35.2,
+        "duration": 9.65,
+        "pause_after": 0.25,
+        "emphasis_words": []
+      },
+      {
+        "sentence_id": "S06",
+        "text": "第二步，用双向链接组织笔记。文件夹只负责收纳，相关观点会自己连接成知识网络。",
+        "start": 35.45,
+        "end": 42.9,
+        "duration": 7.45,
+        "pause_after": 0.25,
+        "emphasis_words": []
+      },
+      {
+        "sentence_id": "S07",
+        "text": "第三步，需要素材时直接问 AI。它不只是搜索关键词，而是从你的笔记里找到观点和例子，整理成答案。",
+        "start": 43.15,
+        "end": 52.36,
+        "duration": 9.21,
+        "pause_after": 0.25,
+        "emphasis_words": []
+      },
+      {
+        "sentence_id": "S08",
+        "text": "以前写文章，要翻遍好几个 App。现在从找素材到拿到素材包，可能只需要 30 秒。",
+        "start": 52.61,
+        "end": 60.06,
+        "duration": 7.45,
+        "pause_after": 0.25,
+        "emphasis_words": []
+      },
+      {
+        "sentence_id": "S09",
+        "text": "但别一上来装 30 个插件，也别花几天设计完美分类。",
+        "start": 60.31,
+        "end": 65.13,
+        "duration": 4.82,
+        "pause_after": 0.25,
+        "emphasis_words": []
+      },
+      {
+        "sentence_id": "S10",
+        "text": "先跑通一个最小闭环：输入、存储、检索、输出。",
+        "start": 65.38,
+        "end": 69.11,
+        "duration": 3.73,
+        "pause_after": 0.25,
+        "emphasis_words": []
+      },
+      {
+        "sentence_id": "S11",
+        "text": "把记住这件事交给第二大脑，你才能把精力留给真正的创造。",
+        "start": 69.36,
+        "end": 74.84,
+        "duration": 5.48,
+        "pause_after": 0.25,
+        "emphasis_words": []
+      },
+      {
+        "sentence_id": "S12",
+        "text": "这套 Obsidian 第二大脑流程，建议先收藏，照着搭一遍。",
+        "start": 75.09,
+        "end": 80.85,
+        "duration": 5.76,
+        "pause_after": 0.0,
+        "emphasis_words": []
+      }
+    ]
+  },
+  "real_duration": 81.1,
+  "speaking_rate": "+0%",
+  "generated_this_run": true,
+  "run_id": "7b4f6421",
+  "message": "edge_tts natural-rate ok"
+}

@@ -1,0 +1,64 @@
+{
+  "status": "FAIL",
+  "project_id": "v3_p311c_static_visual_sprint_preview",
+  "total_score": 17,
+  "max_score": 60,
+  "pass_threshold": 42,
+  "passed_dimensions": [
+    "saveable_value",
+    "visual_rhythm"
+  ],
+  "failed_dimensions": [
+    "hook",
+    "promise",
+    "comment_trigger",
+    "sync_reliability"
+  ],
+  "dimensions": {
+    "hook": {
+      "score": 0,
+      "details": "首句 35 字偏长（建议 ≤30）; 首句缺少冲击词; hook visual = hook_big_claim"
+    },
+    "promise": {
+      "score": 0,
+      "details": "前 2-3 句缺少承诺信号"
+    },
+    "saveable_value": {
+      "score": 9,
+      "details": "可复用结构信号 4 个"
+    },
+    "comment_trigger": {
+      "score": 0,
+      "details": "缺少自然评论引导"
+    },
+    "visual_rhythm": {
+      "score": 8,
+      "details": "unique visual_templates = 15 / 21 = 0.71; ≥6 变体（30 模板库已就绪）"
+    },
+    "sync_reliability": {
+      "score": 0,
+      "details": "无 sync_report.json（请先跑 5s smoke render）"
+    }
+  },
+  "ab_variants": {
+    "current_hook": "hook_big_claim",
+    "hook_variants": [
+      "countdown_strike",
+      "keyword_punchline"
+    ],
+    "method_variants": [
+      "framework_quadrant",
+      "step_ladder"
+    ],
+    "evidence_variants": [
+      "metric_dashboard",
+      "case_study_card"
+    ],
+    "cta_variants": [
+      "end_score_goodbye",
+      "scorecard"
+    ],
+    "usage": "修改 ROLE_NARRATION_OVERRIDE keyword 顺序或调用 generate_preview 强制指定 seed_id 后重跑 preview"
+  },
+  "notes": "评分基于公开可见的内容质量原则（不冒充平台推荐算法）。用于内部筛选和复盘，不用于承诺爆款。"
+}

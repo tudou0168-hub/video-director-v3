@@ -36,6 +36,72 @@ def scale_storyboard_to_audio(storyboard: dict[str, Any], audio_duration: float)
     }
 
 
+# ─── V3-P3.8 — Layer 2 anti-repetition fallback ──────────────
+# When two adjacent scenes end up with the same (visual_template,
+# layout_variant), mutate the scene dict in place to pick a different
+# render_template from the role's rotation pool. The scene dict is the
+# only source of truth: the mutation happens before director_scenes and
+# scene_html are built, so the on-disk JSON and the on-screen HTML
+# always reflect the same final values (plan §4.1).
+#
+# V3-P3.8R1: the feature gate is the project-wide
+# `should_enable_v3_p38_features(design_variance)` from
+# `templates.scene_protocol`. There is no separate threshold constant
+# in this file — the gate is single-sourced.
+
+
+def _pick_rotated_template(role: str, current: str, scene_index: int) -> str | None:
+    """Return a render_template from the role's pool that differs from `current`.
+
+    Layer 2 of V3-P3.8. Used by `_anti_repeat_rotate_scene` only.
+    """
+    from video_director_v3.templates.scene_protocol import (
+        RENDER_TEMPLATE_POOLS,
+        pick_render_template_for_role,
+    )
+
+    pool = RENDER_TEMPLATE_POOLS.get(role)
+    if not pool or len(pool) < 2:
+        return None
+    # Walk forward from scene_index+1 to find a candidate ≠ current.
+    for offset in range(1, len(pool) + 1):
+        candidate = pick_render_template_for_role(role, scene_index + offset)
+        if candidate and candidate != current:
+            return candidate
+    return None
+
+
+def _anti_repeat_rotate_scene(
+    scene: dict[str, Any],
+    scene_index: int,
+    prev_template: str | None,
+    prev_variant: str | None,
+) -> tuple[str | None, str | None]:
+    """If `scene` would collide with the previous scene's (template, variant),
+    mutate `scene` in place to a different visual_template and re-derive the
+    layout variant. Returns the new (prev_template, prev_variant) for the next
+    call.
+    """
+    current_template = scene.get("visual_template", "")
+    # Compute the layout_variant that _hud_scene_config would pick for this
+    # scene. We don't call _hud_scene_config twice — we look at the
+    # narration-derived variant for the current template via the per-template
+    # variant functions. (We use the simple narration-based detection here
+    # because the goal is only to detect collision, not to render.)
+    if current_template == prev_template and prev_template is not None:
+        # Same template as previous — must rotate.
+        role = scene.get("role", "explain")
+        rotated = _pick_rotated_template(role, current_template, scene_index)
+        if rotated and rotated != current_template:
+            scene["visual_template"] = rotated
+            current_template = rotated
+    # We don't try to also re-pick the layout_variant here — the per-template
+    # variant functions are content-driven and typically produce different
+    # variants for different narrations. Layer 1 (storyboard_builder) and
+    # the template variant functions together cover the typical case.
+    return current_template, None
+
+
 def build_studio_native_project(
     *,
     project_dir: Path,
@@ -45,7 +111,21 @@ def build_studio_native_project(
     caption_beats: dict[str, Any],
     visual_beats: dict[str, Any],
     transitions: dict[str, Any],
+    design_variance: int = 7,
 ) -> dict[str, Any]:
+    """Build the final HyperFrames Studio native preview project.
+
+    This function is the **final preview source of truth** (V3-P3.8R1
+    contract — see plan §4.1). It writes both `data/director_timeline.json`
+    and `index.html` from the same in-memory `director_scenes` list, so
+    the on-disk JSON and the on-screen HTML always agree.
+
+    The upstream `motion_storyboard.json` (written by
+    `build_motion_storyboard`) is an *initial suggestion* only — its
+    `visual_template` may be rewritten here under Layer 2 fallback when
+    two adjacent scenes collide. Do not read `motion_storyboard.json`
+    to determine the final preview's visual_template.
+    """
     timeline_dir = project_dir / "hyperframes_timeline"
     assets_dir = timeline_dir / "assets"
     data_dir = timeline_dir / "data"
@@ -59,23 +139,59 @@ def build_studio_native_project(
     captions = caption_beats.get("caption_beats", [])
     scene_html = []
     director_scenes = []
-    for scene in scenes:
+    prev_template: str | None = None
+    prev_variant: str | None = None
+    from video_director_v3.templates.scene_protocol import should_enable_v3_p38_features
+    use_layer2 = should_enable_v3_p38_features(design_variance)
+    for original_scene in scenes:
+        # V3-P3.8: deep-copy each scene so the caller's storyboard dict is
+        # never mutated. Layer 2 may rewrite the visual_template on the
+        # working copy; the caller's input stays pristine.
+        scene = json.loads(json.dumps(original_scene)) if use_layer2 else original_scene
         sid = scene.get("scene_id", "S01")
         role = scene.get("role", "explain")
         start = float(scene.get("start", 0))
         scene_duration = max(float(scene.get("duration", 0)) - 0.001, 0)
         narration = scene.get("narration", "").strip() or role
+        # V3-P3.8: Layer-2 fallback. If a scene's (template, layout_variant)
+        # collides with the previous scene, rotate the visual_template in
+        # place BEFORE _hud_scene_config runs, so the scene dict stays the
+        # single source of truth. The build_studio_native_project caller can
+        # disable this by passing design_variance < 5.
+        if use_layer2:
+            new_prev_t, _ = _anti_repeat_rotate_scene(
+                scene, len(director_scenes), prev_template, prev_variant
+            )
         hud_scene = _hud_scene_config(scene, len(director_scenes), narration)
+        # V3-P3.8 P2-1: the last scene's CTA defaults to a finish-board
+        # layout (end_score_goodbye) for a strong closing feel, unless the
+        # narration keyword routing already picked a different CTA variant
+        # (button_banner, scorecard, end_score_goodbye). Guarded by the
+        # same design_variance threshold as Layer 2.
+        if (
+            use_layer2
+            and role == "cta"
+            and len(director_scenes) == len(scenes) - 1
+            and hud_scene.get("layout_variant") == "checklist_steps"
+        ):
+            hud_scene["layout_variant"] = "end_score_goodbye"
+            hud_scene.setdefault("score", "100")
+            hud_scene.setdefault("score_label", "本章掌握度")
+            hud_scene.setdefault("next_teaser", "下期讲：把检索真正接进 AI 流程")
+        prev_template = hud_scene.get("visual_template", "")
+        prev_variant = hud_scene.get("layout_variant", "")
         director_scenes.append({
             **hud_scene, "id": sid, "start_time": start,
             "end_time": round(start + float(scene.get("duration", 0)), 3),
         })
+        # V3-P3.10A — composition class auto-pick by scene index % 3
+        composition_class = _COMPOSITIONS_BY_INDEX[len(director_scenes) % 3]
         scene_html.append(f"""
-<section id="scene-{escape(sid.lower())}" class="scene clip role-{escape(role)}" data-start="{start}" data-duration="{round(scene_duration, 3)}" data-track-index="1">
+<section id="scene-{escape(sid.lower())}" class="scene clip role-{escape(role)} tpl-{escape(prev_template)} hf-bg-cinematic hf-bg-{escape(role)} {composition_class}" data-start="{start}" data-duration="{round(scene_duration, 3)}" data-track-index="1" data-visual-template="{escape(prev_template)}" data-role="{escape(role)}">
   {get_scene_body(sid, role, hud_scene)}
-  <div class="hud-frame"></div><div class="scan-sweep"></div>
-  <div class="hud-top"><span>{escape(role.upper())} / HUD SYSTEM</span><b>{escape(sid)}</b></div>
-  <div class="hud-bottom"><span>OBSIDIAN SECOND BRAIN</span><i>VOICEOVER DRIVEN</i></div>
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">{escape((hud_scene.get("hud_label_en") or role.upper() + " / HUD SYSTEM").strip())}</span><b class="hf-hud-sid">{escape(sid)}</b>{('<i class="hf-hud-zh">' + escape(hud_scene.get("hud_label_zh", "").strip()) + '</i>') if hud_scene.get("hud_label_zh", "").strip() else ""}</div>
 </section>""")
 
     caption_html = []
@@ -95,8 +211,225 @@ def build_studio_native_project(
     html = f"""<!doctype html>
 <html lang="zh"><head><meta charset="utf-8"><title>{escape(narration_plan.get("title", project_dir.name))}</title>
 <style>
-*{{box-sizing:border-box}}html,body{{margin:0;width:1080px;height:1920px;overflow:hidden;background:#050812;color:#f4f7ff;font-family:sans-serif}}
-#root,.scene{{position:absolute;inset:0;overflow:hidden}}.scene{{background:#050812}}
+/* V3-P3.9R1 — stronger contrast, brighter text, clearer hierarchy */
+:root {{
+  --hf-cyan: #38E1FF;
+  --hf-amber: #FFC83D;
+  --hf-red: #FF5577;
+  --hf-green: #2EE874;
+  --hf-purple: #C77DFF;
+  --hf-text: #F8FAFC;
+  --hf-text-dim: rgba(248,250,252,0.78);
+  --hf-muted: rgba(248,250,252,0.62);
+  --hf-bg: #04060C;
+  --hf-bg-deep: #02030A;
+}}
+*{{box-sizing:border-box}}
+html,body{{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--hf-bg);color:var(--hf-text);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}}
+#root,.scene{{position:absolute;inset:0;overflow:hidden}}
+
+/* Per-scene cinematic background (replaces the old flat #050812 + grid).
+   Each role gets a different temperature via the .hf-bg-{role} modifier. */
+.hf-bg-cinematic{{
+  background:
+    radial-gradient(ellipse 1200px 900px at 78% 18%, rgba(37,216,255,0.10), transparent 65%),
+    radial-gradient(ellipse 1100px 800px at 18% 78%, rgba(168,85,247,0.08), transparent 60%),
+    linear-gradient(180deg, #050812 0%, #0a0d1a 50%, #050812 100%);
+}}
+.hf-bg-hook{{background:
+  radial-gradient(ellipse 1400px 1100px at 80% 12%, rgba(56,225,255,0.28), transparent 55%),
+  radial-gradient(ellipse 1100px 800px at 15% 75%, rgba(255,200,61,0.18), transparent 60%),
+  linear-gradient(180deg, #04060C 0%, #061a2a 50%, #04060C 100%)}}
+.hf-bg-pain{{background:
+  radial-gradient(ellipse 1300px 1000px at 75% 18%, rgba(255,85,119,0.24), transparent 55%),
+  radial-gradient(ellipse 1100px 800px at 15% 75%, rgba(255,200,61,0.16), transparent 60%),
+  linear-gradient(180deg, #100408 0%, #1a0610 50%, #04060C 100%)}}
+.hf-bg-method{{background:
+  radial-gradient(ellipse 1300px 1000px at 75% 18%, rgba(46,232,116,0.26), transparent 55%),
+  radial-gradient(ellipse 1100px 800px at 18% 75%, rgba(56,225,255,0.16), transparent 60%),
+  linear-gradient(180deg, #04060C 0%, #061a10 50%, #04060C 100%)}}
+.hf-bg-evidence{{background:
+  radial-gradient(ellipse 1300px 1000px at 78% 18%, rgba(255,200,61,0.26), transparent 55%),
+  radial-gradient(ellipse 1100px 800px at 18% 75%, rgba(56,225,255,0.18), transparent 60%),
+  linear-gradient(180deg, #04060C 0%, #1a0e08 50%, #04060C 100%)}}
+.hf-bg-explain{{background:
+  radial-gradient(ellipse 1300px 1000px at 78% 18%, rgba(199,125,255,0.28), transparent 55%),
+  radial-gradient(ellipse 1100px 800px at 18% 75%, rgba(56,225,255,0.18), transparent 60%),
+  linear-gradient(180deg, #04060C 0%, #100618 50%, #04060C 100%)}}
+.hf-bg-cta{{background:
+  radial-gradient(ellipse 1400px 1100px at 50% 28%, rgba(46,232,116,0.32), transparent 55%),
+  radial-gradient(ellipse 1100px 800px at 50% 78%, rgba(56,225,255,0.18), transparent 60%),
+  linear-gradient(180deg, #04060C 0%, #061a10 50%, #04060C 100%)}}
+.hf-bg-proof, .hf-bg-input, .hf-bg-memory, .hf-bg-retrieval, .hf-bg-summary, .hf-bg-ready {{
+  background: radial-gradient(ellipse 1200px 900px at 75% 18%, rgba(37,216,255,0.10), transparent 60%),
+    linear-gradient(180deg, #050812 0%, #0a0d1a 50%, #050812 100%);
+}}
+
+/* Subtle film grain (CSS noise) — single low-cost SVG via data URI */
+.hf-bg-cinematic::before{{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.4 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}}
+
+/* Vignette overlay — softer so small text stays readable */
+.hf-vignette{{
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 120% 100% at 50% 50%, transparent 55%, rgba(0,0,0,0.32) 100%);
+  z-index:1;
+}}
+
+/* Ambient scan beam — slow top-to-bottom */
+.hf-scan-beam{{
+  position:absolute;left:0;right:0;height:3px;top:-4%;
+  background:linear-gradient(90deg,transparent,rgba(37,216,255,0.65),transparent);
+  box-shadow:0 0 22px rgba(37,216,255,0.6);
+  animation:hf-beam 5.5s linear infinite;
+  pointer-events:none;z-index:2;
+}}
+
+/* V3-P3.11B — HUD header compact: smaller font, inline zh, tighter gap */
+.hf-hud-header{{
+  position:absolute;top:46px;left:60px;right:60px;display:flex;align-items:center;gap:12px;
+  z-index:5;pointer-events:none;
+}}
+.hf-hud-bar{{
+  display:inline-block;width:5px;height:24px;background:var(--hf-cyan);
+  box-shadow:0 0 16px var(--hf-cyan);border-radius:2px;
+}}
+.hf-hud-en{{
+  font:800 20px/1 "SF Mono","JetBrains Mono",ui-monospace,monospace;
+  letter-spacing:.12em;color:#FFFFFF;text-transform:uppercase;
+  text-shadow:0 0 14px rgba(56,225,255,0.7);
+}}
+.hf-hud-sid{{
+  margin-left:auto;font:800 20px/1 "SF Mono","JetBrains Mono",ui-monospace,monospace;
+  letter-spacing:.16em;color:rgba(248,250,252,0.72);
+}}
+/* zh sub-label rendered inline after hf-hud-en instead of absolute at top:104px */
+.hf-hud-zh{{
+  font:600 16px/1 "PingFang SC",sans-serif;
+  letter-spacing:.12em;color:rgba(248,250,252,0.78);margin-left:4px;
+}}
+
+/* Glass panel — base for cards (deeper, brighter, stronger border) */
+.hf-glass-panel{{
+  background:rgba(2,4,12,0.62);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border:1.5px solid rgba(56,225,255,0.5);
+  box-shadow:0 0 48px rgba(56,225,255,0.18), inset 0 1px 0 rgba(255,255,255,0.10);
+  border-radius:22px;
+  position:relative;
+}}
+.hf-glass-panel::before, .hf-glass-panel::after{{
+  content:"";position:absolute;width:22px;height:22px;border:3px solid var(--hf-cyan);
+  opacity:0.85;
+}}
+.hf-glass-panel::before{{top:-1px;left:-1px;border-right:none;border-bottom:none;}}
+.hf-glass-panel::after{{bottom:-1px;right:-1px;border-left:none;border-top:none;}}
+
+/* Glass panel color variants — brighter borders, deeper bg, stronger glow */
+.hf-glass-cyan{{border-color:rgba(56,225,255,0.7);box-shadow:0 0 48px rgba(56,225,255,0.24), inset 0 1px 0 rgba(255,255,255,0.10);}}
+.hf-glass-cyan::before, .hf-glass-cyan::after{{border-color:var(--hf-cyan);}}
+.hf-glass-amber{{border-color:rgba(255,200,61,0.75);box-shadow:0 0 48px rgba(255,200,61,0.24), inset 0 1px 0 rgba(255,255,255,0.10);}}
+.hf-glass-amber::before, .hf-glass-amber::after{{border-color:var(--hf-amber);}}
+.hf-glass-red{{border-color:rgba(255,85,119,0.75);box-shadow:0 0 48px rgba(255,85,119,0.24), inset 0 1px 0 rgba(255,255,255,0.10);}}
+.hf-glass-red::before, .hf-glass-red::after{{border-color:var(--hf-red);}}
+.hf-glass-green{{border-color:rgba(46,232,116,0.78);box-shadow:0 0 48px rgba(46,232,116,0.28), inset 0 1px 0 rgba(255,255,255,0.10);}}
+.hf-glass-green::before, .hf-glass-green::after{{border-color:var(--hf-green);}}
+.hf-glass-purple{{border-color:rgba(199,125,255,0.72);box-shadow:0 0 48px rgba(199,125,255,0.24), inset 0 1px 0 rgba(255,255,255,0.10);}}
+.hf-glass-purple::before, .hf-glass-purple::after{{border-color:var(--hf-purple);}}
+
+/* Hero typography — V3-P3.9R1: 24px hud, 56-72px sub, 120-180px super, 220-360px numbers */
+.hf-big-title{{
+  font-weight:900;line-height:1.05;letter-spacing:-.025em;
+  font-size:clamp(72px,9vw,108px);
+  color:#FFFFFF;
+  text-shadow:0 6px 36px rgba(0,0,0,0.7);
+  word-break:keep-all;
+  overflow:visible;
+  white-space:pre-line;
+}}
+.hf-big-title .accent{{color:var(--hf-amber);text-shadow:0 0 28px rgba(255,200,61,0.6);}}
+.hf-big-title .accent-cyan{{color:var(--hf-cyan);text-shadow:0 0 28px rgba(56,225,255,0.6);}}
+.hf-big-title .accent-green{{color:var(--hf-green);text-shadow:0 0 28px rgba(46,232,116,0.6);}}
+
+.hf-sub-title{{
+  font:700 28px/1.3 "PingFang SC",sans-serif;
+  letter-spacing:.06em;color:var(--hf-text-dim);
+  margin-top:20px;
+}}
+
+.hf-big-number{{
+  font:900 320px/0.92 "SF Pro Display","Helvetica Neue",Arial,sans-serif;
+  letter-spacing:-.04em;color:var(--hf-cyan);
+  text-shadow:0 0 40px rgba(56,225,255,0.6);
+  display:inline-block;line-height:1;
+}}
+.hf-big-number.amber{{color:var(--hf-amber);text-shadow:0 0 40px rgba(255,200,61,0.6);}}
+.hf-big-number.green{{color:var(--hf-green);text-shadow:0 0 40px rgba(46,232,116,0.6);}}
+.hf-big-number.purple{{color:var(--hf-purple);text-shadow:0 0 40px rgba(199,125,255,0.6);}}
+.hf-big-number.white{{color:#FFFFFF;text-shadow:0 0 40px rgba(255,255,255,0.5);}}
+
+.hf-step-number{{
+  font:900 160px/1 "SF Pro Display","Helvetica Neue",Arial,sans-serif;
+  color:var(--hf-cyan);text-shadow:0 0 28px rgba(56,225,255,0.55);
+  display:inline-block;line-height:1;
+}}
+.hf-step-number.amber{{color:var(--hf-amber);text-shadow:0 0 28px rgba(255,200,61,0.55);}}
+.hf-step-number.green{{color:var(--hf-green);text-shadow:0 0 28px rgba(46,232,116,0.55);}}
+
+/* Status stamp badge */
+.hf-status-stamp{{
+  display:inline-block;padding:6px 14px;border:1.5px solid currentColor;border-radius:4px;
+  font:800 14px/1 "SF Mono",ui-monospace,monospace;letter-spacing:.22em;
+  text-transform:uppercase;background:rgba(6,8,16,0.7);
+}}
+.hf-status-live{{color:var(--hf-cyan);}}
+.hf-status-viral{{color:var(--hf-amber);}}
+.hf-status-pass{{color:var(--hf-green);}}
+.hf-status-ready{{color:var(--hf-cyan);}}
+.hf-status-risk{{color:var(--hf-red);}}
+
+/* Metric card */
+.hf-metric-card{{
+  background:rgba(6,8,16,0.5);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(37,216,255,0.32);
+  border-radius:18px;padding:32px 28px;
+  box-shadow:0 0 28px rgba(37,216,255,0.10);
+  display:flex;flex-direction:column;gap:10px;
+}}
+.hf-metric-label{{font:600 14px/1 "SF Mono",ui-monospace,monospace;letter-spacing:.18em;
+  text-transform:uppercase;color:rgba(244,247,255,0.55);}}
+.hf-metric-value{{font:900 56px/1 "SF Pro Display",Arial,sans-serif;color:var(--hf-text);}}
+.hf-metric-delta{{font:700 16px/1 "SF Mono",ui-monospace,monospace;}}
+
+/* Progress bar (0→100%) */
+.hf-progress{{position:relative;height:8px;background:rgba(244,247,255,0.08);border-radius:4px;overflow:hidden;}}
+.hf-progress > .hf-progress-fill{{
+  position:absolute;left:0;top:0;bottom:0;width:0%;
+  background:linear-gradient(90deg,var(--hf-cyan),var(--hf-amber));
+  box-shadow:0 0 12px var(--hf-cyan);
+  animation:hf-progress-fill 1.2s cubic-bezier(.2,.7,.2,1) forwards;
+}}
+
+/* Animations */
+@keyframes hf-beam{{0%{{top:-4%}}100%{{top:104%}}}}
+@keyframes hf-scale-in{{0%{{transform:scale(.85);opacity:0}}100%{{transform:scale(1);opacity:1}}}}
+@keyframes hf-count-up{{0%{{transform:scale(.6);opacity:0}}60%{{transform:scale(1.08);opacity:1}}100%{{transform:scale(1);opacity:1}}}}
+@keyframes hf-stagger-in{{0%{{transform:translateY(20px);opacity:0}}100%{{transform:translateY(0);opacity:1}}}}
+@keyframes hf-progress-fill{{0%{{width:0%}}100%{{width:var(--hf-target,100%)}}}}
+@keyframes hf-stamp-pop{{0%{{transform:scale(0);opacity:0}}60%{{transform:scale(1.18);opacity:1}}100%{{transform:scale(1);opacity:1}}}}
+@keyframes hf-pulse{{0%,100%{{box-shadow:0 0 28px rgba(46,213,115,.18)}}50%{{box-shadow:0 0 48px rgba(46,213,115,.42)}}}}
+.hf-scale-in{{animation:hf-scale-in .6s cubic-bezier(.2,.7,.2,1) both;}}
+.hf-count-up{{animation:hf-count-up .9s cubic-bezier(.2,.7,.2,1) both;}}
+.hf-stagger-in{{animation:hf-stagger-in .5s cubic-bezier(.2,.7,.2,1) both;}}
+.hf-stamp-pop{{animation:hf-stamp-pop .4s cubic-bezier(.2,.7,.2,1) both;}}
+.hf-pulse{{animation:hf-pulse 2.4s ease-in-out infinite;}}
+
+/* Old classes (kept so the 15 untouched templates still render) */
 .bg-grid{{position:absolute;inset:0;background-image:linear-gradient(rgba(37,216,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(37,216,255,.08) 1px,transparent 1px);background-size:64px 64px}}
 .bg-glow{{position:absolute;width:720px;height:720px;border-radius:50%;filter:blur(36px);animation:glow 3.4s ease-in-out infinite}}
 .bg-glow-1{{left:-220px;top:120px}}.bg-glow-2{{right:-240px;bottom:160px}}
@@ -104,16 +437,135 @@ def build_studio_native_project(
 .hud-top,.hud-bottom{{position:absolute;left:52px;right:52px;display:flex;justify-content:space-between;color:#25d8ff;font:800 18px/1 monospace;letter-spacing:.16em}}
 .hud-top{{top:52px}}.hud-bottom{{bottom:318px}}.hud-bottom i{{font-style:normal;color:rgba(255,255,255,.55)}}
 .scan-sweep{{position:absolute;left:0;right:0;height:3px;top:-4%;background:linear-gradient(90deg,transparent,rgba(37,216,255,.7),transparent);box-shadow:0 0 22px rgba(37,216,255,.7);animation:scan 4.5s linear infinite;pointer-events:none}}
-.caption{{position:absolute;left:54px;right:54px;bottom:72px;padding:20px 30px;border:1px solid rgba(37,216,255,.35);border-radius:20px;background:rgba(6,8,16,.88);box-shadow:0 0 38px rgba(37,216,255,.12);font-size:48px;line-height:1.28;font-weight:850;text-align:center}}
+
+/* Caption — bottom safe zone with blur + glow, never occluded */
+.caption{{
+  position:absolute;left:54px;right:54px;bottom:120px;
+  padding:22px 32px;
+  border:1.5px solid rgba(56,225,255,0.55);
+  border-radius:22px;
+  background:rgba(2,4,12,0.82);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  box-shadow:0 0 42px rgba(56,225,255,0.22), inset 0 1px 0 rgba(255,255,255,0.10);
+  font-size:48px;line-height:1.28;font-weight:850;text-align:center;
+  color:#FFFFFF;
+  z-index:6;
+}}
+/* V3-P3.11B — faint gradient backing anchors subtitle area without being visible */
+.caption::before{{
+  content:"";position:absolute;left:-24px;right:-24px;bottom:-24px;height:160px;
+  background:linear-gradient(transparent, rgba(0,0,0,0.12));
+  border-radius:0 0 32px 32px;pointer-events:none;z-index:-1;
+}}
+
+/* Scene bottom safe-zone — reserves 300px so cards never occlude captions (V3-P3.11A: expanded from 280) */
+.hf-safe-zone{{padding-bottom:300px;}}
+
 @keyframes glow{{0%,100%{{opacity:.58;transform:scale(1)}}50%{{opacity:.92;transform:scale(1.12)}}}}
 @keyframes scan{{0%{{top:-4%}}100%{{top:104%}}}}
+
+/* V3-P3.10A — Smooth scene transition compatible with native opacity toggle */
+.scene {{
+  transition: opacity 0.5s cubic-bezier(.2,.7,.2,1),
+              transform 0.5s cubic-bezier(.2,.7,.2,1) !important;
+}}
+
+/* V3-P3.10A — Old-template overlay降级.
+   让 data-motion-target="scene-bg" 变成半透明 dimming 层，
+   Section 自身的 hf-bg-cinematic / hf-bg-{role} 渐变现在可见。
+   不用 z-index — 模板 div 在 section 内，opacity 已能透出。 */
+[data-motion-target="scene-bg"] {{
+  background: rgba(2, 4, 12, 0.22) !important;
+}}
+[data-motion-target="scene-bg"] .bg-grid {{ opacity: 0.18 !important; }}
+
+/* V3-P3.10A — Three light composition classes for vertical center-of-gravity. */
+.hf-comp-upper  {{ padding-top: 200px; }}
+.hf-comp-center {{ padding-top: 320px; }}
+.hf-comp-lower  {{ padding-top: 460px; }}
+
+/* V3-P3.11A — Per-scene entrance keyframes (CSS only, no custom JS seek).
+   These fire when the section has class .hf-entering. */
+@keyframes hf-scale-in {{
+  0%  {{ transform: scale(.85); opacity: 0; }}
+  100%{{ transform: scale(1);  opacity: 1; }}
+}}
+@keyframes hf-count-up {{
+  0%  {{ transform: scale(.6);  opacity: 0; }}
+  60% {{ transform: scale(1.08); opacity: 1; }}
+  100%{{ transform: scale(1);   opacity: 1; }}
+}}
+@keyframes hf-stagger-in {{
+  0%  {{ transform: translateY(20px); opacity: 0; }}
+  100%{{ transform: translateY(0);    opacity: 1; }}
+}}
+@keyframes hf-progress-fill {{
+  0%  {{ width: 0%; }}
+  100%{{ width: var(--hf-target, 100%); }}
+}}
+@keyframes hf-stamp-pop {{
+  0%  {{ transform: scale(0);    opacity: 0; }}
+  60% {{ transform: scale(1.18); opacity: 1; }}
+  100%{{ transform: scale(1);    opacity: 1; }}
+}}
+@keyframes hf-pulse {{
+  0%, 100% {{ box-shadow: 0 0 28px rgba(46,232,116,.18); }}
+  50%      {{ box-shadow: 0 0 48px rgba(46,232,116,.42); }}
+}}
+
+/* V3-P3.10A-R3 — Default VISIBLE so contact sheet / static captures
+   never black out. Animation fires on .hf-entering only; if animation
+   doesn't trigger, elements remain fully visible. */
+.hf-animate-title,
+.hf-animate-card,
+.hf-animate-number,
+.hf-animate-line,
+.hf-animate-stamp {{
+  opacity: 1;
+  transform: none;
+}}
+
+.hf-entering .hf-animate-title  {{ animation: hf-scale-in      0.6s cubic-bezier(.2,.7,.2,1) both; }}
+.hf-entering .hf-animate-card   {{ animation: hf-stagger-in    0.5s cubic-bezier(.2,.7,.2,1) both; }}
+.hf-entering .hf-animate-number {{ animation: hf-count-up      0.9s cubic-bezier(.2,.7,.2,1) both; }}
+.hf-entering .hf-animate-line   {{ animation: hf-progress-fill 1.2s cubic-bezier(.2,.7,.2,1) both; }}
+.hf-entering .hf-animate-stamp  {{ animation: hf-stamp-pop     0.4s cubic-bezier(.2,.7,.2,1) both; }}
+
+/* V3-P3.11E — shared utility components (static CSS, no JS/animation dep) */
+.hf-page-anchor{{
+  position:absolute;left:96px;right:96px;bottom:340px;text-align:center;
+}}
+.hf-page-anchor > .hf-glow-divider{{
+  width:100px;height:3px;margin:0 auto 16px;
+  background:linear-gradient(90deg,rgba(56,225,255,0.6),transparent);
+  border-radius:2px;
+}}
+.hf-result-card{{
+  background:rgba(6,12,22,0.68);
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+  border:1px solid rgba(80,220,255,0.35);
+  border-radius:20px;
+  box-shadow:0 0 30px rgba(0,220,255,0.12), inset 0 1px 0 rgba(255,255,255,0.08);
+  padding:28px 36px;
+}}
+.hf-flow-line{{
+  position:absolute;left:50%;width:3px;
+  background:linear-gradient(180deg,rgba(56,225,255,0.5),rgba(56,225,255,0.05));
+  transform:translateX(-50%);border-radius:2px;
+}}
+.hf-mini-badge{{
+  display:inline-flex;padding:4px 12px;border-radius:4px;
+  font:700 12px/1 "SF Mono",ui-monospace,monospace;letter-spacing:.16em;
+}}
 </style></head><body>
 <div id="root" data-composition-id="{escape(project_dir.name)}" data-start="0" data-width="1080" data-height="1920" data-duration="{duration}">
 <audio id="voiceover-audio" data-start="0" data-duration="{duration}" data-track-index="0" data-volume="1" src="assets/voiceover.mp3"></audio>
 {"".join(scene_html)}
 {"".join(caption_html)}
 </div>
-<script>window.__timelines=window.__timelines||{{}};</script>
+<script>window.__timelines = window.__timelines || {{}};</script>
 </body></html>"""
     (timeline_dir / "index.html").write_text(html, encoding="utf-8")
     _write_json(data_dir / "script.json", narration_plan)
@@ -133,11 +585,62 @@ def build_studio_native_project(
     }
 
 
+# V3-P3.10A — Three light composition classes auto-picked by scene index % 3.
+# Only adjusts padding-top on the section so the visual center-of-gravity
+# shifts between adjacent scenes. No router / engine / role logic.
+_COMPOSITIONS_BY_INDEX: list[str] = ["hf-comp-upper", "hf-comp-center", "hf-comp-lower"]
+
+
+# V3-P3.9 — Per-template HUD label catalog. The 9 enhanced templates get
+# rich English + Chinese labels.
+# V3-P3.11A — 6 more templates get short labels, eliminating the fallback
+# "ROLE / HUD SYSTEM" header for all 15 active templates.
+HF_HUD_LABELS: dict[str, tuple[str, str]] = {
+    "hook_big_claim":       ("LIVE TIMELINE · AI HOT",     "开场 · 第一印象"),
+    "metric_dashboard":     ("DATA / DASHBOARD",           "数据 · 关键指标"),
+    "case_study_card":      ("CASE / STUDY",                "真实案例 · 90 天实践"),
+    "framework_quadrant":   ("FRAMEWORK / 2X2",             "四象限 · 概念分层"),
+    "concept_layers":       ("LAYERS / CONCEPT",            "概念 · 底层到顶层"),
+    "knowledge_graph":      ("GRAPH / NETWORK",             "知识图谱 · 节点与连接"),
+    "tool_chain_three_cols":("STEP 1/3 · 流程",             "输入、链接、检索 · 闭环"),
+    "step_ladder":          ("STEP 1/4 · 步骤",             "起步、串联、调用、输出"),
+    "checklist_cta":        ("FINAL SCORE · COMPLETE",      "本集掌握度 · 下期预告"),
+    # V3-P3.11A — 6 unpolished templates now get short labels
+    "tool_stack":           ("TOOL STACK · 3 LAYERS",      "三层工具栈"),
+    "broken_chain":         ("CHAIN / BROKEN",             "断裂链路"),
+    "keyword_punchline":    ("KEYWORD / PUNCH",            "关键词一击"),
+    "myth_bust":            ("MYTH / BUST",                "破除迷思"),
+    "progress_tracker":     ("PROGRESS / SCORE",           "进度追踪"),
+    "before_after_compare":  ("BEFORE / AFTER",             "前后对比"),
+    "pain_card_stack":      ("PAIN / CARD STACK",          "痛点 · 问题堆叠"),
+}
+
+
 def _hud_scene_config(scene: dict[str, Any], index: int, narration: str) -> dict[str, Any]:
     template = scene.get("visual_template", "hook_big_claim")
-    config = {**scene, "visual_template": template, "headline": narration[:42]}
+    # V3-P3.11A — headline length depends on scene role, not global 24 char truncation.
+    # S01 (index 0) gets 32-38 chars as main visual title.
+    # Other scenes get 12-20 char short topic keyword only (no duplicate sentence).
+    if index == 0:
+        headline = narration[:38]
+    else:
+        # Take first segment before 句号/逗号/问号, capped at 18 chars
+        brief = narration.split("。")[0].split("，")[0].split("？")[0]
+        headline = brief[:18] if len(brief) > 18 else brief
+    config = {**scene, "visual_template": template, "headline": headline}
+    # V3-P3.9 — inject role-aware HUD label from HF_HUD_LABELS catalog.
+    # V3-P3.10A-R2 — unmatched templates get empty zh label (no fallback "OBSIDIAN SECOND BRAIN").
+    label_en, label_zh = HF_HUD_LABELS.get(template, (None, None))
+    if label_en is not None:
+        config["hud_label_en"] = label_en
+    else:
+        config["hud_label_en"] = ""
+    if label_zh is not None:
+        config["hud_label_zh"] = label_zh
+    else:
+        config["hud_label_zh"] = ""
     if template == "hook_big_claim":
-        config.setdefault("headline", narration[:24] or "读了很多书，为什么还是记不住？")
+        config.setdefault("headline", narration[:38] or "读了很多书，为什么还是记不住？")
         config.setdefault("keyword", "记不住" if "记不住" in narration else "")
         config.setdefault("subheadline", "真正缺的不是努力，而是一个可检索的第二大脑")
         config.setdefault("layout_variant", _hook_layout_variant_from_narration(narration))
@@ -149,7 +652,7 @@ def _hud_scene_config(scene: dict[str, Any], index: int, narration: str) -> dict
         config.setdefault("headline", narration[:28] or "把知识从收藏夹，接入可检索的系统")
         config.setdefault("chain_nodes", _chain_nodes_from_narration(narration))
         config.setdefault("broken_slots", _broken_slots_from_narration(narration))
-        config.setdefault("layout_variant", _broken_layout_variant_from_narration(narration))
+        config.setdefault("layout_variant", _broken_layout_variant_from_narration(narration, index))
         left_panel, right_panel, footer_note = _broken_panels_from_narration(narration)
         config.setdefault("left_panel", left_panel)
         config.setdefault("right_panel", right_panel)
@@ -254,6 +757,8 @@ def _hud_scene_config(scene: dict[str, Any], index: int, narration: str) -> dict
         myth, truth = _myth_bust_pair_from_narration(narration)
         config.setdefault("myth", myth)
         config.setdefault("truth", truth)
+        # V3-P3.11C — alternate glass color for adjacent myth_bust scenes
+        config.setdefault("color_variant", "alt" if index % 2 == 1 else "default")
     elif template == "before_after_flash":
         before_m, after_m, label = _flash_metrics_from_narration(narration)
         config.setdefault("before_metric", before_m)
@@ -338,12 +843,17 @@ def _broken_slots_from_narration(narration: str) -> list[int]:
     return [1, 2]
 
 
-def _broken_layout_variant_from_narration(narration: str) -> str:
+def _broken_layout_variant_from_narration(narration: str, scene_index: int = 0) -> str:
     if "负责" in narration or ("第二大脑" in narration and "思考" in narration):
         return "responsibility_split"
     if "别" in narration or "不要" in narration:
         return "binary_choice_split"
-    return "chain_flow"
+    # V3-P3.8: rotate through the general "explain" variants by scene
+    # index so consecutive `broken_chain` scenes don't all collapse to
+    # the same horizontal chain_flow layout. P2-2 added vertical_flow
+    # and knowledge_triangle to publish_templates._render_broken_chain_layout.
+    _DEFAULT_BROKEN_VARIANTS = ("chain_flow", "vertical_flow", "knowledge_triangle")
+    return _DEFAULT_BROKEN_VARIANTS[scene_index % len(_DEFAULT_BROKEN_VARIANTS)]
 
 
 def _broken_panels_from_narration(

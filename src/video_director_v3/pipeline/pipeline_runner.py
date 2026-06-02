@@ -132,6 +132,7 @@ def run_preview(args: argparse.Namespace, project_dir: Path) -> int:
             target_duration=audio_duration,
             narration_plan=narration_plan,
             audio_timeline=audio_timeline,
+            design_variance=args.design_variance,
         )
         from video_director_v3.renderers.hyperframes.studio_native_project_builder import scale_storyboard_to_audio
         storyboard = scale_storyboard_to_audio(storyboard, audio_duration)

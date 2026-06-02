@@ -1,0 +1,187 @@
+{
+  "project_id": "demo_v3_preview",
+  "title": "知识工作者效率倍增指南",
+  "platform": "douyin",
+  "target_duration": 40,
+  "sentence_count": 12,
+  "total_chinese_chars": 315,
+  "estimated_total_duration": 61.37,
+  "distillation": {
+    "strategy": "profile:obsidian_second_brain",
+    "source_sentence_count": 33,
+    "distilled_sentence_count": 12,
+    "distilled_char_count": 419,
+    "sentences": [
+      "你有没有这种感觉，读了很多书，真正需要的时候，却一句都想不起来？",
+      "我之前也是。读了 100 本书，能记住的不到 10 本，真正能用上的不到 1 本。",
+      "后来我把 Obsidian 打造成了第二大脑，再让 AI 帮我找回知识。",
+      "简单讲，大脑负责思考和创造，第二大脑负责存储和检索。",
+      "第一步，把输入汇聚到一个地方。微信读书笔记、网页剪藏、语音转写和视频笔记，全部进入 Obsidian。",
+      "第二步，用双向链接组织笔记。文件夹只负责收纳，相关观点会自己连接成知识网络。",
+      "第三步，需要素材时直接问 AI。它不只是搜索关键词，而是从你的笔记里找到观点和例子，整理成答案。",
+      "以前写文章，要翻遍好几个 App。现在从找素材到拿到素材包，可能只需要 30 秒。",
+      "但别一上来装 30 个插件，也别花几天设计完美分类。",
+      "先跑通一个最小闭环：输入、存储、检索、输出。",
+      "把记住这件事交给第二大脑，你才能把精力留给真正的创造。",
+      "这套 Obsidian 第二大脑流程，建议先收藏，照着搭一遍。"
+    ]
+  },
+  "sentence_list": [
+    {
+      "sentence_id": "S01",
+      "text": "你有没有这种感觉，读了很多书，真正需要的时候，却一句都想不起来？",
+      "role": "hook",
+      "estimated_duration": 4.83,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S02",
+      "text": "我之前也是。读了 100 本书，能记住的不到 10 本，真正能用上的不到 1 本。",
+      "role": "pain",
+      "estimated_duration": 5.34,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S03",
+      "text": "后来我把 Obsidian 打造成了第二大脑，再让 AI 帮我找回知识。",
+      "role": "method",
+      "estimated_duration": 5.17,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S04",
+      "text": "简单讲，大脑负责思考和创造，第二大脑负责存储和检索。",
+      "role": "explain",
+      "estimated_duration": 3.97,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S05",
+      "text": "第一步，把输入汇聚到一个地方。微信读书笔记、网页剪藏、语音转写和视频笔记，全部进入 Obsidian。",
+      "role": "method",
+      "estimated_duration": 7.59,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S06",
+      "text": "第二步，用双向链接组织笔记。文件夹只负责收纳，相关观点会自己连接成知识网络。",
+      "role": "proof",
+      "estimated_duration": 5.86,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S07",
+      "text": "第三步，需要素材时直接问 AI。它不只是搜索关键词，而是从你的笔记里找到观点和例子，整理成答案。",
+      "role": "method",
+      "estimated_duration": 7.24,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S08",
+      "text": "以前写文章，要翻遍好几个 App。现在从找素材到拿到素材包，可能只需要 30 秒。",
+      "role": "evidence",
+      "estimated_duration": 5.86,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S09",
+      "text": "但别一上来装 30 个插件，也别花几天设计完美分类。",
+      "role": "explain",
+      "estimated_duration": 3.79,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S10",
+      "text": "先跑通一个最小闭环：输入、存储、检索、输出。",
+      "role": "cta",
+      "estimated_duration": 2.93,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S11",
+      "text": "把记住这件事交给第二大脑，你才能把精力留给真正的创造。",
+      "role": "proof",
+      "estimated_duration": 4.31,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S12",
+      "text": "这套 Obsidian 第二大脑流程，建议先收藏，照着搭一遍。",
+      "role": "cta",
+      "estimated_duration": 4.48,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    }
+  ],
+  "director_output": {
+    "scenes": [
+      {
+        "scene_id": "S01",
+        "role": "hook",
+        "start": 0.0,
+        "duration": 5.0,
+        "narration": "你有没有这种感觉，读了很多书，真正需要的时候，却一句都想不起来？"
+      },
+      {
+        "scene_id": "S02",
+        "role": "pain",
+        "start": 5.0,
+        "duration": 5.0,
+        "narration": "我之前也是。读了 100 本书，能记住的不到 10 本，真正能用上的不到 1 本。"
+      },
+      {
+        "scene_id": "S03",
+        "role": "method",
+        "start": 10.0,
+        "duration": 5.0,
+        "narration": "后来我把 Obsidian 打造成了第二大脑，再让 AI 帮我找回知识。"
+      },
+      {
+        "scene_id": "S04",
+        "role": "method",
+        "start": 15.0,
+        "duration": 5.0,
+        "narration": "简单讲，大脑负责思考和创造，第二大脑负责存储和检索。"
+      },
+      {
+        "scene_id": "S05",
+        "role": "method",
+        "start": 20.0,
+        "duration": 5.0,
+        "narration": "第一步，把输入汇聚到一个地方。微信读书笔记、网页剪藏、语音转写和视频笔记，全部进入 Obsidian。"
+      },
+      {
+        "scene_id": "S06",
+        "role": "evidence",
+        "start": 25.0,
+        "duration": 5.0,
+        "narration": "第二步，用双向链接组织笔记。文件夹只负责收纳，相关观点会自己连接成知识网络。"
+      },
+      {
+        "scene_id": "S07",
+        "role": "proof",
+        "start": 30.0,
+        "duration": 5.0,
+        "narration": "第三步，需要素材时直接问 AI。它不只是搜索关键词，而是从你的笔记里找到观点和例子，整理成答案。"
+      },
+      {
+        "scene_id": "S08",
+        "role": "cta",
+        "start": 35.0,
+        "duration": 5.0,
+        "narration": "以前写文章，要翻遍好几个 App。现在从找素材到拿到素材包，可能只需要 30 秒。"
+      }
+    ]
+  }
+}

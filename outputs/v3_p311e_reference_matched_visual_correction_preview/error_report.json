@@ -1,0 +1,78 @@
+{
+  "status": "ok",
+  "stages": [
+    {
+      "name": "read_input_script",
+      "status": "PASS",
+      "detail": "input script loaded",
+      "artifact": null
+    },
+    {
+      "name": "narration_plan",
+      "status": "PASS",
+      "detail": "24 sentences",
+      "artifact": null
+    },
+    {
+      "name": "tts",
+      "status": "PASS",
+      "detail": "TTS edge_tts ok, duration=116.21s",
+      "artifact": null
+    },
+    {
+      "name": "motion_storyboard",
+      "status": "PASS",
+      "detail": "21 scenes",
+      "artifact": null
+    },
+    {
+      "name": "design_profile",
+      "status": "PASS",
+      "detail": "design dials and profile generated",
+      "artifact": null
+    },
+    {
+      "name": "semantic_transitions",
+      "status": "PASS",
+      "detail": "20 transitions",
+      "artifact": null
+    },
+    {
+      "name": "visual_beats",
+      "status": "PASS",
+      "detail": "visual beats generated",
+      "artifact": null
+    },
+    {
+      "name": "caption_beats",
+      "status": "PASS",
+      "detail": "39 caption beats",
+      "artifact": null
+    },
+    {
+      "name": "studio_native_preview",
+      "status": "PASS",
+      "detail": "hyperframes_timeline/index.html generated",
+      "artifact": "/Users/muzi/video-director-v3/outputs/v3_p311e_reference_matched_visual_correction_preview/hyperframes_timeline"
+    },
+    {
+      "name": "review_frames",
+      "status": "PASS",
+      "detail": "7/7 frames captured",
+      "artifact": "/Users/muzi/video-director-v3/outputs/v3_p311e_reference_matched_visual_correction_preview/review_frames"
+    },
+    {
+      "name": "input_relevance",
+      "status": "PASS",
+      "detail": "score=0.900",
+      "artifact": null
+    },
+    {
+      "name": "quality_report",
+      "status": "PASS",
+      "detail": "quality report generated",
+      "artifact": null
+    }
+  ],
+  "errors": []
+}

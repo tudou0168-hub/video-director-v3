@@ -1,0 +1,519 @@
+{
+  "total_duration_sec": 81.1,
+  "scenes": [
+    {
+      "scene_id": "S01",
+      "role": "hook",
+      "start": 0.0,
+      "duration": 6.159,
+      "end": 6.14,
+      "narration": "你有没有这种感觉，读了很多书，真正需要的时候，却一句都想不起来？",
+      "sentence_ids": [
+        "S01"
+      ],
+      "scene_framework": "scene.hook.hero_center",
+      "visual_template": "hook_big_claim",
+      "accent": "#FF4757",
+      "density": "high",
+      "headline": "你有没有这种感觉，读了很多书，真正需要的时候，却一句都想不起来？",
+      "hud_label_en": "LIVE TIMELINE · AI HOT",
+      "hud_label_zh": "开场 · 第一印象",
+      "keyword": "",
+      "subheadline": "真正缺的不是努力，而是一个可检索的第二大脑",
+      "layout_variant": "quote_punch",
+      "id": "S01",
+      "start_time": 0.0,
+      "end_time": 6.159
+    },
+    {
+      "scene_id": "S02",
+      "role": "pain",
+      "start": 6.41,
+      "duration": 6.811,
+      "end": 13.18,
+      "narration": "我之前也是。读了 100 本书，能记住的不到 10 本，真正能用上的不到 1 本。",
+      "sentence_ids": [
+        "S02"
+      ],
+      "scene_framework": "scene.input.dense_data_table",
+      "visual_template": "pain_card_stack",
+      "accent": "#FBBF24",
+      "density": "high",
+      "headline": "我之前也是。读了 100 本书，能记住的不到 10 本，真正能用上的不到 1 本。",
+      "cards": [
+        {
+          "icon": "📚",
+          "text": "读了很多书",
+          "sub": "信息进脑很快"
+        },
+        {
+          "icon": "🧠",
+          "text": "真正要用时",
+          "sub": "一句都想不起来"
+        },
+        {
+          "icon": "📉",
+          "text": "记住的很少",
+          "sub": "能调用的更少"
+        },
+        {
+          "icon": "📊",
+          "text": "读了 100 本书",
+          "sub": "能记住不到 10 本"
+        }
+      ],
+      "conclusion": "信息收集很多，不等于需要时能拿出来用",
+      "id": "S02",
+      "start_time": 6.41,
+      "end_time": 13.221
+    },
+    {
+      "scene_id": "S03",
+      "role": "method",
+      "start": 13.472,
+      "duration": 6.59,
+      "end": 20.0,
+      "narration": "后来我把 Obsidian 打造成了第二大脑，再让 AI 帮我找回知识。",
+      "sentence_ids": [
+        "S03"
+      ],
+      "scene_framework": "scene.method.framework_quadrant",
+      "visual_template": "framework_quadrant",
+      "accent": "#4D9FFF",
+      "density": "high",
+      "headline": "后来我把 Obsidian 打造成了第二大脑，再让 AI 帮我找回知识。",
+      "hud_label_en": "FRAMEWORK / 2X2",
+      "hud_label_zh": "四象限 · 概念分层",
+      "quadrants": [
+        {
+          "label": "Q1 输入",
+          "text": "统一入口",
+          "color": "#4D9FFF"
+        },
+        {
+          "label": "Q2 结构",
+          "text": "组织整理",
+          "color": "#2ED573"
+        },
+        {
+          "label": "Q3 检索",
+          "text": "按需调用",
+          "color": "#FF6B35"
+        },
+        {
+          "label": "Q4 输出",
+          "text": "持续产出",
+          "color": "#A855F7"
+        }
+      ],
+      "center_label": "Obsidian",
+      "id": "S03",
+      "start_time": 13.472,
+      "end_time": 20.062
+    },
+    {
+      "scene_id": "S04",
+      "role": "explain",
+      "start": 20.313,
+      "duration": 5.065,
+      "end": 25.3,
+      "narration": "简单讲，大脑负责思考和创造，第二大脑负责存储和检索。",
+      "sentence_ids": [
+        "S04"
+      ],
+      "scene_framework": "scene.hook.myth_bust",
+      "visual_template": "myth_bust",
+      "accent": "#FF4757",
+      "density": "high",
+      "headline": "简单讲，大脑负责思考和创造，第二大脑负责存储和检索。",
+      "myth": "多就是好",
+      "truth": "对才是好",
+      "id": "S04",
+      "start_time": 20.313,
+      "end_time": 25.378
+    },
+    {
+      "scene_id": "S05",
+      "role": "method",
+      "start": 25.629,
+      "duration": 9.68,
+      "end": 35.2,
+      "narration": "第一步，把输入汇聚到一个地方。微信读书笔记、网页剪藏、语音转写和视频笔记，全部进入 Obsidian。",
+      "sentence_ids": [
+        "S05"
+      ],
+      "scene_framework": "scene.retrieval.pipeline_nodes",
+      "visual_template": "tool_chain_three_cols",
+      "accent": "#A855F7",
+      "density": "medium",
+      "headline": "第一步，把输入汇聚到一个地方。微信读书笔记、网页剪藏、语音转写和视频笔记，全部进入 ",
+      "hud_label_en": "STEP 1/3 · 流程",
+      "hud_label_zh": "输入、链接、检索 · 闭环",
+      "three_cols": [
+        {
+          "name": "微信读书",
+          "func": "摘录同步",
+          "icon": "RD",
+          "detail": "高亮和笔记汇进同一库"
+        },
+        {
+          "name": "网页剪藏",
+          "func": "素材归档",
+          "icon": "WEB",
+          "detail": "文章和片段不再散落"
+        },
+        {
+          "name": "语音视频",
+          "func": "转写入库",
+          "icon": "AV",
+          "detail": "口述与视频笔记统一检索"
+        }
+      ],
+      "layout_variant": "source_ingest",
+      "id": "S05",
+      "start_time": 25.629,
+      "end_time": 35.309
+    },
+    {
+      "scene_id": "S06",
+      "role": "proof",
+      "start": 35.56,
+      "duration": 7.473,
+      "end": 42.9,
+      "narration": "第二步，用双向链接组织笔记。文件夹只负责收纳，相关观点会自己连接成知识网络。",
+      "sentence_ids": [
+        "S06"
+      ],
+      "scene_framework": "scene.proof.knowledge_graph",
+      "visual_template": "knowledge_graph",
+      "accent": "#A855F7",
+      "density": "high",
+      "headline": "第二步，用双向链接组织笔记。文件夹只负责收纳，相关观点会自己连接成知识网络。",
+      "hud_label_en": "GRAPH / NETWORK",
+      "hud_label_zh": "知识图谱 · 节点与连接",
+      "nodes": [
+        {
+          "id": "N1",
+          "label": "时间管理",
+          "x": 540,
+          "y": 800
+        },
+        {
+          "id": "N2",
+          "label": "GTD",
+          "x": 250,
+          "y": 500
+        },
+        {
+          "id": "N3",
+          "label": "番茄钟",
+          "x": 830,
+          "y": 500
+        },
+        {
+          "id": "N4",
+          "label": "Obsidian",
+          "x": 540,
+          "y": 400
+        },
+        {
+          "id": "N5",
+          "label": "AI 提问",
+          "x": 250,
+          "y": 1100
+        },
+        {
+          "id": "N6",
+          "label": "写作复盘",
+          "x": 830,
+          "y": 1100
+        }
+      ],
+      "edges": [
+        [
+          "N1",
+          "N2"
+        ],
+        [
+          "N1",
+          "N3"
+        ],
+        [
+          "N1",
+          "N4"
+        ],
+        [
+          "N2",
+          "N5"
+        ],
+        [
+          "N3",
+          "N6"
+        ],
+        [
+          "N4",
+          "N5"
+        ],
+        [
+          "N4",
+          "N6"
+        ]
+      ],
+      "central_node": "N1",
+      "id": "S06",
+      "start_time": 35.56,
+      "end_time": 43.033
+    },
+    {
+      "scene_id": "S07",
+      "role": "method",
+      "start": 43.283,
+      "duration": 9.239,
+      "end": 52.36,
+      "narration": "第三步，需要素材时直接问 AI。它不只是搜索关键词，而是从你的笔记里找到观点和例子，整理成答案。",
+      "sentence_ids": [
+        "S07"
+      ],
+      "scene_framework": "scene.method.framework_quadrant",
+      "visual_template": "framework_quadrant",
+      "accent": "#4D9FFF",
+      "density": "high",
+      "headline": "第三步，需要素材时直接问 AI。它不只是搜索关键词，而是从你的笔记里找到观点和例子，",
+      "hud_label_en": "FRAMEWORK / 2X2",
+      "hud_label_zh": "四象限 · 概念分层",
+      "quadrants": [
+        {
+          "label": "Q1 输入",
+          "text": "统一入口",
+          "color": "#4D9FFF"
+        },
+        {
+          "label": "Q2 结构",
+          "text": "组织整理",
+          "color": "#2ED573"
+        },
+        {
+          "label": "Q3 检索",
+          "text": "按需调用",
+          "color": "#FF6B35"
+        },
+        {
+          "label": "Q4 输出",
+          "text": "持续产出",
+          "color": "#A855F7"
+        }
+      ],
+      "center_label": "AI",
+      "id": "S07",
+      "start_time": 43.283,
+      "end_time": 52.522
+    },
+    {
+      "scene_id": "S08",
+      "role": "evidence",
+      "start": 52.773,
+      "duration": 7.473,
+      "end": 60.06,
+      "narration": "以前写文章，要翻遍好几个 App。现在从找素材到拿到素材包，可能只需要 30 秒。",
+      "sentence_ids": [
+        "S08"
+      ],
+      "scene_framework": "scene.evidence.metric_dashboard",
+      "visual_template": "metric_dashboard",
+      "accent": "#2ED573",
+      "density": "high",
+      "headline": "以前写文章，要翻遍好几个 App。现在从找素材到拿到素材包，可能只需要 30 秒。",
+      "hud_label_en": "DATA / DASHBOARD",
+      "hud_label_zh": "数据 · 关键指标",
+      "metrics": [
+        {
+          "label": "启动",
+          "value": "READY",
+          "delta": "+OK"
+        },
+        {
+          "label": "闭环",
+          "value": "RUN",
+          "delta": "+OK"
+        },
+        {
+          "label": "输出",
+          "value": "ON",
+          "delta": "+GO"
+        },
+        {
+          "label": "复盘",
+          "value": "DAILY",
+          "delta": "+GO"
+        }
+      ],
+      "trend_caption": "持续跑通最小闭环后，看实际数字",
+      "id": "S08",
+      "start_time": 52.773,
+      "end_time": 60.246
+    },
+    {
+      "scene_id": "S09",
+      "role": "explain",
+      "start": 60.496,
+      "duration": 4.835,
+      "end": 65.13,
+      "narration": "但别一上来装 30 个插件，也别花几天设计完美分类。",
+      "sentence_ids": [
+        "S09"
+      ],
+      "scene_framework": "scene.hook.myth_bust",
+      "visual_template": "myth_bust",
+      "accent": "#FF4757",
+      "density": "high",
+      "headline": "但别一上来装 30 个插件，也别花几天设计完美分类。",
+      "myth": "多装插件就能提高效率",
+      "truth": "先跑通最小闭环再说",
+      "id": "S09",
+      "start_time": 60.496,
+      "end_time": 65.331
+    },
+    {
+      "scene_id": "S10",
+      "role": "cta",
+      "start": 65.582,
+      "duration": 3.742,
+      "end": 69.11,
+      "narration": "先跑通一个最小闭环：输入、存储、检索、输出。",
+      "sentence_ids": [
+        "S10"
+      ],
+      "scene_framework": "scene.cta.checklist_board",
+      "visual_template": "checklist_cta",
+      "accent": "#34D399",
+      "density": "medium",
+      "headline": "先跑通一个最小闭环：输入、存储、检索、输出。",
+      "hud_label_en": "FINAL SCORE · COMPLETE",
+      "hud_label_zh": "本集掌握度 · 下期预告",
+      "layout_variant": "checklist_steps",
+      "checklist": [
+        "输入统一到一个库",
+        "把相关笔记连起来",
+        "需要时直接问 AI"
+      ],
+      "final_message": "先把闭环跑通，再决定要不要加插件",
+      "id": "S10",
+      "start_time": 65.582,
+      "end_time": 69.324
+    },
+    {
+      "scene_id": "S11",
+      "role": "proof",
+      "start": 69.574,
+      "duration": 5.497,
+      "end": 74.84,
+      "narration": "把记住这件事交给第二大脑，你才能把精力留给真正的创造。",
+      "sentence_ids": [
+        "S11"
+      ],
+      "scene_framework": "scene.compare.option_split_vertical",
+      "visual_template": "before_after_compare",
+      "accent": "#34D399",
+      "density": "medium",
+      "headline": "把记住这件事交给第二大脑，你才能把精力留给真正的创造。",
+      "layout_variant": "symptom_panel",
+      "left_items": [
+        "大脑忙着记忆",
+        "创作被琐事挤占",
+        "每次都从头拼"
+      ],
+      "right_items": [
+        "记忆外包出去",
+        "精力回到判断",
+        "把时间留给创造"
+      ],
+      "dashboard_metrics": [
+        {
+          "label": "入口数量",
+          "value": "1"
+        },
+        {
+          "label": "结构状态",
+          "value": "READY"
+        },
+        {
+          "label": "输出速度",
+          "value": "FAST"
+        }
+      ],
+      "parallel_lanes": [
+        {
+          "label": "旧路径",
+          "color": "#FF4757",
+          "steps": [
+            "到处找资料",
+            "重新组织",
+            "写一半卡住"
+          ]
+        },
+        {
+          "label": "新路径",
+          "color": "#4D9FFF",
+          "steps": [
+            "统一入口",
+            "直接回查",
+            "继续输出"
+          ]
+        }
+      ],
+      "left_panel": {
+        "label": "交给第二大脑",
+        "title": "记忆负担下降",
+        "items": [
+          "不用强记细节",
+          "素材随时能回查",
+          "例子和观点更好找"
+        ]
+      },
+      "right_panel": {
+        "label": "留给自己",
+        "title": "创造空间上升",
+        "items": [
+          "注意力回到判断",
+          "把精力放在表达",
+          "真正去做创造"
+        ]
+      },
+      "summary_badge": "记忆外包，不等于放弃思考；而是把大脑还给创造。",
+      "id": "S11",
+      "start_time": 69.574,
+      "end_time": 75.071
+    },
+    {
+      "scene_id": "S12",
+      "role": "cta",
+      "start": 75.322,
+      "duration": 5.778,
+      "end": 80.85000000000001,
+      "narration": "这套 Obsidian 第二大脑流程，建议先收藏，照着搭一遍。",
+      "sentence_ids": [
+        "S12"
+      ],
+      "scene_framework": "scene.cta.checklist_board",
+      "visual_template": "checklist_cta",
+      "accent": "#34D399",
+      "density": "medium",
+      "headline": "这套 Obsidian 第二大脑流程，建议先收藏，照着搭一遍。",
+      "hud_label_en": "FINAL SCORE · COMPLETE",
+      "hud_label_zh": "本集掌握度 · 下期预告",
+      "layout_variant": "end_score_goodbye",
+      "checklist": [
+        "先收藏这套流程",
+        "照着搭一遍最小版本",
+        "用一次真实输出验证它"
+      ],
+      "final_message": "先用起来，比继续囤工具更重要",
+      "score": "100",
+      "score_label": "本章掌握度",
+      "next_teaser": "下期讲：把检索真正接进 AI 流程",
+      "id": "S12",
+      "start_time": 75.322,
+      "end_time": 81.1
+    }
+  ]
+}

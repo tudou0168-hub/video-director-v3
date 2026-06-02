@@ -207,22 +207,58 @@ def _cluster_sentences(
     return scenes
 
 
-def _assign_visual_templates(scenes: list[dict[str, Any]]) -> None:
+def _pick_keyword_seed_id(role: str, narration: str) -> str | None:
+    """Return a seed_id matched by narration keyword, or None.
+
+    V3-P3.8 split: this is the *keyword* half of routing. The other half
+    (per-role round-robin when no keyword matches) lives in
+    `_assign_visual_templates`. `_pick_seed_id` is kept for backward
+    compatibility with existing tests/callers; it adds the default-fallback
+    behavior on top of this function.
+    """
+    for keyword_tuple, seed_id in ROLE_NARRATION_OVERRIDE.get(role, []):
+        if any(token in narration for token in keyword_tuple):
+            return seed_id
+    return None
+
+
+def _assign_visual_templates(scenes: list[dict[str, Any]], design_variance: int = 7) -> None:
     """Mutate scenes in-place: attach visual_template and accent by role.
 
-    Routing rules (P3.3):
-      1. Default: role → seed template via ROLE_DEFAULT_TEMPLATE.
-      2. Override: if role ∈ {method, evidence, proof} and the sentence narration
-         contains a recognised keyword cluster, swap to a more specific seed
-         (e.g. method + "四象限" → framework_quadrant).
+    Routing rules (P3.3 + V3-P3.8R1):
+      1. Keyword override: if role ∈ {method, evidence, proof, …} and the
+         sentence narration contains a recognised keyword cluster, swap to
+         a more specific seed (e.g. method + "四象限" → framework_quadrant).
+      2. Layer-1 round-robin (V3-P3.8, gated by `should_enable_v3_p38_features`):
+         if no keyword override matches AND the role is in {explain, evidence,
+         method}, rotate through the role-specific render_template pool by
+         scene index. This breaks the "same skeleton × N" pattern that hit
+         the 2026-05-26 run. When `design_variance < 5`, Layer 1 is **off**
+         and we fall through to the deterministic `pick_template_for_role`.
+      3. Default fallback: role → seed template via ROLE_DEFAULT_TEMPLATE.
     """
+    from video_director_v3.templates.scene_protocol import (
+        RENDER_TEMPLATE_TO_SEED_ID,
+        get_template,
+        pick_render_template_for_role,
+        should_enable_v3_p38_features,
+    )
+
     register_seed_templates()
-    for scene in scenes:
+    use_layer1 = should_enable_v3_p38_features(design_variance)
+    for idx, scene in enumerate(scenes):
         role = scene.get("role", "explain")
         narration = scene.get("narration", "") or ""
-        seed_id = _pick_seed_id(role, narration)
-        from video_director_v3.templates.scene_protocol import get_template
-        tpl = get_template(seed_id) or pick_template_for_role(role)
+        seed_id = _pick_keyword_seed_id(role, narration)
+        if seed_id is None and use_layer1:
+            render_tpl = pick_render_template_for_role(role, idx)
+            if render_tpl is not None:
+                seed_id = RENDER_TEMPLATE_TO_SEED_ID.get(render_tpl, "")
+        if not seed_id:
+            tpl = pick_template_for_role(role)
+            seed_id = tpl.get("id", "")
+        else:
+            tpl = get_template(seed_id) or pick_template_for_role(role)
         scene["scene_framework"] = tpl.get("id", seed_id)
         scene["visual_template"] = tpl.get("render_template", "hook_big_claim")
         fixture = tpl.get("preview_fixture", {}) or {}
@@ -231,10 +267,15 @@ def _assign_visual_templates(scenes: list[dict[str, Any]]) -> None:
 
 
 def _pick_seed_id(role: str, narration: str) -> str:
-    """Return the seed template id for a given role + narration."""
-    for keyword_tuple, seed_id in ROLE_NARRATION_OVERRIDE.get(role, []):
-        if any(token in narration for token in keyword_tuple):
-            return seed_id
+    """Return the seed template id for a given role + narration.
+
+    Backward-compatible wrapper: keyword match first, then the default
+    fallback. New code should prefer `_pick_keyword_seed_id` to distinguish
+    "no keyword match" from "matched the default".
+    """
+    matched = _pick_keyword_seed_id(role, narration)
+    if matched is not None:
+        return matched
     tpl = pick_template_for_role(role)
     return tpl.get("id", "")
 
@@ -247,8 +288,18 @@ def build_motion_storyboard(
     *,
     narration_plan: dict[str, Any] | None = None,
     audio_timeline: dict[str, Any] | None = None,
+    design_variance: int = 7,
 ) -> dict[str, Any]:
-    """Build motion storyboard. Dynamic when narration_plan + audio_timeline given."""
+    """Build motion storyboard. Dynamic when narration_plan + audio_timeline given.
+
+    The `visual_template` and `layout_variant` fields in the produced
+    `motion_storyboard.json` are an *initial suggestion* — they reflect
+    Layer 1 routing only. The final preview source of truth is the
+    `director_timeline.json` written by `studio_native_project_builder`,
+    which may rewrite `visual_template` under Layer 2 fallback. Do not
+    treat this file's template assignments as authoritative for the
+    final preview. (V3-P3.8R1 contract — see plan §4.1.)
+    """
     project_id = "unknown"
     if narration_plan:
         project_id = narration_plan.get("project_id", project_id)
@@ -261,13 +312,13 @@ def build_motion_storyboard(
         timings = audio_timeline.get("sentence_timings", [])
         if sentences and timings and len(sentences) == len(timings):
             scenes = _cluster_sentences(sentences, timings)
-            _assign_visual_templates(scenes)
+            _assign_visual_templates(scenes, design_variance=design_variance)
 
     if not scenes:
         legacy = (director_output or {}).get("scenes", []) or []
         if legacy:
             scenes = legacy
-            _assign_visual_templates(scenes)
+            _assign_visual_templates(scenes, design_variance=design_variance)
         else:
             scene_roles = ["hook", "pain", "method", "method", "evidence", "proof", "cta"]
             scene_dur = target_duration / len(scene_roles)

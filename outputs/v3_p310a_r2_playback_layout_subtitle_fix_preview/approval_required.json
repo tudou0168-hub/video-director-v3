@@ -1,0 +1,34 @@
+{
+  "status": "pending_human_review",
+  "approval_required": true,
+  "approved": false,
+  "preview_status": "READY",
+  "review_frames_count": 7,
+  "review_frames_status": "PASS",
+  "can_approve_preview": true,
+  "next_command": "python3 -m video_director_v3.cli --project-id v3_p310a_r2_playback_layout_subtitle_fix_preview --output-mode render_mp4 --approved",
+  "checks": {
+    "required_stage_status": {
+      "narration_plan": "PASS",
+      "tts": "PASS",
+      "motion_storyboard": "PASS",
+      "semantic_transitions": "PASS",
+      "caption_beats": "PASS",
+      "studio_native_preview": "PASS",
+      "review_frames": "PASS",
+      "input_relevance": "PASS",
+      "preview_report": "PASS"
+    },
+    "failed_required_stages": [],
+    "studio_native_index_exists": true,
+    "studio_native_index_size": 107638,
+    "preview_report_exists": true,
+    "audio_exists": true,
+    "tts_status": "ok",
+    "input_relevance_passed": true,
+    "caption_beats_count": 39,
+    "semantic_transition_count": 20,
+    "review_frames_ok": true,
+    "review_frames_count": 7
+  }
+}

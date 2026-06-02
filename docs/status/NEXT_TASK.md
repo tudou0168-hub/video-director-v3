@@ -2,53 +2,61 @@
 
 ## 当前任务
 
-**V3-P2.8 Repo Cleanup Apply** — 已执行完成。
+**V3-P3.11E Reference-Style Template Polish** — 已生成 preview，待人工验收。
 
-## 下一任务
+新 preview 路径：`outputs/v3_p311e_reference_matched_visual_correction_preview/`
+- `hyperframes_timeline/index.html`（21 scenes）
+- 无 MP4
+- 无 window.__hf
+- 无 sentinel
 
-**等待人工确认 `docs/cleanup-status.md` 后，再决定是否处理 D 类文件**
+## 本轮改动
 
-当前只允许：
-- 整理入口文档
-- 盘点仓库内容
-- 输出 A/B/C/D 分类
-- 等人工确认
+### 重写了 4 个模板函数（按参考风格）
 
-### 暂不开始 V4
+| 模板 | 原来 | 现在 |
+|------|------|------|
+| **tool_stack** | 3 张卡片飘在中区 | 3 层流水线：L1 左移、L2 中置、L3 右移，层间 flow 线 + 箭头，左侧 4px 发光竖条，底部 amber 结果卡 |
+| **keyword_punchline** | 大词+一句话+底部文字 | 大词 top:300 + glow block + 2 张 glass 解释卡（1 创作调用 / 2 素材系统）+ 底部 green INSIGHT 卡 |
+| **myth_bust** | 上下两个框+中间按钮 | 4 段式：MYTH 卡（✕ icon）→ MYTH→TRUTH 过渡条 → TRUTH 卡（✓ icon）→ 底部结论卡 |
+| **progress_tracker** | 3 条孤立进度条 | 3 个评分卡（左名称+描述 / 中 W1→W8 进度条 / 右大分数+状态标签 READY/STABLE/GROWING）+ 底部结果卡 |
 
-V4 仍然保留为后续方向，但在 cleanup status 被确认前，不进入 V4 开发。
+### 新增共享 CSS（studio_native_project_builder.py）
 
-## P3.2 批次 7 验收证据
+.hf-page-anchor / .hf-result-card / .hf-flow-line / .hf-mini-badge / .hf-glow-divider
 
-- `checklist_cta` 已复用现有 HUD 卡片骨架扩展为 4 个 layout_variant：
-  - `checklist_steps`（默认 3-step action list）
-  - `button_banner`（大按钮式行动号召）
-  - `end_score_goodbye`（大分数收束 + 下期预告）
-  - `scorecard`（3 项指标得分卡）
-- `_cta_layout_variant_from_narration()` 按 narration 关键词自动路由：
-  - 完结 / 下期 / 系列 → `end_score_goodbye`
-  - 得分 / 状态 / 指标 → `scorecard`
-  - 立即 / 现在 / 下一步 → `button_banner`
-  - 其他 → `checklist_steps`
-- `_render_cta_button_banner / _render_cta_end_score_goodbye / _render_cta_scorecard` 三个新 render 函数全部接入 `get_scene_body` 的 dispatch 路径。
-- GSAP 评估结论：`get_scene_gsap` 当前只被已废弃的 `combined_html_builder` 消费；Native Preview 主线（`studio_native_project_builder`）未消费 GSAP，**故评估为"接入但未触发"状态**。按用户"如破坏稳定性就停止扩大范围"原则，**不**把 GSAP timeline 注入到 Native Preview HTML，以保护 0.0s 同步漂移基线。`get_scene_gsap` 函数体保留作为未来扩展点。
-- 47 个测试基线保持通过（`tests/test_preview_pipeline.py` 25 个 + 其他 22 个），`compileall` 通过，`git diff --check` 通过，真实 preview `READY`，5 秒 smoke render `PASS`，`sync_report.json` `max_drift=0.0s`。
-- 新增 4 项测试断言（`test_cta_routes_to_layout_variants_by_narration_semantics` / `test_cta_renders_distinct_html_for_each_variant` / `test_template_checklist_cta_dispatches_by_layout_variant`）全部通过。
+### 模板函数覆盖
 
-## 后续阶段
+- `_template_tool_stack` — 重写
+- `_template_keyword_punchline` — 重写
+- `_template_myth_bust` — 重写
+- `_template_progress_tracker` — 重写
 
-- 等待人工确认 `docs/cleanup-status.md`
+其余 6 个模板（broken_chain、before_after_compare、framework_quadrant、concept_layers、knowledge_graph、case_study_card）已在 P3.11C/D 中完成统一，本次未改。
 
-## 不允许
+## 验证
 
-- 为命中固定时长加速语音。
-- 公众号长文未经提炼直接生成超长口播。
-- 用简化占位画面替代 HUD 科技风发布基线。
-- 固定生成 6、7、8 个场景。
-- 回到 `combined/index.html` / `file://` 路线。
-- 预览静音后未经最终 MP4 音频验证就交付。
-- 把 GSAP timeline 注入到 Native Preview HTML（会破坏 0.0s 同步漂移基线）。
-- 未经人工确认就 render MP4。
+| Check | Result |
+|-------|--------|
+| 36 tests | ✅ PASS |
+| compileall | ✅ PASS |
+| git diff --check | ✅ clean |
+| window.__hf | ✅ 0 |
+| sentinel | ✅ clean |
+| 21 scenes | ✅ |
+| Contact sheet | ✅ 457K |
+
+## 交付物
+
+- **preview:** `outputs/v3_p311e_reference_matched_visual_correction_preview/hyperframes_timeline/index.html`
+- **contact sheet:** `review_frames/contact-sheet.jpg`
+- **21-scene thumbnails:** `review_frames/frame-XX-at-XXXs.png`（21 frames）
+- **contact grid:** `review_frames/contact-sheet-1..3.jpg`（3 张拼接图）
+
+## Studio 验证
+
+请在 Studio 中打开验证：
+`http://localhost:3002/#project/v3_p311e_reference_matched_visual_correction_preview/hyperframes_timeline`
 
 ---
-最后更新：2026-06-01
+最后更新：2026-06-02

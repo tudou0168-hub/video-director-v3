@@ -1,0 +1,11 @@
+{
+  "phase": "V3-P3.1-Audio-First",
+  "project": "v3_p311a_static_visual_continuity_preview",
+  "canvas": {
+    "width": 1080,
+    "height": 1920
+  },
+  "audio_duration": 81.1,
+  "scene_count": 12,
+  "caption_count": 26
+}

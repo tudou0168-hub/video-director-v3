@@ -61,33 +61,67 @@ def _template_hook_big_claim(sid: str, role: str, scene: dict[str, Any]) -> str:
     acc = _accent(role)
     narration = scene.get("narration", "")
     layout_variant = scene.get("layout_variant", "center_claim")
-    # Use first 40 chars as main headline
-    headline = narration[:40] if narration else "你有没有发现，收藏越多，反而越写不出来？"
-    # Support custom headline override
-    headline = scene.get("headline", headline)
+    headline = scene.get("headline", narration[:40] if narration else "你有没有发现，收藏越多，反而越写不出来？")
     sub = scene.get("subheadline", "")
-    keyword = scene.get("keyword", "")
-    if keyword:
-        safe_headline = headline.replace(keyword, f"<b style='color:{acc}'>{keyword}</b>")
-    else:
-        safe_headline = headline
 
-    sub_html = f"<div class='hook-sub' style='font-size:32px;color:rgba(255,255,255,0.65);margin-top:20px;'>{sub}</div>" if sub else ""
+    # V3-P3.11A — Remove 3-line hard split. Use natural CSS wrapping instead.
+    cyan = "#38E1FF"
+    amber = "#FFC83D"
+    import html as _html
+    def _highlight(s: str) -> str:
+        s = _html.escape(s)
+        s = s.replace("Claude Code", '<span class="accent-cyan">Claude Code</span>')
+        s = s.replace("三个月后", '<span class="accent">三个月后</span>')
+        return s
+
+    safe_headline = _highlight(headline)
+
+    sub_html = ""
+    if sub:
+        sub_html = f"<div class='hf-sub-title hf-animate-title' style='margin-top:32px;line-height:1.4;max-width:920px;font-size:30px;color:rgba(248,250,252,0.82);'>{sub}</div>"
 
     if layout_variant == "quote_punch":
         return _render_hook_quote_punch(sid, role, safe_headline, sub, acc)
     if layout_variant == "big_number_left":
         return _render_hook_big_number_left(sid, role, safe_headline, sub, acc)
 
+    # Subtitle bar (Chinese) — "真实效率变化"
+    subtitle_bar = (
+        '<div class="hf-animate-stamp" style="position:absolute;top:-110px;left:0;'
+        'display:inline-flex;align-items:center;gap:14px;'
+        'padding:14px 24px;border-radius:14px;background:rgba(56,225,255,0.18);'
+        f'border:1.5px solid {cyan};box-shadow:0 0 18px rgba(56,225,255,0.4);">'
+        '<span style="font:800 18px/1 &quot;SF Mono&quot;,monospace;letter-spacing:.22em;'
+        f'color:{cyan};text-transform:uppercase;">REAL EFFICIENCY SHIFT</span>'
+        '<span style="font-size:24px;font-weight:700;color:#FFFFFF;'
+        'letter-spacing:.04em;">真实效率变化</span></div>'
+    )
+
+    # Right-side HUD stamp cluster
+    right_stamps = (
+        '<div style="position:absolute;top:-110px;right:0;display:flex;gap:10px;flex-direction:column;align-items:flex-end;">'
+        f'<div class="hf-status-stamp hf-status-live hf-animate-stamp" style="font-size:16px;padding:10px 18px;color:{cyan};border-width:2px;">AGENT / 12 SEC</div>'
+        f'<div class="hf-status-stamp hf-status-viral hf-animate-stamp" style="font-size:16px;padding:10px 18px;color:{amber};border-width:2px;">+12 HRS / WEEK</div>'
+        f'<div class="hf-status-stamp hf-status-pass hf-animate-stamp" style="font-size:16px;padding:10px 18px;color:#2EE874;border-width:2px;">3 STAGES</div>'
+        '</div>'
+    )
+
     return f"""
-    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:{_bg(role)};">
-      <div class="bg-grid"></div>
-      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,{acc}22 0%,transparent 70%);"></div>
-      <div class="bg-glow bg-glow-2" style="background:radial-gradient(circle,{acc}18 0%,transparent 70%);"></div>
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+      <div class="bg-grid" style="opacity:.25"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,rgba(56,225,255,0.28) 0%,transparent 70%);"></div>
+      <div class="bg-glow bg-glow-2" style="background:radial-gradient(circle,rgba(255,200,61,0.18) 0%,transparent 70%);"></div>
     </div>
-    <div data-motion-target="hook-main" class="hook-main" style="position:absolute;top:420px;left:72px;right:72px;text-align:center;">
-      <div class="hook-title" style="font-size:72px;font-weight:700;color:#fff;line-height:1.15;letter-spacing:-1px;">{safe_headline}</div>
+    <div data-motion-target="hook-main" class="hook-main hf-safe-zone" style="position:absolute;top:500px;left:60px;right:60px;text-align:left;">
+      {subtitle_bar}
+      {right_stamps}
+      <h1 class="hf-big-title hf-animate-title" style="margin:0;line-height:1.06;max-width:960px;font-size:clamp(56px,8vw,76px);word-break:keep-all;overflow-wrap:break-word;">{safe_headline}</h1>
       {sub_html}
+    </div>
+    <!-- V3-P3.11C — bottom anchor: accent bar + tagline for poster-like visual weight -->
+    <div style="position:absolute;bottom:360px;left:50%;transform:translateX(-50%);text-align:center;">
+      <div style="width:160px;height:4px;margin:0 auto 20px;background:linear-gradient(90deg,{cyan},transparent);border-radius:2px;box-shadow:0 0 12px rgba(56,225,255,0.4);"></div>
+      <div style="font-size:24px;font-weight:600;color:rgba(255,255,255,0.38);letter-spacing:.06em;">· AI·Obsidian 第二大脑 ·</div>
     </div>
     <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
 """
@@ -102,7 +136,8 @@ def _render_hook_quote_punch(sid: str, role: str, headline: str, sub: str, acc: 
       <div style="position:absolute;top:0;right:0;width:360px;height:100%;background:linear-gradient(180deg,rgba(37,216,255,0.12),transparent 32%,rgba(255,71,87,0.08));clip-path:polygon(24% 0,100% 0,100% 100%,0 100%);"></div>
       <div style="position:absolute;top:56px;right:56px;font-size:18px;letter-spacing:0.2em;color:{acc};opacity:0.88;">QUOTE / PUNCH</div>
     </div>
-    <div style="position:absolute;top:160px;left:72px;right:72px;">
+    <!-- V3-P3.11B — shifted from top:160px to top:350px for better vertical balance -->
+    <div style="position:absolute;top:350px;left:72px;right:72px;">
       <div style="display:inline-flex;padding:10px 18px;border-radius:999px;background:rgba(255,255,255,0.06);border:1px solid {acc}44;color:{acc};font-size:18px;letter-spacing:0.18em;margin-bottom:26px;">HIGHLIGHT</div>
       <div style="max-width:700px;font-size:70px;font-weight:900;line-height:1.08;letter-spacing:-1.8px;color:#fff;">
         “{headline}”
@@ -186,7 +221,7 @@ def _template_pain_card_stack(sid: str, role: str, scene: dict[str, Any]) -> str
         top = 280 + i * 160
         opacity = 1.0 - i * 0.12
         card_htmls.append(f"""
-        <div class="pain-card" id="{sid.lower()}-card-{i}" style="
+        <div class="pain-card hf-animate-card" id="{sid.lower()}-card-{i}" style="
             position:absolute;top:{top}px;left:72px;right:72px;
             background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);
             border-radius:16px;padding:24px 28px;display:flex;align-items:center;gap:20px;
@@ -249,13 +284,14 @@ def _template_broken_chain(sid: str, role: str, scene: dict[str, Any]) -> str:
     headline = scene.get("headline", "输入→整理→回顾→输出，四个环节全断开")
     headline_html = f"""
     <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
-        <div style="font-size:52px;font-weight:700;color:#fff;line-height:1.2;">{headline}</div>
+        <div class="hf-animate-title hf-safe-zone" style="font-size:52px;font-weight:700;color:#fff;line-height:1.2;">{headline}</div>
     </div>
     """
     layout_html = _render_broken_chain_layout(scene, acc, layout_variant)
     return f"""
-    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:{_bg(role)};">
-      <div class="bg-grid"></div>
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+      <div class="bg-grid" style="opacity:.25"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,{acc}28 0%,transparent 70%);"></div>
     </div>
     {headline_html}
     {layout_html}
@@ -286,7 +322,133 @@ def _render_broken_chain_layout(scene: dict[str, Any], acc: str, layout_variant:
         return _render_responsibility_split_layout(scene, acc)
     if layout_variant == "binary_choice_split":
         return _render_binary_choice_split_layout(scene, acc)
+    if layout_variant == "vertical_flow":
+        return _render_chain_vertical_flow_layout(scene, acc)
+    if layout_variant == "knowledge_triangle":
+        return _render_chain_knowledge_triangle_layout(scene, acc)
     return _render_chain_flow_layout(scene, acc)
+
+
+def _render_chain_vertical_flow_layout(scene: dict[str, Any], acc: str) -> str:
+    """V3-P3.8: column-stacked nodes with a left-side accent rail.
+
+    Used as a fresh visual grammar for `broken_chain` scenes so the
+    2026-05-26 horizontal-row repetition doesn't recur. Reuses the
+    existing chain_nodes / broken_slots data.
+    """
+    nodes = scene.get("chain_nodes", ["输入", "整理", "回顾", "输出"])
+    broken_slots = scene.get("broken_slots", [1, 2, 3])
+    node_htmls = []
+    rail_segments = []
+    node_h = 110
+    gap = 28
+    start_y = 480
+    rail_x = 168
+    for i, node in enumerate(nodes):
+        y = start_y + i * (node_h + gap)
+        node_color = "#FF4757" if i in broken_slots else acc
+        # V3-P3.11D — hf-glass-panel on chain nodes
+        glass_class = "hf-glass-red" if i in broken_slots else "hf-glass-cyan"
+        node_htmls.append(f"""
+        <div class="chain-node hf-glass-panel {glass_class} hf-animate-card" style="
+            position:absolute;top:{y}px;left:{rail_x + 40}px;width:760px;height:{node_h}px;
+            display:flex;align-items:center;padding:0 36px;font-size:34px;font-weight:700;color:#fff;
+            background:rgba(2,4,12,0.6);border-color:{node_color};
+        ">{node}</div>
+        """)
+        # Rail segment between consecutive nodes.
+        if i < len(nodes) - 1:
+            seg_y = y + node_h
+            seg_h = gap
+            rail_segments.append(f"""
+            <div class="tool-connector" style="
+                position:absolute;top:{seg_y}px;left:{rail_x + 60}px;width:6px;height:{seg_h}px;
+                background:linear-gradient(180deg,{acc},rgba(37,216,255,0.2));
+                border-radius:4px;
+            "></div>
+            """)
+    rail_html = f"""
+    <div style="position:absolute;top:{start_y}px;left:{rail_x}px;width:6px;height:{len(nodes) * (node_h + gap) - gap}px;background:linear-gradient(180deg,{acc},rgba(37,216,255,0.25));border-radius:4px;box-shadow:0 0 18px {acc}66;"></div>
+    """
+    return rail_html + "\n".join(node_htmls) + "\n" + "\n".join(rail_segments)
+
+
+def _render_chain_knowledge_triangle_layout(scene: dict[str, Any], acc: str) -> str:
+    """V3-P3.8: 3 nodes arranged in a triangle with 1 detached node and
+    a dotted connector. Suggests "the chain has 3 connected + 1 isolated"
+    in a more spatial way than the row layout.
+    """
+    nodes = scene.get("chain_nodes", ["输入", "整理", "检索", "输出"])
+    broken_slots = scene.get("broken_slots", [3])
+    # 3 connected nodes in a triangle; 4th detached to the right.
+    triangle_pts = [
+        (270, 720),    # bottom-left
+        (540, 480),    # top
+        (810, 720),    # bottom-right
+    ]
+    detached = (920, 1080)
+    node_radius = 64
+    pieces = []
+    for i, (cx, cy) in enumerate(triangle_pts):
+        if i < len(nodes):
+            label = nodes[i]
+        else:
+            label = ""
+        node_color = "#FF4757" if i in broken_slots else acc
+        glass_class = "hf-glass-red" if i in broken_slots else "hf-glass-cyan"
+        pieces.append(f"""
+        <div class="chain-node hf-glass-panel {glass_class} hf-animate-card" style="
+            position:absolute;top:{cy - node_radius}px;left:{cx - node_radius}px;
+            width:{node_radius * 2}px;height:{node_radius * 2}px;border-radius:50%;
+            display:flex;align-items:center;justify-content:center;
+            font-size:28px;font-weight:800;color:#fff;
+            background:rgba(2,4,12,0.6);border-color:{node_color};
+            box-shadow:0 0 26px {node_color}55;
+        ">{label}</div>
+        """)
+    # Triangle edges.
+    for a, b in ((0, 1), (1, 2), (0, 2)):
+        ax, ay = triangle_pts[a]
+        bx, by = triangle_pts[b]
+        # Use a simple line via SVG-like div with rotation.
+        import math
+        dx, dy = bx - ax, by - ay
+        length = math.hypot(dx, dy)
+        angle = math.degrees(math.atan2(dy, dx))
+        midx, midy = (ax + bx) / 2, (ay + by) / 2
+        edge_color = "#FF4757" if (a in broken_slots or b in broken_slots) else acc
+        pieces.append(f"""
+        <div class="tool-connector" style="
+            position:absolute;top:{midy - 2}px;left:{midx - length / 2}px;
+            width:{length}px;height:3px;
+            background:linear-gradient(90deg,{edge_color},rgba(37,216,255,0.2));
+            transform:rotate({angle}deg);transform-origin:center;
+            box-shadow:0 0 12px {edge_color}55;
+        "></div>
+        """)
+    # Detached node + dotted connector.
+    if len(nodes) >= 4:
+        cx, cy = detached
+        detached_color = "#FF4757" if 3 in broken_slots else acc
+        detached_glass = "hf-glass-red" if 3 in broken_slots else "hf-glass-cyan"
+        pieces.append(f"""
+        <div class="chain-node hf-glass-panel {detached_glass} hf-animate-card" style="
+            position:absolute;top:{cy - node_radius}px;left:{cx - node_radius}px;
+            width:{node_radius * 2}px;height:{node_radius * 2}px;border-radius:50%;
+            display:flex;align-items:center;justify-content:center;
+            font-size:28px;font-weight:800;color:#fff;opacity:0.85;
+            background:rgba(2,4,12,0.5);border-color:{detached_color};
+            border-style:dashed;
+        ">{nodes[3]}</div>
+        """)
+        # Dotted connector from triangle-right to detached.
+        pieces.append(f"""
+        <div class="tool-connector" style="
+            position:absolute;top:720px;left:880px;width:80px;height:0;
+            border-top:3px dotted {acc};
+        "></div>
+        """)
+    return "\n".join(pieces)
 
 
 def _render_chain_flow_layout(scene: dict[str, Any], acc: str) -> str:
@@ -303,7 +465,7 @@ def _render_chain_flow_layout(scene: dict[str, Any], acc: str) -> str:
         x = start_x + i * (node_width + gap)
         node_color = "#FF4757" if i in broken_slots else acc
         node_htmls.append(f"""
-        <div class="chain-node" style="
+        <div class="chain-node hf-animate-card" style="
             position:absolute;top:{node_y}px;left:{x}px;width:{node_width}px;height:120px;
             background:rgba(255,255,255,0.08);border:2px solid {node_color};
             border-radius:20px;display:flex;align-items:center;justify-content:center;
@@ -339,7 +501,7 @@ def _render_responsibility_split_layout(scene: dict[str, Any], acc: str) -> str:
             for item in panel.get("items", [])
         )
         panels.append(f"""
-        <div class="chain-node" style="
+        <div class="chain-node hf-animate-card" style="
             position:absolute;top:420px;left:{x}px;width:456px;height:620px;
             background:{panel_bg};border:2px solid {label_color};
             border-radius:30px;padding:30px 26px 24px;box-shadow:0 0 38px {label_color}18;
@@ -370,13 +532,13 @@ def _render_binary_choice_split_layout(scene: dict[str, Any], acc: str) -> str:
         for item in right.get("items", [])
     )
     return f"""
-    <div class="chain-node" style="position:absolute;top:390px;left:72px;width:444px;height:700px;background:linear-gradient(180deg,rgba(255,71,87,0.14),rgba(255,255,255,0.04));border:2px solid #FF4757;border-radius:32px;padding:30px 26px;box-shadow:0 0 40px rgba(255,71,87,0.16);">
+    <div class="chain-node hf-animate-card" style="position:absolute;top:390px;left:72px;width:444px;height:700px;background:linear-gradient(180deg,rgba(255,71,87,0.14),rgba(255,255,255,0.04));border:2px solid #FF4757;border-radius:32px;padding:30px 26px;box-shadow:0 0 40px rgba(255,71,87,0.16);">
         <div style="font-size:20px;letter-spacing:0.16em;color:#FF4757;margin-bottom:10px;">{left.get('label', '不要')}</div>
         <div style="font-size:44px;font-weight:900;color:#fff;margin-bottom:20px;line-height:1.08;">{left.get('title', '')}</div>
         {left_items}
     </div>
     <div style="position:absolute;top:650px;left:512px;width:56px;height:56px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:rgba(255,255,255,0.06);border:1px solid rgba(255,255,255,0.14);font-size:24px;color:rgba(255,255,255,0.7);">VS</div>
-    <div class="chain-node" style="position:absolute;top:390px;right:72px;width:444px;height:700px;background:linear-gradient(180deg,rgba(46,213,115,0.14),rgba(255,255,255,0.04));border:2px solid {acc};border-radius:32px;padding:30px 26px;box-shadow:0 0 40px rgba(46,213,115,0.12);">
+    <div class="chain-node hf-animate-card" style="position:absolute;top:390px;right:72px;width:444px;height:700px;background:linear-gradient(180deg,rgba(46,213,115,0.14),rgba(255,255,255,0.04));border:2px solid {acc};border-radius:32px;padding:30px 26px;box-shadow:0 0 40px rgba(46,213,115,0.12);">
         <div style="font-size:20px;letter-spacing:0.16em;color:{acc};margin-bottom:10px;">{right.get('label', '先做')}</div>
         <div style="font-size:44px;font-weight:900;color:#fff;margin-bottom:20px;line-height:1.08;">{right.get('title', '')}</div>
         {right_items}
@@ -400,15 +562,18 @@ def _template_tool_chain_three_cols(sid: str, role: str, scene: dict[str, Any]) 
     ])
     layout_variant = scene.get("layout_variant", "three_col_row")
     headline = scene.get("headline", "三个工具串起来，各司其职")
+    # V3-P3.9 — Step Panel grammar: 3 numbered glass columns with STEP X/3
+    # badge top-right; arrows between them; current step (index 0) glows.
     headline_html = f"""
-    <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
-        <div style="font-size:52px;font-weight:700;color:#fff;line-height:1.2;">{headline}</div>
+    <div class="hf-safe-zone" style="position:absolute;top:200px;left:96px;right:96px;">
+      <div class="hf-status-stamp hf-status-pass hf-animate-stamp" style="display:inline-flex;margin-bottom:14px;">STEP 1/3 · 流程</div>
+      <h2 class="hf-animate-title" style="margin:0;font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">{headline}</h2>
     </div>
     """
     cols_html = _render_tool_chain_layout(col_data, acc, layout_variant)
     return f"""
-    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:{_bg(role)};">
-      <div class="bg-grid"></div>
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+      <div class="bg-grid" style="opacity:.3"></div>
     </div>
     {headline_html}
     {cols_html}
@@ -458,35 +623,38 @@ def _render_tool_col(
     y: int,
     width: int,
     padding: str = "28px 20px",
+    extra_class: str = "",
 ) -> str:
+    # V3-P3.9 — glass panel + big step number
     return f"""
-    <div class="tool-col" style="
+    <div class="tool-col hf-glass-panel hf-animate-card{extra_class}" style="
         position:absolute;top:{y}px;left:{x}px;width:{width}px;
-        background:rgba(255,255,255,0.06);border:2px solid {acc};
-        border-radius:20px;padding:{padding};text-align:center;
+        padding:{padding};text-align:center;
     ">
-        <div style="font-size:56px;margin-bottom:12px;">{col['icon']}</div>
-        <div style="font-size:32px;font-weight:700;color:#fff;margin-bottom:8px;">{col['name']}</div>
-        <div style="font-size:28px;font-weight:600;color:{acc};margin-bottom:8px;">{col['func']}</div>
-        <div style="font-size:22px;color:rgba(255,255,255,0.55);">{col['detail']}</div>
+        <div class="hf-step-number" style="font-size:64px;color:{acc};text-shadow:0 0 18px {acc}66;line-height:1;margin-bottom:8px;">{col.get('icon','')}</div>
+        <div style="font-size:32px;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:.04em;">{col['name']}</div>
+        <div style="font-size:22px;font-weight:700;color:{acc};margin-bottom:6px;letter-spacing:.12em;">{col['func']}</div>
+        <div style="font-size:20px;color:rgba(255,255,255,0.6);line-height:1.35;">{col['detail']}</div>
     </div>
     """
 
 
 def _render_three_col_row_layout(col_data: list[dict[str, Any]], acc: str) -> str:
-    col_width = 280
-    gap = 60
+    col_width = 300
+    gap = 50
     total_w = 3 * col_width + 2 * gap
     start_x = (1080 - total_w) // 2
-    col_y = 520
+    col_y = 540
     parts: list[str] = []
     for i, col in enumerate(col_data):
         x = start_x + i * (col_width + gap)
-        parts.append(_render_tool_col(col=col, acc=acc, x=x, y=col_y, width=col_width))
+        # V3-P3.9 — first step glows with hf-pulse
+        glow_class = " hf-pulse" if i == 0 else ""
+        parts.append(_render_tool_col(col=col, acc=acc, x=x, y=col_y, width=col_width, extra_class=glow_class))
         if i < 2:
             arrow_x = x + col_width
             parts.append(
-                f'<div class="tool-connector" style="position:absolute;top:{col_y + 60}px;left:{arrow_x}px;width:{gap}px;text-align:center;font-size:40px;color:{acc};">→</div>'
+                f'<div class="tool-connector hf-animate-title" style="position:absolute;top:{col_y + 60}px;left:{arrow_x}px;width:{gap}px;text-align:center;font-size:48px;color:{acc};text-shadow:0 0 12px {acc};">→</div>'
             )
     return "\n".join(parts)
 
@@ -661,11 +829,12 @@ def _template_before_after_compare(sid: str, role: str, scene: dict[str, Any]) -
     """
     layout_html = _render_compare_layout(scene, acc, layout_variant)
     return f"""
-    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:{_bg(role)};">
-      <div class="bg-grid"></div>
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+      <div class="bg-grid" style="opacity:.25"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,{acc}28 0%,transparent 70%);"></div>
     </div>
-    {headline_html}
-    {layout_html}
+    <div class="hf-safe-zone">{headline_html}</div>
+    <div class="hf-safe-zone">{layout_html}</div>
     <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
 """
 
@@ -779,21 +948,26 @@ def _render_parallel_lanes_layout(scene: dict[str, Any], acc: str) -> str:
     parts = []
     for idx, lane in enumerate(lanes):
         y = 520 + idx * 290
+        lane_color = lane.get('color', acc)
+        # V3-P3.11D — chips now use hf-glass-panel
         chips = "".join(
-            f"<div class='compare-item' style='display:inline-flex;align-items:center;padding:14px 18px;border-radius:999px;background:rgba(255,255,255,0.05);font-size:26px;color:#fff;margin-right:14px;'>{step}</div>"
+            f"<div class='compare-item hf-glass-panel hf-animate-card' style='display:inline-flex;align-items:center;padding:14px 20px;font-size:26px;color:#fff;margin-right:14px;background:rgba(2,4,12,0.5);border-color:{lane_color}66;'>{step}</div>"
             for step in lane.get("steps", [])
         )
         parts.append(f"""
-        <div style="position:absolute;top:{y}px;left:92px;right:92px;">
+        <div class="hf-safe-zone" style="position:absolute;top:{y}px;left:92px;right:92px;">
             <div style="display:flex;align-items:center;gap:18px;margin-bottom:18px;">
-                <div style="font-size:22px;letter-spacing:0.16em;color:{lane.get('color', acc)};">{lane.get('label', '')}</div>
-                <div class="tool-connector" style="flex:1;height:2px;background:linear-gradient(90deg,{lane.get('color', acc)},transparent);"></div>
+                <div style="font-size:22px;letter-spacing:0.16em;color:{lane_color};">{lane.get('label', '')}</div>
+                <div class="tool-connector" style="flex:1;height:2px;background:linear-gradient(90deg,{lane_color},transparent);"></div>
             </div>
             <div>{chips}</div>
         </div>
         """)
+    # V3-P3.11D — summary badge with glass styling
     parts.append(f"""
-    <div style="position:absolute;top:1120px;left:118px;right:118px;padding:20px 24px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.14);border-radius:18px;text-align:center;font-size:28px;color:rgba(255,255,255,0.72);">旧流程在找，新的流程在直接调用。</div>
+    <div class="hf-glass-panel hf-animate-card" style="position:absolute;top:1120px;left:118px;right:118px;padding:20px 24px;text-align:center;border-color:rgba(255,255,255,0.14);background:rgba(56,225,255,0.08);">
+        <div style="font-size:28px;color:rgba(255,255,255,0.82);">旧流程在找，新的流程在直接调用。</div>
+    </div>
     """)
     return "".join(parts)
 
@@ -802,22 +976,30 @@ def _render_symptom_panel_layout(scene: dict[str, Any], acc: str) -> str:
     left = scene.get("left_panel", {"label": "交给第二大脑", "title": "记忆负担下降", "items": ["不用强记细节", "素材随时能回查"]})
     right = scene.get("right_panel", {"label": "留给自己", "title": "创造空间上升", "items": ["注意力回到判断", "把精力放在表达"]})
     summary = scene.get("summary_badge", "记忆外包，不等于放弃思考；而是把大脑还给创造。")
+    red, green = "#FF5577", "#2EE874"
     sections = []
-    for panel, x, color in ((left, 88, acc), (right, 548, "#2ED573")):
+    for panel, x, border_color, glass_tint in (
+        (left, 88, red, "rgba(255,85,119,0.08)"),
+        (right, 548, green, "rgba(46,232,116,0.08)"),
+    ):
         bullets = "".join(
             f"<div class='compare-item' style='margin-bottom:16px;padding:16px 18px;background:rgba(255,255,255,0.05);border-radius:14px;font-size:27px;color:#fff;'>{item}</div>"
             for item in panel.get("items", [])
         )
+        # V3-P3.11C — glass-panel styling with color-tinted background
         sections.append(f"""
-        <div class="compare-item" style="position:absolute;top:470px;left:{x}px;width:444px;background:rgba(255,255,255,0.06);border:2px solid {color};border-radius:24px;padding:26px 22px;">
-            <div style="font-size:22px;letter-spacing:0.16em;color:{color};margin-bottom:10px;">{panel.get('label', '')}</div>
+        <div class="compare-item hf-glass-panel" style="position:absolute;top:470px;left:{x}px;width:444px;border:2px solid {border_color};padding:26px 22px;background:linear-gradient(180deg,{glass_tint},rgba(2,4,12,0.62));">
+            <div style="font-size:22px;letter-spacing:0.16em;color:{border_color};margin-bottom:10px;">{panel.get('label', '')}</div>
             <div style="font-size:40px;font-weight:800;color:#fff;margin-bottom:18px;">{panel.get('title', '')}</div>
             {bullets}
         </div>
         """)
     return f"""
     {''.join(sections)}
-    <div style="position:absolute;top:1080px;left:140px;right:140px;padding:22px 24px;border-radius:18px;background:rgba(37,216,255,0.08);border:1px solid rgba(37,216,255,0.28);text-align:center;font-size:30px;color:#fff;line-height:1.45;">{summary}</div>
+    <!-- V3-P3.11C — summary badge with glass-style glow -->
+    <div class="hf-glass-panel" style="position:absolute;top:1080px;left:140px;right:140px;padding:22px 24px;border-color:rgba(56,225,255,0.5);text-align:center;background:rgba(56,225,255,0.08);">
+        <div style="font-size:30px;color:#fff;line-height:1.45;">{summary}</div>
+    </div>
     """
 
 
@@ -851,23 +1033,35 @@ def _render_cta_checklist_steps(sid: str, role: str, scene: dict[str, Any], acc:
         num = i + 1
         item_htmls.append(f"""
         <div class="check-item" style="
-            margin-bottom:28px;padding:24px 32px;
+            margin-bottom:60px;padding:36px 48px;
             background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);
             border-radius:16px;display:flex;align-items:center;gap:20px;
         ">
             <div style="
-                width:56px;height:56px;background:{acc};border-radius:50%;
+                width:60px;height:60px;background:{acc};border-radius:50%;
                 display:flex;align-items:center;justify-content:center;
-                font-size:32px;font-weight:800;color:#fff;flex-shrink:0;
+                font-size:34px;font-weight:800;color:#fff;flex-shrink:0;
             ">{num}</div>
             <span style="font-size:36px;font-weight:600;color:#fff;">{item}</span>
         </div>
         """)
 
     items_html = "\n".join(item_htmls)
+    # V3-P3.11C — visual divider + "三步闭环" step summary
+    step_count = len(items)
+    step_label = f"共 {step_count} 步 · 最小闭环"
+    step_html = f"""
+    <div style="position:absolute;top:760px;left:0;right:0;text-align:center;">
+        <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(46,213,115,0.1);border:1px solid {acc}66;color:{acc};font-size:18px;letter-spacing:0.16em;">{step_label}</div>
+    </div>
+    """
+    # V3-P3.11B — visual divider between checklist and CTA; CTA moved up from bottom:180px to fill gap
     final_html = f"""
+    <div class="hf-divider" style="position:absolute;top:840px;left:120px;right:120px;height:2px;
+        background:linear-gradient(90deg,transparent,{acc}66,transparent);
+        border-radius:1px;"></div>
     <div style="
-        position:absolute;bottom:180px;left:72px;right:72px;text-align:center;
+        position:absolute;top:900px;left:72px;right:72px;text-align:center;
         padding:24px;background:rgba(46,213,115,0.1);border:1px solid #2ED573;
         border-radius:16px;
     ">
@@ -886,6 +1080,7 @@ def _render_cta_checklist_steps(sid: str, role: str, scene: dict[str, Any], acc:
     </div>
     {headline_html}
     <div style="position:absolute;top:340px;left:120px;right:120px;">{items_html}</div>
+    {step_html}
     {final_html}
     <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
 """
@@ -948,34 +1143,42 @@ def _render_cta_button_banner(sid: str, role: str, scene: dict[str, Any], acc: s
 
 
 def _render_cta_end_score_goodbye(sid: str, role: str, scene: dict[str, Any], acc: str) -> str:
-    """Big score number + chapter close — series finale feel."""
+    """V3-P3.9R1 — Final Score Board grammar: GIANT 100 + DONE / COMPLETE
+    stamp + bright green glow halo + prominent NEXT PREVIEW bar."""
     score = scene.get("score", scene.get("score_value", "100"))
     score_label = scene.get("score_label", "本章掌握度")
     headline = scene.get("headline", scene.get("narration", "这一章就到这里")[:30] or "这一章就到这里")
     next_teaser = scene.get("next_teaser", "下期讲：把检索真正接进 AI 流程")
     final_msg = scene.get("final_message", "先把这一章跑通，再来下期")
+    green, amber = "#2EE874", "#FFC83D"
     return f"""
-    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(160deg,#0A1428 0%,#0A1A28 55%,#0F2A1A 100%);">
-      <div class="bg-grid"></div>
-      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,#2ED57328 0%,transparent 70%);"></div>
-      <div class="bg-glow bg-glow-2" style="background:radial-gradient(circle,{acc}18 0%,transparent 72%);"></div>
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(160deg,#04060C 0%,#0a1a14 55%,#0a1a14 100%);">
+      <div class="bg-grid" style="opacity:.2"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,rgba(46,232,116,0.45) 0%,transparent 65%);"></div>
+      <div class="bg-glow bg-glow-2" style="background:radial-gradient(circle,rgba(255,200,61,0.18) 0%,transparent 72%);"></div>
     </div>
-    <div style="position:absolute;top:140px;left:0;right:0;text-align:center;">
-      <div style="font-size:22px;letter-spacing:0.32em;color:rgba(255,255,255,0.5);">CHAPTER CLOSE</div>
-      <div style="font-size:20px;letter-spacing:0.2em;color:{acc};margin-top:12px;">{score_label}</div>
+    <div class="hf-safe-zone" style="position:absolute;top:180px;left:0;right:0;text-align:center;">
+      <div style="display:flex;justify-content:center;gap:14px;margin-bottom:18px;">
+        <div class="hf-status-stamp hf-status-pass hf-animate-stamp" style="font-size:18px;padding:10px 22px;border-width:2px;">DONE</div>
+        <div class="hf-status-stamp hf-status-viral hf-animate-stamp" style="font-size:18px;padding:10px 22px;border-width:2px;color:{amber};">COMPLETE</div>
+      </div>
+      <div class="hf-animate-number" style="font-size:380px;font-weight:900;line-height:0.92;color:{green};text-shadow:0 0 72px {green}cc;letter-spacing:-12px;">{score}</div>
+      <div style="font:800 48px/1 &quot;SF Mono&quot;,monospace;color:#FFFFFF;margin-top:10px;letter-spacing:.18em;text-shadow:0 0 14px rgba(255,255,255,0.4);">/ 100 · CHAPTER CLOSE</div>
+      <div style="font:700 18px/1 &quot;SF Mono&quot;,monospace;letter-spacing:.22em;color:{green};margin-top:14px;text-transform:uppercase;">{score_label}</div>
     </div>
-    <div style="position:absolute;top:230px;left:0;right:0;text-align:center;">
-      <div style="font-size:280px;font-weight:900;line-height:0.9;color:{acc};text-shadow:0 0 64px {acc}80;letter-spacing:-6px;">{score}</div>
-      <div style="font-size:36px;font-weight:700;color:rgba(255,255,255,0.78);margin-top:8px;letter-spacing:0.08em;">/ 100</div>
+    <div class="hf-glass-panel hf-glass-green hf-pulse" style="position:absolute;top:760px;left:80px;right:80px;padding:36px 40px;min-height:120px;background:linear-gradient(180deg,rgba(46,232,116,0.22),rgba(2,4,12,0.7) 80%);">
+      <div style="font-size:48px;font-weight:800;color:#FFFFFF;line-height:1.18;text-align:center;letter-spacing:-.01em;">{headline}</div>
     </div>
-    <div style="position:absolute;top:680px;left:72px;right:72px;padding:24px 26px;border:1px solid rgba(255,255,255,0.16);border-radius:24px;background:rgba(255,255,255,0.05);text-align:center;">
-      <div style="font-size:42px;font-weight:800;color:#fff;line-height:1.2;">{headline}</div>
+    <div style="position:absolute;top:950px;left:0;right:0;text-align:center;">
+      <div style="font:800 18px/1 &quot;SF Mono&quot;,monospace;letter-spacing:.32em;color:{green};margin-bottom:14px;">NEXT / PREVIEW</div>
+      <div class="hf-animate-stamp" style="display:inline-flex;padding:20px 40px;border-radius:18px;background:rgba(46,232,116,0.22);border:2.5px solid {green};font:800 32px/1 &quot;PingFang SC&quot;,sans-serif;color:#FFFFFF;box-shadow:0 0 32px {green}77;letter-spacing:.04em;">{next_teaser}</div>
     </div>
-    <div style="position:absolute;top:880px;left:0;right:0;text-align:center;">
-      <div style="font-size:18px;letter-spacing:0.32em;color:{acc};margin-bottom:14px;">NEXT / PREVIEW</div>
-      <div style="display:inline-flex;padding:16px 32px;border-radius:18px;background:rgba(46,213,115,0.12);border:1px solid {acc}66;font-size:30px;color:#fff;font-weight:600;">{next_teaser}</div>
-    </div>
-    <div style="position:absolute;top:1130px;left:140px;right:140px;padding:18px 22px;border-radius:18px;background:rgba(255,255,255,0.04);text-align:center;font-size:26px;color:rgba(255,255,255,0.68);line-height:1.4;">{final_msg}</div>
+    <div style="position:absolute;top:1090px;left:140px;right:140px;padding:20px 24px;border-radius:18px;background:rgba(255,255,255,0.06);text-align:center;font-size:26px;color:rgba(248,250,252,0.82);line-height:1.4;letter-spacing:.02em;">{final_msg}</div>
+    <!-- V3-P3.11C — END marker with ceremony feel -->
+    <div style="position:absolute;bottom:300px;left:50%;transform:translateX(-50%);
+        font-size:20px;letter-spacing:.32em;color:rgba(255,255,255,0.35);
+        border-top:2px solid rgba(46,232,116,0.30);padding-top:20px;width:180px;text-align:center;
+        box-shadow:0 -4px 12px rgba(46,232,116,0.08);">· END ·</div>
     <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
 """
 
@@ -1059,30 +1262,45 @@ def _template_framework_quadrant(sid: str, role: str, scene: dict[str, Any]) -> 
         {"label": "Q4 输出", "text": "写作 / 复盘", "color": "#A855F7"},
     ])
     center_label = scene.get("center_label", scene.get("quadrant_center", "Obsidian"))
-    positions = [("top:420px;left:120px;", "Q1"), ("top:420px;right:120px;", "Q2"),
-                 ("top:900px;left:120px;", "Q3"), ("top:900px;right:120px;", "Q4")]
+    positions = [("top:480px;left:120px;", "Q1"), ("top:480px;right:120px;", "Q2"),
+                 ("top:980px;left:120px;", "Q3"), ("top:980px;right:120px;", "Q4")]
+    # V3-P3.9 — Knowledge Overlay grammar: 2x2 glass panels with CENTER hub.
+    # Each quadrant uses hf-glass-panel + the role's accent color.
     quad_htmls = []
+    color_to_glass = {
+        "#4D9FFF": "hf-glass-cyan", "#25D8FF": "hf-glass-cyan",
+        "#2ED573": "hf-glass-green",
+        "#FF6B35": "hf-glass-amber", "#FFB627": "hf-glass-amber",
+        "#A855F7": "hf-glass-purple",
+    }
     for pos, qkey, quadrant in zip(positions, ["q1", "q2", "q3", "q4"], quadrants):
         top_left, _ = pos
         qcolor = quadrant.get("color", acc)
+        glass_class = color_to_glass.get(qcolor.upper(), "")
         quad_htmls.append(f"""
-        <div class="framework-quad" style="position:absolute;{top_left}width:380px;height:380px;background:rgba(255,255,255,0.05);border:2px solid {qcolor};border-radius:30px;padding:30px 26px;box-shadow:0 0 32px {qcolor}22;">
-            <div style="font-size:20px;letter-spacing:0.18em;color:{qcolor};margin-bottom:10px;">{quadrant.get('label', '')}</div>
-            <div style="font-size:32px;font-weight:800;color:#fff;line-height:1.2;margin-top:6px;">{quadrant.get('text', '')}</div>
+        <div class="framework-quad hf-glass-panel {glass_class} hf-animate-card" style="position:absolute;{top_left}width:380px;height:420px;padding:34px 30px;">
+            <div class="hf-step-number" style="font-size:88px;color:{qcolor};text-shadow:0 0 18px {qcolor}66;line-height:1;margin-bottom:18px;">{qkey}</div>
+            <div style="font-size:18px;letter-spacing:0.18em;color:{qcolor};margin-bottom:8px;">{quadrant.get('label', '')}</div>
+            <div style="font-size:30px;font-weight:800;color:#fff;line-height:1.2;">{quadrant.get('text', '')}</div>
         </div>
         """)
+    # V3-P3.11C — scene context label for reduced template feel
+    context_note = scene.get("narration", "")[:18] or "四象限 · 概念分层"
     return f"""
-    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(135deg,#0A1628 0%,#0A1A28 60%,#0A1428 100%);">
-      <div class="bg-grid"></div>
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(135deg,#0A1628 0%,#0A1A28 60%,#0A1428 100%);">
+      <div class="bg-grid" style="opacity:.3"></div>
     </div>
-    <div style="position:absolute;top:220px;left:72px;right:72px;text-align:center;">
-      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">{headline}</div>
+    <div class="hf-safe-zone" style="position:absolute;top:200px;left:96px;right:96px;">
+      <div class="hf-status-stamp hf-status-live hf-animate-stamp" style="display:inline-flex;margin-bottom:10px;font-size:16px;padding:8px 18px;">FRAMEWORK / 2X2</div>
+      <h2 class="hf-animate-title" style="margin:0;font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">{headline}</h2>
     </div>
     {''.join(quad_htmls)}
-    <div style="position:absolute;top:660px;left:430px;width:220px;height:220px;border-radius:50%;background:linear-gradient(135deg,rgba(37,216,255,0.18),rgba(46,213,115,0.18));border:2px solid {acc};display:flex;align-items:center;justify-content:center;">
+    <!-- V3-P3.11C — larger center hub with narrative tag -->
+    <div class="hf-glass-panel hf-glass-purple hf-animate-card" style="position:absolute;top:730px;left:430px;width:220px;height:220px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(168,85,247,0.22),rgba(37,216,255,0.10));">
         <div style="text-align:center;">
-            <div style="font-size:14px;letter-spacing:0.22em;color:rgba(255,255,255,0.55);">CENTER</div>
-            <div style="font-size:32px;font-weight:900;color:#fff;margin-top:4px;">{center_label}</div>
+            <div style="font-size:12px;letter-spacing:0.22em;color:rgba(255,255,255,0.55);margin-bottom:2px;">FRAMEWORK</div>
+            <div style="font-size:34px;font-weight:900;color:#fff;margin-top:2px;">{center_label}</div>
+            <div style="font-size:12px;letter-spacing:0.12em;color:rgba(255,255,255,0.35);margin-top:4px;">{context_note}</div>
         </div>
     </div>
     <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
@@ -1180,29 +1398,93 @@ def _template_metric_dashboard(sid: str, role: str, scene: dict[str, Any]) -> st
         {"label": "完播率", "value": "61%", "delta": "+18%"},
     ])
     trend_caption = scene.get("trend_caption", "3 个月持续跑通最小闭环")
-    positions = [("top:480px;left:72px;", 0), ("top:480px;right:72px;", 1),
-                 ("top:920px;left:72px;", 2), ("top:920px;right:72px;", 3)]
+    cyan, amber, green, red = "#38E1FF", "#FFC83D", "#2EE874", "#FF5577"
+    # V3-P3.9R1 — single HUGE hero number + 3 satellite metric cards.
+    # The hero number is the visual anchor; satellites are supporting.
+    hero_metric = metrics[0] if metrics else {"label": "—", "value": "—", "delta": "—"}
+    satellites = metrics[1:4] if len(metrics) >= 4 else metrics[1:]
+    # Hero color: amber if number is a percentage/ratio, else cyan
+    hero_value = hero_metric.get("value", "")
+    if any(c in hero_value for c in ["%", "x", "倍"]):
+        hero_class = "amber"
+        hero_color = amber
+    elif any(c in hero_value for c in ["篇", "s"]):
+        hero_class = ""
+        hero_color = cyan
+    else:
+        hero_class = ""
+        hero_color = cyan
+    # Strip the unit (e.g. "3.2 篇" → "3.2" + "篇") for bigger impact
+    import re as _re
+    m = _re.match(r"^([\d.]+)\s*(.*)$", hero_value)
+    if m:
+        hero_num, hero_unit = m.group(1), m.group(2)
+        hero_is_numeric = True
+    else:
+        hero_num = hero_value
+        hero_unit = ""
+        hero_is_numeric = False
+
     metric_htmls = []
-    for top_left, idx in positions:
-        m = metrics[idx] if idx < len(metrics) else {"label": "—", "value": "—", "delta": "—"}
-        delta_color = "#2ED573" if (m.get("delta", "").startswith("+") or m.get("delta", "").startswith("-") and "65" in m.get("delta", "")) else "#FF6B35"
+    # Hero card — left side, takes ~55% width
+    hero_delta = hero_metric.get("delta", "")
+    hero_delta_color = green if hero_delta.startswith("+") else (red if hero_delta.startswith("-") else amber)
+    # V3-P3.11C — non-numeric values show as status badge instead of giant number
+    if not hero_is_numeric:
+        hero_content = f"""
+        <div style="display:flex;align-items:center;justify-content:center;margin-top:32px;">
+          <div class="hf-status-stamp hf-status-live hf-animate-stamp" style="font-size:48px;padding:28px 40px;border-width:3px;color:{cyan};border-color:{cyan};background:rgba(56,225,255,0.12);box-shadow:0 0 32px rgba(56,225,255,0.3);">{hero_num}</div>
+        </div>
+        <div style="font-size:28px;color:rgba(255,255,255,0.55);margin-top:24px;text-align:center;letter-spacing:.08em;">系统状态</div>
+        <div style="font:800 28px/1 &quot;SF Mono&quot;,monospace;color:{hero_delta_color};margin-top:16px;text-align:center;letter-spacing:.04em;">{hero_delta}</div>
+        """
+    else:
+        hero_content = f"""
+        <div style="display:flex;align-items:baseline;gap:14px;margin-top:32px;">
+          <span class="hf-big-number {hero_class} hf-animate-number" style="font-size:240px;">{hero_num}</span>
+          <span style="font:800 56px/1 &quot;SF Mono&quot;,monospace;letter-spacing:.04em;color:#FFFFFF;text-shadow:0 0 14px rgba(255,255,255,0.4);">{hero_unit}</span>
+        </div>
+        <div class="hf-progress" style="margin-top:30px;--hf-target:78%;height:14px;border-radius:7px;">
+          <div class="hf-progress-fill" style="background:linear-gradient(90deg,{cyan},{amber});box-shadow:0 0 16px {cyan}cc;"></div>
+        </div>
+        <div style="font:800 40px/1 &quot;SF Mono&quot;,monospace;color:{hero_delta_color};margin-top:20px;letter-spacing:.04em;">{hero_delta} vs 起点</div>
+        """
+    metric_htmls.append(f"""
+    <div class="hf-glass-panel hf-animate-card" style="position:absolute;top:420px;left:60px;width:520px;height:560px;padding:52px 48px;background:linear-gradient(180deg,rgba(2,4,12,0.78),rgba(2,4,12,0.62) 80%);">
+      <div class="hf-status-stamp hf-status-viral hf-animate-stamp" style="position:absolute;top:24px;right:24px;font-size:14px;padding:6px 14px;border-width:2px;">VIRAL</div>
+      <div style="font:800 20px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.22em;color:rgba(248,250,252,0.72);text-transform:uppercase;">{hero_metric.get('label', '')}</div>
+      {hero_content}
+    </div>
+    """)
+    # Satellite tiles — right column, 3 stacked
+    sat_y = [420, 620, 820]
+    for i, m in enumerate(satellites):
+        if i >= 3: break
+        delta = m.get("delta", "")
+        delta_color = green if delta.startswith("+") else (red if delta.startswith("-") else amber)
+        # Split value into number + unit
+        mm = _re.match(r"^([\d.]+)\s*(.*)$", m.get("value", ""))
+        sat_num, sat_unit = (mm.group(1), mm.group(2)) if mm else (m.get("value", ""), "")
         metric_htmls.append(f"""
-        <div class="metric-tile" style="position:absolute;{top_left}width:432px;height:380px;background:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.14);border-radius:28px;padding:30px 28px;box-shadow:0 0 28px rgba(37,216,255,0.08);">
-            <div style="font-size:18px;letter-spacing:0.2em;color:rgba(255,255,255,0.55);margin-bottom:14px;">{m.get('label', '')}</div>
-            <div style="font-size:80px;font-weight:900;color:{acc};line-height:0.95;letter-spacing:-2px;">{m.get('value', '')}</div>
-            <div style="display:inline-flex;margin-top:14px;padding:6px 14px;border-radius:999px;background:{delta_color}22;border:1px solid {delta_color}66;font-size:22px;color:{delta_color};font-weight:700;">{m.get('delta', '')}</div>
+        <div class="hf-glass-panel hf-animate-card" style="position:absolute;top:{sat_y[i]}px;right:60px;width:280px;padding:24px 26px;background:rgba(2,4,12,0.62);">
+          <div style="font:700 16px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.22em;color:rgba(248,250,252,0.72);text-transform:uppercase;">{m.get('label', '')}</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-top:12px;">
+            <span style="font:900 64px/1 &quot;SF Pro Display&quot;,Arial,sans-serif;color:#FFFFFF;letter-spacing:-.02em;text-shadow:0 0 12px rgba(255,255,255,0.3);">{sat_num}</span>
+            <span style="font:800 24px/1 &quot;SF Mono&quot;,monospace;color:{acc};">{sat_unit}</span>
+          </div>
+          <div style="font:700 18px/1 &quot;SF Mono&quot;,monospace;color:{delta_color};margin-top:8px;">{delta}</div>
         </div>
         """)
     return f"""
-    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(135deg,#0A1428 0%,#0A1A28 60%,#082016 100%);">
-      <div class="bg-grid"></div>
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(135deg,#0A1428 0%,#0A1A28 60%,#082016 100%);">
+      <div class="bg-grid" style="opacity:.25"></div>
     </div>
-    <div style="position:absolute;top:210px;left:72px;right:72px;text-align:center;">
-      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(46,213,115,0.12);border:1px solid {acc}66;color:{acc};font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">DATA / DASHBOARD</div>
-      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">{headline}</div>
+    <div class="hf-safe-zone" style="position:absolute;top:200px;left:80px;right:80px;text-align:left;">
+      <div class="hf-status-stamp hf-status-live hf-animate-stamp" style="display:inline-flex;margin-bottom:14px;font-size:18px;padding:10px 22px;border-width:2px;">LIVE METRICS · 实时数据</div>
+      <h2 class="hf-animate-title" style="margin:0;font-size:64px;font-weight:900;color:#FFFFFF;line-height:1.1;letter-spacing:-.02em;">{headline}</h2>
     </div>
     {''.join(metric_htmls)}
-    <div style="position:absolute;top:1340px;left:140px;right:140px;padding:18px 24px;border-top:1px solid rgba(255,255,255,0.18);text-align:center;font-size:24px;color:rgba(255,255,255,0.7);">{trend_caption}</div>
+    <div style="position:absolute;top:1400px;left:140px;right:140px;padding:20px 28px;border-top:2px solid rgba(255,200,61,0.4);text-align:center;font:800 26px/1 &quot;SF Mono&quot;,monospace;letter-spacing:.18em;color:#FFC83D;text-transform:uppercase;">{trend_caption}</div>
     <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
 """
 
@@ -1231,32 +1513,40 @@ def _template_case_study_card(sid: str, role: str, scene: dict[str, Any]) -> str
     before = scene.get("before", "笔记散 5 个 App，写一篇要 6 小时")
     after = scene.get("after", "统一到 Obsidian + AI，1.5 小时成稿")
     highlights = scene.get("highlights", ["整理耗时下降 75%", "素材复用率 3.4×", "AI 草稿接受率 80%"])
-    highlight_htmls = "".join(
-        f"""
-        <div class="cs-highlight" style="display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:999px;background:rgba(46,213,115,0.12);border:1px solid {acc}66;font-size:24px;color:#fff;margin-right:12px;margin-bottom:12px;">
-            <span style="color:{acc};font-size:22px;">●</span> {h}
-        </div>
-        """
-        for h in highlights
-    )
+    red, green, amber = "#FF5577", "#2EE874", "#FFC83D"
+    # V3-P3.11D — CRITICAL FIX: BEFORE/AFTER cards no longer overlap.
+    # BEFORE moved to left:80, width:420 (spans x:80-500).
+    # AFTER moved to left:540, width:460 (spans x:540-1000).
+    # Both at same top:460. 40px gap between them. Bottom anchor added.
     return f"""
-    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(160deg,#0A1628 0%,#0A1A28 60%,#101B32 100%);">
-      <div class="bg-grid"></div>
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(160deg,#0A1628 0%,#0A1A28 60%,#101B32 100%);">
+      <div class="bg-grid" style="opacity:.25"></div>
     </div>
-    <div style="position:absolute;top:220px;left:72px;right:72px;text-align:center;">
-      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(77,159,255,0.12);border:1px solid {acc}66;color:{acc};font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">CASE / STUDY</div>
-      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">{headline}</div>
-      <div style="font-size:24px;color:rgba(255,255,255,0.65);margin-top:8px;">{case_subject}</div>
+    <div class="hf-safe-zone" style="position:absolute;top:180px;left:80px;right:80px;">
+      <div class="hf-status-stamp hf-status-viral hf-animate-stamp" style="display:inline-flex;margin-bottom:14px;font-size:18px;padding:10px 22px;">真实案例 · 90 天实践</div>
+      <h2 class="hf-animate-title" style="margin:0 0 6px 0;font-size:64px;font-weight:900;color:#FFFFFF;line-height:1.1;letter-spacing:-.02em;">{headline}</h2>
+      <div class="hf-animate-title" style="font-size:28px;color:rgba(248,250,252,0.78);margin-top:4px;letter-spacing:.04em;">{case_subject}</div>
     </div>
-    <div style="position:absolute;top:520px;left:72px;width:432px;background:linear-gradient(180deg,rgba(255,71,87,0.12),rgba(255,255,255,0.04));border:2px solid #FF4757;border-radius:24px;padding:28px 26px;">
-        <div style="font-size:18px;letter-spacing:0.2em;color:#FF4757;margin-bottom:10px;">BEFORE / 之前</div>
-        <div style="font-size:28px;font-weight:700;color:#fff;line-height:1.4;">{before}</div>
+    <div class="hf-glass-panel hf-glass-red hf-animate-card" style="position:absolute;top:460px;left:80px;width:420px;padding:48px 40px;background:linear-gradient(180deg,rgba(255,85,119,0.22),rgba(2,4,12,0.62) 60%);">
+      <div class="hf-status-stamp hf-status-risk hf-animate-stamp" style="position:absolute;top:24px;right:24px;font-size:18px;padding:8px 18px;border-width:2px;">BEFORE</div>
+      <div style="font:800 22px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.22em;color:{red};margin-bottom:14px;text-transform:uppercase;">之前 · OLD WAY</div>
+      <div style="font-size:44px;font-weight:800;color:#FFFFFF;line-height:1.2;letter-spacing:-.01em;">{before}</div>
     </div>
-    <div style="position:absolute;top:520px;right:72px;width:432px;background:linear-gradient(180deg,rgba(46,213,115,0.12),rgba(255,255,255,0.04));border:2px solid #2ED573;border-radius:24px;padding:28px 26px;">
-        <div style="font-size:18px;letter-spacing:0.2em;color:#2ED573;margin-bottom:10px;">AFTER / 之后</div>
-        <div style="font-size:28px;font-weight:700;color:#fff;line-height:1.4;">{after}</div>
+    <div class="hf-glass-panel hf-glass-green hf-animate-card" style="position:absolute;top:460px;left:540px;width:460px;padding:48px 40px;background:linear-gradient(180deg,rgba(46,232,116,0.22),rgba(2,4,12,0.62) 60%);">
+      <div class="hf-status-stamp hf-status-pass hf-animate-stamp" style="position:absolute;top:24px;right:24px;font-size:18px;padding:8px 18px;border-width:2px;">AFTER</div>
+      <div style="font:800 22px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.22em;color:{green};margin-bottom:14px;text-transform:uppercase;">之后 · NEW WAY</div>
+      <div style="font-size:38px;font-weight:800;color:#FFFFFF;line-height:1.2;letter-spacing:-.01em;">{after}</div>
     </div>
-    <div style="position:absolute;top:1100px;left:72px;right:72px;text-align:center;">{highlight_htmls}</div>
+    <div class="hf-animate-card" style="position:absolute;top:420px;left:50%;transform:translateX(-50%);display:flex;gap:14px;align-items:center;font:800 18px/1 &quot;SF Mono&quot;,monospace;letter-spacing:.22em;color:#FFFFFF;text-transform:uppercase;">
+      <span style="color:{red};">BEFORE</span>
+      <span style="font-size:36px;color:{amber};text-shadow:0 0 14px {amber}aa;">→</span>
+      <span style="color:{green};">AFTER</span>
+    </div>
+    <!-- V3-P3.11D — bottom anchor: result summary below side-by-side cards -->
+    <div style="position:absolute;bottom:360px;left:50%;transform:translateX(-50%);text-align:center;">
+      <div style="width:140px;height:3px;margin:0 auto 16px;background:linear-gradient(90deg,{red},{amber},{green});border-radius:2px;"></div>
+      <div style="font-size:24px;font-weight:600;color:rgba(255,255,255,0.40);letter-spacing:.06em;">· OLD → NEW · 真实变化 ·</div>
+    </div>
     <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
 """
 
@@ -1438,21 +1728,36 @@ def _template_keyword_punchline(sid: str, role: str, scene: dict[str, Any]) -> s
     acc = _accent(role)
     keyword = scene.get("keyword", "记住")
     punchline = scene.get("punchline", scene.get("narration", "不是多一个工具，而是把链路接通")[:30] or "不是多一个工具")
+    amber, cyan, green = "#FFC83D", "#38E1FF", "#2EE874"
     return f"""
-    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(160deg,#0A1628 0%,#1A0A0A 50%,#0A1628 100%);">
-      <div class="bg-grid"></div>
-      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,{acc}28 0%,transparent 70%);"></div>
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+      <div class="bg-grid" style="opacity:.25"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,rgba(255,200,61,0.3) 0%,transparent 70%);"></div>
     </div>
-    <div style="position:absolute;top:200px;left:0;right:0;text-align:center;">
-      <div style="font-size:18px;letter-spacing:0.32em;color:rgba(255,255,255,0.5);margin-bottom:16px;">KEYWORD / PUNCH</div>
+    <!-- KEYWORD label -->
+    <div style="position:absolute;top:180px;left:0;right:0;text-align:center;">
+      <div style="font-size:18px;letter-spacing:0.32em;color:rgba(255,255,255,0.5);">KEYWORD / INSIGHT</div>
     </div>
-    <div style="position:absolute;top:280px;left:0;right:0;text-align:center;">
-      <div style="display:inline-flex;padding:32px 80px;border-radius:36px;background:linear-gradient(135deg,{acc},rgba(255,107,53,0.8));box-shadow:0 0 64px {acc}66;">
-        <div style="font-size:180px;font-weight:900;color:#0A1628;letter-spacing:-6px;line-height:0.9;">{keyword}</div>
+    <!-- V3-P3.11E — big keyword with glow block -->
+    <div style="position:absolute;top:300px;left:50%;transform:translateX(-50%);text-align:center;">
+      <div style="display:inline-flex;padding:28px 72px;border-radius:36px;background:linear-gradient(135deg,rgba(255,200,61,0.25),rgba(255,107,53,0.15));box-shadow:0 0 80px rgba(255,200,61,0.4);border:2px solid {amber}55;">
+        <div class="hf-animate-title" style="font-size:180px;font-weight:900;color:{amber};letter-spacing:-6px;line-height:0.9;text-shadow:0 0 40px {amber}88;">{keyword}</div>
       </div>
     </div>
-    <div style="position:absolute;top:760px;left:120px;right:120px;text-align:center;">
-      <div style="font-size:46px;font-weight:700;color:#fff;line-height:1.32;letter-spacing:-0.4px;">{punchline}</div>
+    <!-- Two explanation cards -->
+    <div class="hf-glass-panel hf-animate-card" style="position:absolute;top:680px;left:120px;width:820px;height:100px;padding:20px 28px;display:flex;align-items:center;gap:20px;background:rgba(56,225,255,0.08);border-color:rgba(56,225,255,0.3);">
+      <div style="width:48px;height:48px;border-radius:12px;background:{cyan};display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">1</div>
+      <div style="font-size:30px;font-weight:700;color:#fff;">不是背下来，是写作时能被调用</div>
+    </div>
+    <div class="hf-glass-panel hf-animate-card" style="position:absolute;top:810px;left:120px;width:820px;height:100px;padding:20px 28px;display:flex;align-items:center;gap:20px;background:rgba(199,125,255,0.08);border-color:rgba(199,125,255,0.3);">
+      <div style="width:48px;height:48px;border-radius:12px;background:#C77DFF;display:flex;align-items:center;justify-content:center;font-size:24px;flex-shrink:0;">2</div>
+      <div style="font-size:30px;font-weight:700;color:#fff;">不是收藏更多，是让素材进入系统</div>
+    </div>
+    <!-- Result anchor -->
+    <div class="hf-result-card hf-page-anchor" style="border-color:{green}44;background:rgba(46,232,116,0.08);">
+      <div class="hf-glow-divider" style="background:linear-gradient(90deg,{green},transparent);"></div>
+      <span class="hf-mini-badge" style="background:{green}22;color:{green};margin-bottom:8px;">INSIGHT</span>
+      <div style="font-size:28px;font-weight:700;color:#fff;line-height:1.3;">记住 = 能在需要时立刻调用</div>
     </div>
     <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
 """
@@ -1536,27 +1841,47 @@ def _template_step_ladder(sid: str, role: str, scene: dict[str, Any]) -> str:
         {"label": "4. 输出", "text": "草稿 + 复盘"},
     ])
     top_label = scene.get("top_label", "MILESTONE")
+    green = "#2EE874"
+    # V3-P3.9R1 — Step Panel grammar: shorter headline, larger 4 steps
+    # occupying center 60% of canvas, brighter green step numbers, vertical
+    # connector line through the centers of the step badges.
+    # Vertical connector line — runs through the centers of step badges
+    connector_y_start = 800
+    connector_y_end = 800 + (len(steps) - 1) * 130
+    connector = f"""
+    <div style="position:absolute;top:{connector_y_start}px;left:60px;width:6px;height:{connector_y_end - connector_y_start}px;
+        background:linear-gradient(180deg,rgba(46,232,116,0.85),rgba(46,232,116,0.25));
+        box-shadow:0 0 18px rgba(46,232,116,0.6);border-radius:3px;z-index:3;"></div>
+    """
     rung_htmls = []
+    rung_height = 110
+    rung_gap = 20
     for idx, step in enumerate(steps):
-        y = 460 + idx * 200
-        indent = idx * 40
+        y = 750 + idx * (rung_height + rung_gap)
+        indent = idx * 30
+        is_current = (idx == 0)  # first step is "current"
+        glow = " hf-pulse" if is_current else ""
+        border_color = green if is_current else "rgba(46,232,116,0.45)"
+        badge_bg = "rgba(46,232,116,0.28)" if is_current else "rgba(46,232,116,0.12)"
+        badge_shadow = "0 0 32px rgba(46,232,116,0.75)" if is_current else "0 0 18px rgba(46,232,116,0.4)"
         rung_htmls.append(f"""
-        <div class="ladder-rung" style="position:absolute;top:{y}px;left:{120 + indent}px;right:{120 - indent}px;height:140px;background:linear-gradient(90deg,rgba(46,213,115,0.18),rgba(46,213,115,0.04));border:2px solid {acc};border-radius:18px;padding:24px 32px;display:flex;align-items:center;gap:24px;box-shadow:0 0 24px {acc}18;">
-            <div style="width:80px;height:80px;border-radius:50%;background:{acc};display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;color:#0A1628;flex-shrink:0;">{idx+1}</div>
+        <div class="ladder-rung hf-glass-panel hf-glass-green hf-animate-card{glow}" style="position:absolute;top:{y}px;left:{110 + indent}px;right:{110 - indent}px;height:{rung_height}px;padding:14px 32px;display:flex;align-items:center;gap:28px;background:linear-gradient(90deg,{badge_bg},rgba(2,4,12,0.7) 70%);border-color:{border_color};">
+            <div style="width:90px;height:90px;border-radius:50%;background:rgba(46,232,116,0.18);border:4px solid {green};display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:900;color:{green};flex-shrink:0;box-shadow:{badge_shadow};line-height:1;">{idx+1}</div>
             <div style="flex:1;">
-                <div style="font-size:24px;letter-spacing:0.16em;color:rgba(255,255,255,0.6);margin-bottom:6px;">{step.get('label', '')}</div>
-                <div style="font-size:36px;font-weight:800;color:#fff;line-height:1.2;">{step.get('text', '')}</div>
+                <div style="font:800 18px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.18em;color:{green};margin-bottom:6px;text-transform:uppercase;">{step.get('label', '')}</div>
+                <div style="font-size:36px;font-weight:800;color:#FFFFFF;line-height:1.18;letter-spacing:-.01em;">{step.get('text', '')}</div>
             </div>
         </div>
         """)
     return f"""
-    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(180deg,#0A1628 0%,#0A1A28 60%,#082016 100%);">
-      <div class="bg-grid"></div>
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(180deg,#0A1628 0%,#0A1A28 60%,#082016 100%);">
+      <div class="bg-grid" style="opacity:.25"></div>
     </div>
-    <div style="position:absolute;top:220px;left:0;right:0;text-align:center;">
-      <div style="font-size:18px;letter-spacing:0.32em;color:{acc};margin-bottom:14px;">{top_label}</div>
-      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">{headline}</div>
+    <div class="hf-safe-zone" style="position:absolute;top:220px;left:80px;right:80px;text-align:left;">
+      <div class="hf-status-stamp hf-status-pass hf-animate-stamp" style="display:inline-flex;margin-bottom:12px;font-size:18px;padding:10px 22px;border-width:2px;">STEP 1/4 · {top_label}</div>
+      <h2 class="hf-animate-title" style="margin:0;font-size:48px;font-weight:900;color:#FFFFFF;line-height:1.1;letter-spacing:-.02em;">{headline}</h2>
     </div>
+    {connector}
     {''.join(rung_htmls)}
     <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
 """
@@ -1586,28 +1911,41 @@ def _template_concept_layers(sid: str, role: str, scene: dict[str, Any]) -> str:
         {"level": "L2", "text": "结构：双向链接"},
         {"level": "L3", "text": "调用：AI 提问"},
     ])
-    widths = [840, 720, 600]
+    widths = [920, 760, 600]
     colors = [acc, "#7C3AED", "#A855F7"]
+    # V3-P3.9 — Knowledge Overlay grammar: 3 receding-width glass bars with
+    # accent rail on the left + accent-color L# badge. Each layer is a
+    # glass panel; uses a corner bracket "ribbon" effect.
     layer_htmls = []
     for idx, (layer, w, c) in enumerate(zip(layers, widths, colors)):
-        y = 480 + idx * 240
+        y = 500 + idx * 200
         x = (1080 - w) // 2
+        glass_class = "hf-glass-amber" if c.upper() in ("#FF6B35", "#FFB627") else (
+            "hf-glass-purple" if c.upper() in ("#7C3AED", "#A855F7") else "hf-glass-cyan"
+        )
         layer_htmls.append(f"""
-        <div class="layer-bar" style="position:absolute;top:{y}px;left:{x}px;width:{w}px;height:180px;background:linear-gradient(90deg,{c}26,rgba(255,255,255,0.04));border:2px solid {c};border-radius:24px;padding:24px 32px;display:flex;align-items:center;gap:24px;box-shadow:0 0 32px {c}22;">
-            <div style="width:90px;height:90px;border-radius:18px;background:{c};display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:900;color:#0A1628;flex-shrink:0;">{layer.get('level', '')}</div>
+        <div class="layer-bar hf-glass-panel {glass_class} hf-animate-card" style="position:absolute;top:{y}px;left:{x}px;width:{w}px;height:160px;padding:0 32px;display:flex;align-items:center;gap:28px;background:linear-gradient(90deg,{c}33,rgba(6,8,16,0.55) 60%);">
+            <div style="position:absolute;left:0;top:0;bottom:0;width:6px;background:{c};box-shadow:0 0 18px {c}66;"></div>
+            <div style="width:96px;height:96px;border-radius:18px;background:{c};display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:900;color:#0A1628;flex-shrink:0;box-shadow:0 0 24px {c}66;">{layer.get('level', '')}</div>
             <div style="flex:1;">
                 <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.18;">{layer.get('text', '')}</div>
             </div>
         </div>
         """)
     return f"""
-    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(180deg,#0A1628 0%,#0F0820 60%,#0A1628 100%);">
-      <div class="bg-grid"></div>
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(180deg,#0A1628 0%,#0F0820 60%,#0A1628 100%);">
+      <div class="bg-grid" style="opacity:.3"></div>
     </div>
-    <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
-      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">{headline}</div>
+    <div class="hf-safe-zone" style="position:absolute;top:220px;left:96px;right:96px;">
+      <div class="hf-status-stamp hf-status-live hf-animate-stamp" style="display:inline-flex;margin-bottom:10px;font-size:16px;padding:8px 18px;">CONCEPT / LAYERS</div>
+      <h2 class="hf-animate-title" style="margin:0;font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">{headline}</h2>
     </div>
     {''.join(layer_htmls)}
+    <!-- V3-P3.11D — bottom anchor -->
+    <div style="position:absolute;bottom:320px;left:50%;transform:translateX(-50%);text-align:center;">
+      <div style="width:100px;height:3px;margin:0 auto 14px;background:linear-gradient(90deg,{acc},transparent);border-radius:2px;"></div>
+      <div style="font-size:22px;font-weight:600;color:rgba(255,255,255,0.38);letter-spacing:.06em;">三层递进 · 从底层到顶层</div>
+    </div>
     <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
 """
 
@@ -1637,37 +1975,57 @@ def _template_progress_tracker(sid: str, role: str, scene: dict[str, Any]) -> st
         {"label": "输出", "weeks": [5, 18, 35, 50, 62, 75, 85, 92]},
     ])
     caption = scene.get("caption", "8 周跑通最小闭环后，三条曲线同步进入加速段")
-    track_colors = [acc, "#2ED573", "#FF6B35"]
-    bar_y = [490, 720, 950]
-    bar_max_w = 800
-    week_labels = ["W1", "W2", "W3", "W4", "W5", "W6", "W7", "W8"]
+    # V3-P3.11E — 3 rating cards: left name, center bar, right score
+    track_config = [
+        {"color": "#38E1FF", "desc": "素材调用", "status": "READY", "glass": "hf-glass-cyan"},
+        {"color": "#2EE874", "desc": "结构整理", "status": "STABLE", "glass": "hf-glass-green"},
+        {"color": "#FFC83D", "desc": "持续输出", "status": "GROWING", "glass": "hf-glass-amber"},
+    ]
+    bar_max_w = 440
+    week_labels = ["W1","W2","W3","W4","W5","W6","W7","W8"]
     track_htmls = []
-    for idx, (track, color, y) in enumerate(zip(tracks, track_colors, bar_y)):
+    for idx, (track, tc) in enumerate(zip(tracks, track_config)):
+        y = 430 + idx * 220
         weeks = track.get("weeks", [])
-        bar_w = int(bar_max_w * (weeks[-1] if weeks else 0) / 100)
+        final_val = weeks[-1] if weeks else 0
+        bar_w = int(bar_max_w * final_val / 100)
         bar_w = max(40, bar_w)
+        color = tc["color"]
         track_htmls.append(f"""
-        <div class="progress-track" style="position:absolute;top:{y}px;left:200px;width:800px;">
-            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;">
-                <div style="font-size:24px;letter-spacing:0.16em;color:rgba(255,255,255,0.7);font-weight:700;">{track.get('label', '')}</div>
-                <div style="font-size:32px;font-weight:900;color:{color};">{weeks[-1] if weeks else 0}<span style="font-size:18px;color:rgba(255,255,255,0.5);">%</span></div>
+        <div class="progress-track hf-glass-panel {tc['glass']} hf-animate-card" style="position:absolute;top:{y}px;left:80px;width:920px;height:160px;padding:20px 28px;display:flex;align-items:center;gap:20px;background:rgba(2,4,12,0.5);">
+            <div style="width:140px;flex-shrink:0;">
+                <div style="font-size:30px;font-weight:800;color:#fff;line-height:1.2;">{track.get('label', '')}</div>
+                <div style="font-size:18px;color:rgba(255,255,255,0.5);margin-top:4px;">{tc['desc']}</div>
             </div>
-            <div style="width:100%;height:36px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;position:relative;">
-                <div class="progress-bar" style="position:absolute;left:0;top:0;bottom:0;width:{bar_w}px;background:linear-gradient(90deg,{color},rgba(255,255,255,0.3));border-radius:999px;box-shadow:0 0 18px {color}66;"></div>
-                <div style="position:absolute;left:0;right:0;top:0;bottom:0;display:flex;justify-content:space-between;align-items:center;padding:0 14px;font-size:14px;color:rgba(255,255,255,0.45);font-family:monospace;">{''.join(f'<span>{w}</span>' for w in week_labels)}</div>
+            <div style="flex:1;">
+                <div style="width:100%;height:28px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;position:relative;">
+                    <div style="position:absolute;left:0;top:0;bottom:0;width:{bar_w}px;background:linear-gradient(90deg,{color},rgba(255,255,255,0.3));border-radius:999px;box-shadow:0 0 14px {color}66;"></div>
+                    <div style="position:absolute;left:0;right:0;top:0;bottom:0;display:flex;justify-content:space-between;align-items:center;padding:0 10px;font-size:12px;color:rgba(255,255,255,0.35);font-family:monospace;">{''.join(f'<span>{w}</span>' for w in week_labels)}</div>
+                </div>
+                <div style="display:flex;justify-content:space-between;margin-top:4px;">
+                    <span style="font-size:12px;color:rgba(255,255,255,0.3);">W1 → W8</span>
+                    <span style="font-size:14px;color:{color};">+{final_val}%</span>
+                </div>
+            </div>
+            <div style="text-align:center;width:80px;flex-shrink:0;">
+                <div style="font-size:48px;font-weight:900;color:{color};line-height:1;text-shadow:0 0 20px {color}66;">{final_val}</div>
+                <div class="hf-mini-badge" style="background:{color}22;color:{color};margin-top:4px;font-size:10px;">{tc['status']}</div>
             </div>
         </div>
         """)
     return f"""
-    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(135deg,#0A1428 0%,#0A1A28 60%,#082016 100%);">
-      <div class="bg-grid"></div>
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+      <div class="bg-grid" style="opacity:.25"></div>
     </div>
-    <div style="position:absolute;top:200px;left:72px;right:72px;text-align:center;">
-      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(77,159,255,0.12);border:1px solid {acc}66;color:{acc};font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">PROGRESS / TRACKER</div>
-      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">{headline}</div>
+    <div class="hf-safe-zone" style="position:absolute;top:200px;left:80px;right:80px;">
+      <div class="hf-status-stamp hf-status-live hf-animate-stamp" style="display:inline-flex;margin-bottom:12px;font-size:16px;padding:8px 18px;">PROGRESS / TRACKER</div>
+      <div class="hf-animate-title" style="font-size:52px;font-weight:900;color:#fff;line-height:1.1;">{headline}</div>
     </div>
     {''.join(track_htmls)}
-    <div style="position:absolute;top:1200px;left:120px;right:120px;padding:18px 24px;border-top:1px solid rgba(255,255,255,0.18);text-align:center;font-size:24px;color:rgba(255,255,255,0.7);">{caption}</div>
+    <div class="hf-result-card hf-page-anchor" style="border-color:rgba(56,225,255,0.25);background:rgba(56,225,255,0.06);">
+      <div class="hf-glow-divider"></div>
+      <div style="font-size:24px;color:rgba(255,255,255,0.72);line-height:1.4;">{caption}</div>
+    </div>
     <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
 """
 
@@ -1691,45 +2049,56 @@ tl_{sid}.fromTo('[data-scene-id="{sid}"] .progress-bar',{{scaleX:0,transformOrig
 def _template_knowledge_graph(sid: str, role: str, scene: dict[str, Any]) -> str:
     acc = _accent(role)
     headline = scene.get("headline", scene.get("narration", "你的知识网络")[:30] or "你的知识网络")
+    purple = "#C77DFF"
+    # V3-P3.9R1 — Knowledge Overlay grammar: ONE big center HUB (2x larger
+    # than before) + max 4 satellites. Connections are brighter, thicker
+    # lines with glow. Center HUB carries a strong title.
     nodes = scene.get("nodes", [
         {"id": "N1", "label": "时间管理", "x": 540, "y": 800},
-        {"id": "N2", "label": "GTD", "x": 250, "y": 500},
-        {"id": "N3", "label": "番茄钟", "x": 830, "y": 500},
-        {"id": "N4", "label": "Obsidian", "x": 540, "y": 400},
-        {"id": "N5", "label": "AI 提问", "x": 250, "y": 1100},
-        {"id": "N6", "label": "写作复盘", "x": 830, "y": 1100},
+        {"id": "N2", "label": "GTD", "x": 240, "y": 540},
+        {"id": "N3", "label": "Obsidian", "x": 540, "y": 400},
+        {"id": "N4", "label": "AI 提问", "x": 240, "y": 1060},
+        {"id": "N5", "label": "写作复盘", "x": 840, "y": 1060},
     ])
-    edges = scene.get("edges", [("N1","N2"), ("N1","N3"), ("N1","N4"), ("N2","N5"), ("N3","N6"), ("N4","N5"), ("N4","N6")])
+    edges = scene.get("edges", [("N1","N2"), ("N1","N3"), ("N1","N4"), ("N1","N5")])
     central_node = scene.get("central_node", "N1")
     nodes_by_id = {n["id"]: n for n in nodes}
+    # V3-P3.9R1 — edges brighter, thicker, with purple glow
     edge_htmls = []
     for src_id, dst_id in edges:
         if src_id in nodes_by_id and dst_id in nodes_by_id:
             src = nodes_by_id[src_id]
             dst = nodes_by_id[dst_id]
-            x1, y1 = src["x"] + 60, src["y"] + 40
-            x2, y2 = dst["x"] + 60, dst["y"] + 40
+            x1, y1 = src["x"] + 90, src["y"] + 60
+            x2, y2 = dst["x"] + 90, dst["y"] + 40
             edge_htmls.append(f"""
-            <div class="kg-edge" style="position:absolute;left:{x1}px;top:{y1}px;width:{max(abs(x2-x1), 1)}px;height:2px;background:linear-gradient(90deg,{acc}66,rgba(255,255,255,0.2));transform-origin:0 0;transform:rotate({(y2-y1)/(x2-x1+0.0001) * 57.3 if x2 != x1 else 90}deg);"></div>
+            <div class="kg-edge" style="position:absolute;left:{x1}px;top:{y1}px;width:{max(abs(x2-x1), 1)}px;height:4px;background:linear-gradient(90deg,{purple}cc,rgba(56,225,255,0.4));transform-origin:0 0;transform:rotate({(y2-y1)/(x2-x1+0.0001) * 57.3 if x2 != x1 else 90}deg);box-shadow:0 0 18px {purple}aa;"></div>
             """)
     node_htmls = []
     for n in nodes:
         is_central = n["id"] == central_node
-        r = 70 if is_central else 56
-        bg = acc if is_central else "rgba(37,216,255,0.18)"
-        text_color = "#0A1628" if is_central else "#fff"
-        node_htmls.append(f"""
-        <div class="kg-node" style="position:absolute;left:{n['x']}px;top:{n['y']}px;width:120px;height:80px;border-radius:14px;background:{bg};border:2px solid {acc};display:flex;align-items:center;justify-content:center;text-align:center;padding:6px 10px;box-shadow:0 0 22px {acc}44;">
-            <div style="font-size:{18 if is_central else 16}px;font-weight:800;color:{text_color};line-height:1.15;">{n.get('label', '')}</div>
-        </div>
-        """)
+        if is_central:
+            # Center HUB: 2x larger, big title, purple glass
+            node_htmls.append(f"""
+            <div class="kg-node hf-glass-panel hf-glass-purple hf-animate-card hf-pulse" style="position:absolute;left:{n['x']-40}px;top:{n['y']-30}px;width:280px;height:180px;border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 20px;box-shadow:0 0 64px {purple}cc;background:linear-gradient(180deg,rgba(199,125,255,0.40),rgba(2,4,12,0.7));">
+              <div class="hf-status-stamp hf-status-viral hf-animate-stamp" style="margin-bottom:10px;font-size:18px;padding:10px 20px;border-width:2px;">CORE HUB</div>
+              <div style="font:900 40px/1.1 &quot;PingFang SC&quot;,sans-serif;color:#FFFFFF;line-height:1.1;text-align:center;letter-spacing:-.01em;text-shadow:0 0 20px {purple}66;">{n.get('label', '')}</div>
+            </div>
+            """)
+        else:
+            # V3-P3.11C — satellite nodes enlarged from 180×80 to 200×96
+            node_htmls.append(f"""
+            <div class="kg-node hf-glass-panel hf-animate-card" style="position:absolute;left:{n['x']}px;top:{n['y']}px;width:200px;height:96px;display:flex;align-items:center;justify-content:center;text-align:center;padding:10px 14px;background:rgba(2,4,12,0.7);border-color:rgba(199,125,255,0.4);">
+              <div style="font:800 28px/1.15 &quot;PingFang SC&quot;,sans-serif;color:#FFFFFF;line-height:1.15;letter-spacing:-.005em;">{n.get('label', '')}</div>
+            </div>
+            """)
     return f"""
-    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(160deg,#0A1628 0%,#0F0820 60%,#0A1628 100%);">
-      <div class="bg-grid"></div>
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(160deg,#0A1628 0%,#0F0820 60%,#0A1628 100%);">
+      <div class="bg-grid" style="opacity:.25"></div>
     </div>
-    <div style="position:absolute;top:200px;left:72px;right:72px;text-align:center;">
-      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(168,85,247,0.12);border:1px solid {acc}66;color:{acc};font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">KNOWLEDGE / GRAPH</div>
-      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">{headline}</div>
+    <div class="hf-safe-zone" style="position:absolute;top:170px;left:80px;right:80px;">
+      <div class="hf-status-stamp hf-status-viral hf-animate-stamp" style="display:inline-flex;margin-bottom:12px;font-size:18px;padding:10px 22px;border-width:2px;">KNOWLEDGE GRAPH · 知识系统</div>
+      <h2 class="hf-animate-title" style="margin:0;font-size:64px;font-weight:900;color:#FFFFFF;line-height:1.1;letter-spacing:-.02em;">{headline}</h2>
     </div>
     {''.join(edge_htmls)}
     {''.join(node_htmls)}
@@ -1806,25 +2175,58 @@ def _template_myth_bust(sid: str, role: str, scene: dict[str, Any]) -> str:
     headline = scene.get("headline", scene.get("narration", "大部分人都搞错了")[:30] or "大部分人都搞错了")
     myth = scene.get("myth", "多装插件就能提高效率")
     truth = scene.get("truth", "先跑通最小闭环再说")
+    # V3-P3.11C — alternate glass color so adjacent myth_bust scenes look different
+    color_variant = scene.get("color_variant", "default")
+    if color_variant == "alt":
+        myth_color, x_color = "#FFC83D", "rgba(255,200,61,0.15)"
+        truth_color, check_color = "#38E1FF", "rgba(56,225,255,0.15)"
+    else:
+        myth_color, x_color = "#FF5577", "rgba(255,85,119,0.15)"
+        truth_color, check_color = "#2EE874", "rgba(46,232,116,0.15)"
+    green = "#2EE874"
     return f"""
-    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(180deg,#1A0A0A 0%,#0A1628 60%,#0A1628 100%);">
-      <div class="bg-grid"></div>
-      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,{acc}22 0%,transparent 70%);"></div>
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+      <div class="bg-grid" style="opacity:.25"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,{acc}28 0%,transparent 70%);"></div>
     </div>
-    <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
-      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(255,71,87,0.12);border:1px solid {acc}66;color:{acc};font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">MYTH / BUST</div>
-      <div style="font-size:60px;font-weight:900;color:#fff;line-height:1.1;letter-spacing:-1.4px;">{headline}</div>
+    <div class="hf-safe-zone" style="position:absolute;top:190px;left:72px;right:72px;">
+      <div class="hf-status-stamp hf-status-risk hf-animate-stamp" style="display:inline-flex;margin-bottom:12px;font-size:16px;padding:8px 18px;">MYTH / BUST</div>
+      <div class="hf-animate-title" style="font-size:52px;font-weight:900;color:#fff;line-height:1.1;">{headline}</div>
     </div>
-    <div style="position:absolute;top:560px;left:120px;width:840px;background:rgba(255,71,87,0.10);border:2px solid #FF4757;border-radius:24px;padding:34px 32px;text-align:center;box-shadow:0 0 32px rgba(255,71,87,0.18);">
-        <div style="font-size:18px;letter-spacing:0.22em;color:#FF4757;margin-bottom:12px;">MYTH / 迷思</div>
-        <div style="font-size:42px;font-weight:800;color:rgba(255,255,255,0.5);text-decoration:line-through;line-height:1.18;">{myth}</div>
+    <!-- MYTH card -->
+    <div class="hf-glass-panel hf-animate-card" style="position:absolute;top:430px;left:72px;width:936px;padding:28px 36px;text-align:left;border-color:{myth_color};background:{x_color};">
+      <div style="display:flex;align-items:flex-start;gap:20px;">
+        <div style="width:48px;height:48px;border-radius:50%;background:{myth_color}33;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;">✕</div>
+        <div style="flex:1;">
+          <div class="hf-mini-badge" style="background:{myth_color}33;color:{myth_color};margin-bottom:8px;">MYTH · 误区</div>
+          <div style="font-size:40px;font-weight:800;color:rgba(255,255,255,0.5);text-decoration:line-through;line-height:1.2;">{myth}</div>
+        </div>
+      </div>
     </div>
-    <div style="position:absolute;top:920px;left:0;right:0;text-align:center;">
-        <div style="display:inline-flex;padding:14px 36px;border-radius:18px;background:linear-gradient(135deg,{acc},#2ED573);font-size:32px;font-weight:900;color:#0A1628;letter-spacing:-0.4px;box-shadow:0 0 40px {acc}66;">▼ 真相是 ▼</div>
+    <!-- Transition block: MYTH → TRUTH -->
+    <div style="position:absolute;top:680px;left:50%;transform:translateX(-50%);text-align:center;">
+      <div class="hf-glow-divider" style="margin:0 auto 14px;"></div>
+      <div style="display:inline-flex;align-items:center;gap:14px;padding:8px 24px;border-radius:999px;background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.1);font-size:22px;color:rgba(255,255,255,0.55);letter-spacing:.04em;">
+        <span style="color:{myth_color};">MYTH</span>
+        <span style="font-size:18px;">→</span>
+        <span style="color:{truth_color};">TRUTH</span>
+      </div>
+      <div style="font-size:24px;color:rgba(255,255,255,0.45);margin-top:4px;">真正的问题不是数量，而是结构</div>
     </div>
-    <div style="position:absolute;top:1080px;left:120px;width:840px;background:linear-gradient(180deg,rgba(46,213,115,0.18),rgba(255,255,255,0.04));border:2px solid #2ED573;border-radius:24px;padding:34px 32px;text-align:center;box-shadow:0 0 32px rgba(46,213,115,0.18);">
-        <div style="font-size:18px;letter-spacing:0.22em;color:#2ED573;margin-bottom:12px;">TRUTH / 真相</div>
-        <div style="font-size:42px;font-weight:900;color:#fff;line-height:1.18;">{truth}</div>
+    <!-- TRUTH card -->
+    <div class="hf-glass-panel hf-animate-card" style="position:absolute;top:820px;left:72px;width:936px;padding:28px 36px;text-align:left;border-color:{truth_color};background:{check_color};">
+      <div style="display:flex;align-items:flex-start;gap:20px;">
+        <div style="width:48px;height:48px;border-radius:50%;background:{truth_color}33;display:flex;align-items:center;justify-content:center;font-size:28px;flex-shrink:0;">✓</div>
+        <div style="flex:1;">
+          <div class="hf-mini-badge" style="background:{truth_color}33;color:{truth_color};margin-bottom:8px;">TRUTH · 真相</div>
+          <div style="font-size:40px;font-weight:900;color:#fff;line-height:1.2;">{truth}</div>
+        </div>
+      </div>
+    </div>
+    <!-- Bottom conclusion -->
+    <div class="hf-result-card hf-page-anchor" style="border-color:rgba(56,225,255,0.25);background:rgba(56,225,255,0.06);">
+      <div class="hf-glow-divider"></div>
+      <div style="font-size:26px;color:rgba(255,255,255,0.75);line-height:1.4;">真正要搭的是可调用的第二大脑</div>
     </div>
     <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
 """
@@ -2001,30 +2403,55 @@ def _template_tool_stack(sid: str, role: str, scene: dict[str, Any]) -> str:
         {"name": "Codex", "role": "整理", "color": "#4D9FFF"},
         {"name": "Hermes", "role": "复盘", "color": "#2ED573"},
     ])
-    widths = [720, 600, 480]
+    # V3-P3.11E — 3-layer pipeline: L1 left, L2 center, L3 right with flow arrows
+    layer_data_list = [
+        {"pos": "left:60px;",  "tag": "采集 / INPUT",     "tag_color": "#38E1FF"},
+        {"pos": "left:180px;", "tag": "整理 / STRUCTURE",  "tag_color": "#C77DFF"},
+        {"pos": "left:300px;", "tag": "输出 / OUTPUT",     "tag_color": "#2EE874"},
+    ]
     layer_htmls = []
-    for idx, (s, w) in enumerate(zip(stack, widths)):
-        y = 480 + idx * 200
-        x = (1080 - w) // 2
-        c = s.get("color", acc)
+    for idx, (s, ld) in enumerate(zip(stack, layer_data_list)):
+        y = 420 + idx * 230
+        c = s.get("color", ld["tag_color"])
+        # Flow arrow between layers
+        arrow = ""
+        if idx < len(stack) - 1:
+            arrow = f"""
+            <div class="hf-flow-line" style="top:{y + 160}px;height:70px;"></div>
+            <div style="position:absolute;top:{y + 220}px;left:50%;width:0;height:0;
+                border-left:10px solid transparent;border-right:10px solid transparent;
+                border-top:12px solid rgba(56,225,255,0.35);transform:translateX(-50%);"></div>
+            """
         layer_htmls.append(f"""
-        <div class="stack-layer" style="position:absolute;top:{y}px;left:{x}px;width:{w}px;height:140px;background:linear-gradient(90deg,{c}22,rgba(255,255,255,0.04));border:2px solid {c};border-radius:20px;padding:20px 28px;display:flex;align-items:center;gap:24px;box-shadow:0 0 26px {c}22;">
-            <div style="width:80px;height:80px;border-radius:16px;background:{c};display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#0A1428;flex-shrink:0;">L{idx+1}</div>
+        {arrow}
+        <div class="stack-layer hf-glass-panel hf-animate-card" style="position:absolute;top:{y}px;{ld['pos']}width:720px;height:160px;padding:24px 32px;display:flex;align-items:center;gap:24px;
+            background:linear-gradient(135deg,{c}33,rgba(2,4,12,0.62) 70%);
+            border-left:4px solid {ld['tag_color']};box-shadow:0 0 30px {ld['tag_color']}22;">
+            <div style="width:64px;height:64px;border-radius:14px;background:{c};display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:900;color:#0A1428;flex-shrink:0;box-shadow:0 0 20px {c}66;">L{idx+1}</div>
             <div style="flex:1;">
-                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.1;">{s.get('name', '')}</div>
-                <div style="font-size:24px;color:rgba(255,255,255,0.65);margin-top:6px;">{s.get('role', '')}</div>
+                <div class="hf-mini-badge" style="background:{ld['tag_color']}22;color:{ld['tag_color']};margin-bottom:6px;">{ld['tag']}</div>
+                <div style="font-size:36px;font-weight:800;color:#fff;line-height:1.15;">{s.get('name', '')}</div>
+                <div style="font-size:22px;color:rgba(255,255,255,0.6);margin-top:4px;">{s.get('role', '')}</div>
             </div>
+            <div style="font-size:16px;color:rgba(255,255,255,0.3);font-family:monospace;letter-spacing:0.1em;margin-top:auto;align-self:flex-end;">{idx+1}/3</div>
         </div>
         """)
     return f"""
-    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(180deg,#0A1628 0%,#0F0820 60%,#0A1628 100%);">
-      <div class="bg-grid"></div>
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+      <div class="bg-grid" style="opacity:.25"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,{acc}28 0%,transparent 70%);"></div>
     </div>
-    <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
-      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(168,85,247,0.12);border:1px solid {acc}66;color:{acc};font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">TOOL / STACK</div>
-      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">{headline}</div>
+    <div class="hf-safe-zone" style="position:absolute;top:220px;left:72px;right:72px;">
+      <div class="hf-status-stamp hf-status-live hf-animate-stamp" style="display:inline-flex;margin-bottom:12px;font-size:16px;padding:8px 18px;">TOOL / STACK</div>
+      <div class="hf-animate-title" style="font-size:52px;font-weight:900;color:#fff;line-height:1.12;">{headline}</div>
     </div>
     {''.join(layer_htmls)}
+    <!-- V3-P3.11E — result anchor card -->
+    <div class="hf-result-card hf-page-anchor" style="border-color:rgba(255,200,61,0.3);background:rgba(255,200,61,0.08);">
+      <div class="hf-glow-divider"></div>
+      <span class="hf-mini-badge" style="background:rgba(255,200,61,0.2);color:#FFC83D;margin-bottom:10px;">RESULT</span>
+      <div style="font-size:24px;color:rgba(255,255,255,0.7);line-height:1.4;max-width:600px;margin:0 auto;">从分散工具变成可调用系统</div>
+    </div>
     <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
 """
 

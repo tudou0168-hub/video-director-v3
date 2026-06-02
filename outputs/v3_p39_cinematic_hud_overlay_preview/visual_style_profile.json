@@ -1,0 +1,13 @@
+{
+  "aspect_ratio": "9:16",
+  "design_variance": 8,
+  "motion_intensity": 7,
+  "visual_density": 9,
+  "layout_strategy": "centered",
+  "hook_strategy": "metrics_focus",
+  "caption_style": {},
+  "color_tokens": {},
+  "component_preferences": [],
+  "transition_style": "fade",
+  "density_rules": {}
+}

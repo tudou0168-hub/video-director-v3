@@ -1,0 +1,910 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><title>---</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:#050812;color:#f4f7ff;font-family:sans-serif}
+#root,.scene{position:absolute;inset:0;overflow:hidden}.scene{background:#050812}
+.bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(37,216,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(37,216,255,.08) 1px,transparent 1px);background-size:64px 64px}
+.bg-glow{position:absolute;width:720px;height:720px;border-radius:50%;filter:blur(36px);animation:glow 3.4s ease-in-out infinite}
+.bg-glow-1{left:-220px;top:120px}.bg-glow-2{right:-240px;bottom:160px}
+.hud-frame{position:absolute;inset:28px;border:1px solid rgba(37,216,255,.32);clip-path:polygon(0 0,100% 0,100% 94%,94% 100%,0 100%);pointer-events:none}
+.hud-top,.hud-bottom{position:absolute;left:52px;right:52px;display:flex;justify-content:space-between;color:#25d8ff;font:800 18px/1 monospace;letter-spacing:.16em}
+.hud-top{top:52px}.hud-bottom{bottom:318px}.hud-bottom i{font-style:normal;color:rgba(255,255,255,.55)}
+.scan-sweep{position:absolute;left:0;right:0;height:3px;top:-4%;background:linear-gradient(90deg,transparent,rgba(37,216,255,.7),transparent);box-shadow:0 0 22px rgba(37,216,255,.7);animation:scan 4.5s linear infinite;pointer-events:none}
+.caption{position:absolute;left:54px;right:54px;bottom:72px;padding:20px 30px;border:1px solid rgba(37,216,255,.35);border-radius:20px;background:rgba(6,8,16,.88);box-shadow:0 0 38px rgba(37,216,255,.12);font-size:48px;line-height:1.28;font-weight:850;text-align:center}
+@keyframes glow{0%,100%{opacity:.58;transform:scale(1)}50%{opacity:.92;transform:scale(1.12)}}
+@keyframes scan{0%{top:-4%}100%{top:104%}}
+</style></head><body>
+<div id="root" data-composition-id="v3_p38r1_contract_fix_preview" data-start="0" data-width="1080" data-height="1920" data-duration="116.21">
+<audio id="voiceover-audio" data-start="0" data-duration="116.21" data-track-index="0" data-volume="1" src="assets/voiceover.mp3"></audio>
+
+<section id="scene-s01" class="scene clip role-hook tpl-hook_big_claim" data-start="0.0" data-duration="6.402" data-track-index="1" data-visual-template="hook_big_claim">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:#0A1628;">
+      <div class="bg-grid"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,#FF475722 0%,transparent 70%);"></div>
+      <div class="bg-glow bg-glow-2" style="background:radial-gradient(circle,#FF475718 0%,transparent 70%);"></div>
+    </div>
+    <div data-motion-target="hook-main" class="hook-main" style="position:absolute;top:420px;left:72px;right:72px;text-align:center;">
+      <div class="hook-title" style="font-size:72px;font-weight:700;color:#fff;line-height:1.15;letter-spacing:-1px;">用 Claude Code 写公众号三个月后，我发现它提升的不只是效率</div>
+      <div class='hook-sub' style='font-size:32px;color:rgba(255,255,255,0.65);margin-top:20px;'>真正缺的不是努力，而是一个可检索的第二大脑</div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#FF4757;opacity:0.7;">S01 · hook</div>
+
+  <div class="hud-frame"></div><div class="scan-sweep"></div>
+  <div class="hud-top"><span>HOOK / HUD SYSTEM</span><b>S01</b></div>
+  <div class="hud-bottom"><span>OBSIDIAN SECOND BRAIN</span><i>VOICEOVER DRIVEN</i></div>
+</section>
+<section id="scene-s02" class="scene clip role-explain tpl-concept_layers" data-start="6.644" data-duration="3.937" data-track-index="1" data-visual-template="concept_layers">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(180deg,#0A1628 0%,#0F0820 60%,#0A1628 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">用 Claude Code 写公众号三个月了</div>
+    </div>
+    
+        <div class="layer-bar" style="position:absolute;top:480px;left:120px;width:840px;height:180px;background:linear-gradient(90deg,#25D8FF26,rgba(255,255,255,0.04));border:2px solid #25D8FF;border-radius:24px;padding:24px 32px;display:flex;align-items:center;gap:24px;box-shadow:0 0 32px #25D8FF22;">
+            <div style="width:90px;height:90px;border-radius:18px;background:#25D8FF;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:900;color:#0A1628;flex-shrink:0;">L1</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.18;">现象：散落</div>
+            </div>
+        </div>
+        
+        <div class="layer-bar" style="position:absolute;top:720px;left:180px;width:720px;height:180px;background:linear-gradient(90deg,#7C3AED26,rgba(255,255,255,0.04));border:2px solid #7C3AED;border-radius:24px;padding:24px 32px;display:flex;align-items:center;gap:24px;box-shadow:0 0 32px #7C3AED22;">
+            <div style="width:90px;height:90px;border-radius:18px;background:#7C3AED;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:900;color:#0A1628;flex-shrink:0;">L2</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.18;">结构：可检索</div>
+            </div>
+        </div>
+        
+        <div class="layer-bar" style="position:absolute;top:960px;left:240px;width:600px;height:180px;background:linear-gradient(90deg,#A855F726,rgba(255,255,255,0.04));border:2px solid #A855F7;border-radius:24px;padding:24px 32px;display:flex;align-items:center;gap:24px;box-shadow:0 0 32px #A855F722;">
+            <div style="width:90px;height:90px;border-radius:18px;background:#A855F7;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:900;color:#0A1628;flex-shrink:0;">L3</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.18;">调用：随用随取</div>
+            </div>
+        </div>
+        
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#25D8FF;opacity:0.7;">S02 · explain</div>
+
+  <div class="hud-frame"></div><div class="scan-sweep"></div>
+  <div class="hud-top"><span>EXPLAIN / HUD SYSTEM</span><b>S02</b></div>
+  <div class="hud-bottom"><span>OBSIDIAN SECOND BRAIN</span><i>VOICEOVER DRIVEN</i></div>
+</section>
+<section id="scene-s03" class="scene clip role-explain tpl-tool_stack" data-start="10.822" data-duration="6.823" data-track-index="1" data-visual-template="tool_stack">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(180deg,#0A1628 0%,#0F0820 60%,#0A1628 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(168,85,247,0.12);border:1px solid #25D8FF66;color:#25D8FF;font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">TOOL / STACK</div>
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">一开始我只是想找个工具帮我写代码，结果用它做自媒体创作比写代码还顺手</div>
+    </div>
+    
+        <div class="stack-layer" style="position:absolute;top:480px;left:180px;width:720px;height:140px;background:linear-gradient(90deg,#7C3AED22,rgba(255,255,255,0.04));border:2px solid #7C3AED;border-radius:20px;padding:20px 28px;display:flex;align-items:center;gap:24px;box-shadow:0 0 26px #7C3AED22;">
+            <div style="width:80px;height:80px;border-radius:16px;background:#7C3AED;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#0A1428;flex-shrink:0;">L1</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.1;">Layer 1</div>
+                <div style="font-size:24px;color:rgba(255,255,255,0.65);margin-top:6px;">采集</div>
+            </div>
+        </div>
+        
+        <div class="stack-layer" style="position:absolute;top:680px;left:240px;width:600px;height:140px;background:linear-gradient(90deg,#4D9FFF22,rgba(255,255,255,0.04));border:2px solid #4D9FFF;border-radius:20px;padding:20px 28px;display:flex;align-items:center;gap:24px;box-shadow:0 0 26px #4D9FFF22;">
+            <div style="width:80px;height:80px;border-radius:16px;background:#4D9FFF;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#0A1428;flex-shrink:0;">L2</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.1;">Layer 2</div>
+                <div style="font-size:24px;color:rgba(255,255,255,0.65);margin-top:6px;">加工</div>
+            </div>
+        </div>
+        
+        <div class="stack-layer" style="position:absolute;top:880px;left:300px;width:480px;height:140px;background:linear-gradient(90deg,#2ED57322,rgba(255,255,255,0.04));border:2px solid #2ED573;border-radius:20px;padding:20px 28px;display:flex;align-items:center;gap:24px;box-shadow:0 0 26px #2ED57322;">
+            <div style="width:80px;height:80px;border-radius:16px;background:#2ED573;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#0A1428;flex-shrink:0;">L3</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.1;">Layer 3</div>
+                <div style="font-size:24px;color:rgba(255,255,255,0.65);margin-top:6px;">输出</div>
+            </div>
+        </div>
+        
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#25D8FF;opacity:0.7;">S03 · explain</div>
+
+  <div class="hud-frame"></div><div class="scan-sweep"></div>
+  <div class="hud-top"><span>EXPLAIN / HUD SYSTEM</span><b>S03</b></div>
+  <div class="hud-bottom"><span>OBSIDIAN SECOND BRAIN</span><i>VOICEOVER DRIVEN</i></div>
+</section>
+<section id="scene-s04" class="scene clip role-evidence tpl-case_study_card" data-start="17.887" data-duration="2.885" data-track-index="1" data-visual-template="case_study_card">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(160deg,#0A1628 0%,#0A1A28 60%,#101B32 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:220px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(77,159,255,0.12);border:1px solid #4D9FFF66;color:#4D9FFF;font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">CASE / STUDY</div>
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">以前写一篇公众号文章是这样的</div>
+      <div style="font-size:24px;color:rgba(255,255,255,0.65);margin-top:8px;">真实案例 · 90 天实践</div>
+    </div>
+    <div style="position:absolute;top:520px;left:72px;width:432px;background:linear-gradient(180deg,rgba(255,71,87,0.12),rgba(255,255,255,0.04));border:2px solid #FF4757;border-radius:24px;padding:28px 26px;">
+        <div style="font-size:18px;letter-spacing:0.2em;color:#FF4757;margin-bottom:10px;">BEFORE / 之前</div>
+        <div style="font-size:28px;font-weight:700;color:#fff;line-height:1.4;">旧流程：信息散落，输出靠人肉拼接</div>
+    </div>
+    <div style="position:absolute;top:520px;right:72px;width:432px;background:linear-gradient(180deg,rgba(46,213,115,0.12),rgba(255,255,255,0.04));border:2px solid #2ED573;border-radius:24px;padding:28px 26px;">
+        <div style="font-size:18px;letter-spacing:0.2em;color:#2ED573;margin-bottom:10px;">AFTER / 之后</div>
+        <div style="font-size:28px;font-weight:700;color:#fff;line-height:1.4;">新流程：统一入口，结构先出来</div>
+    </div>
+    <div style="position:absolute;top:1100px;left:72px;right:72px;text-align:center;">
+        <div class="cs-highlight" style="display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:999px;background:rgba(46,213,115,0.12);border:1px solid #4D9FFF66;font-size:24px;color:#fff;margin-right:12px;margin-bottom:12px;">
+            <span style="color:#4D9FFF;font-size:22px;">●</span> 找到素材更快
+        </div>
+        
+        <div class="cs-highlight" style="display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:999px;background:rgba(46,213,115,0.12);border:1px solid #4D9FFF66;font-size:24px;color:#fff;margin-right:12px;margin-bottom:12px;">
+            <span style="color:#4D9FFF;font-size:22px;">●</span> 草稿质量提升
+        </div>
+        
+        <div class="cs-highlight" style="display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:999px;background:rgba(46,213,115,0.12);border:1px solid #4D9FFF66;font-size:24px;color:#fff;margin-right:12px;margin-bottom:12px;">
+            <span style="color:#4D9FFF;font-size:22px;">●</span> 复盘变得简单
+        </div>
+        </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#4D9FFF;opacity:0.7;">S04 · evidence</div>
+
+  <div class="hud-frame"></div><div class="scan-sweep"></div>
+  <div class="hud-top"><span>EVIDENCE / HUD SYSTEM</span><b>S04</b></div>
+  <div class="hud-bottom"><span>OBSIDIAN SECOND BRAIN</span><i>VOICEOVER DRIVEN</i></div>
+</section>
+<section id="scene-s05" class="scene clip role-explain tpl-framework_quadrant" data-start="21.013" data-duration="2.154" data-track-index="1" data-visual-template="framework_quadrant">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(135deg,#0A1628 0%,#0A1A28 60%,#0A1428 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:220px;left:72px;right:72px;text-align:center;">
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">改稿，1 小时</div>
+    </div>
+    
+        <div class="framework-quad" style="position:absolute;top:420px;left:120px;width:380px;height:380px;background:rgba(255,255,255,0.05);border:2px solid #4D9FFF;border-radius:30px;padding:30px 26px;box-shadow:0 0 32px #4D9FFF22;">
+            <div style="font-size:20px;letter-spacing:0.18em;color:#4D9FFF;margin-bottom:10px;">Q1 输入</div>
+            <div style="font-size:32px;font-weight:800;color:#fff;line-height:1.2;margin-top:6px;">统一入口</div>
+        </div>
+        
+        <div class="framework-quad" style="position:absolute;top:420px;right:120px;width:380px;height:380px;background:rgba(255,255,255,0.05);border:2px solid #2ED573;border-radius:30px;padding:30px 26px;box-shadow:0 0 32px #2ED57322;">
+            <div style="font-size:20px;letter-spacing:0.18em;color:#2ED573;margin-bottom:10px;">Q2 结构</div>
+            <div style="font-size:32px;font-weight:800;color:#fff;line-height:1.2;margin-top:6px;">组织整理</div>
+        </div>
+        
+        <div class="framework-quad" style="position:absolute;top:900px;left:120px;width:380px;height:380px;background:rgba(255,255,255,0.05);border:2px solid #FF6B35;border-radius:30px;padding:30px 26px;box-shadow:0 0 32px #FF6B3522;">
+            <div style="font-size:20px;letter-spacing:0.18em;color:#FF6B35;margin-bottom:10px;">Q3 检索</div>
+            <div style="font-size:32px;font-weight:800;color:#fff;line-height:1.2;margin-top:6px;">按需调用</div>
+        </div>
+        
+        <div class="framework-quad" style="position:absolute;top:900px;right:120px;width:380px;height:380px;background:rgba(255,255,255,0.05);border:2px solid #A855F7;border-radius:30px;padding:30px 26px;box-shadow:0 0 32px #A855F722;">
+            <div style="font-size:20px;letter-spacing:0.18em;color:#A855F7;margin-bottom:10px;">Q4 输出</div>
+            <div style="font-size:32px;font-weight:800;color:#fff;line-height:1.2;margin-top:6px;">持续产出</div>
+        </div>
+        
+    <div style="position:absolute;top:660px;left:430px;width:220px;height:220px;border-radius:50%;background:linear-gradient(135deg,rgba(37,216,255,0.18),rgba(46,213,115,0.18));border:2px solid #25D8FF;display:flex;align-items:center;justify-content:center;">
+        <div style="text-align:center;">
+            <div style="font-size:14px;letter-spacing:0.22em;color:rgba(255,255,255,0.55);">CENTER</div>
+            <div style="font-size:32px;font-weight:900;color:#fff;margin-top:4px;">Hub</div>
+        </div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#25D8FF;opacity:0.7;">S05 · explain</div>
+
+  <div class="hud-frame"></div><div class="scan-sweep"></div>
+  <div class="hud-top"><span>EXPLAIN / HUD SYSTEM</span><b>S05</b></div>
+  <div class="hud-bottom"><span>OBSIDIAN SECOND BRAIN</span><i>VOICEOVER DRIVEN</i></div>
+</section>
+<section id="scene-s06" class="scene clip role-explain tpl-broken_chain" data-start="23.408" data-duration="8.056" data-track-index="1" data-visual-template="broken_chain">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:#050814;">
+      <div class="bg-grid"></div>
+    </div>
+    
+    <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
+        <div style="font-size:52px;font-weight:700;color:#fff;line-height:1.2;">不是 Claude Code 帮我写了文章，是它帮我把「想」和「等灵感」的时间压缩到</div>
+    </div>
+    
+    
+        <div class="chain-node" style="
+            position:absolute;top:656px;left:206px;
+            width:128px;height:128px;border-radius:50%;
+            background:rgba(255,255,255,0.08);border:3px solid #25D8FF;
+            display:flex;align-items:center;justify-content:center;
+            font-size:28px;font-weight:800;color:#fff;
+            box-shadow:0 0 26px #25D8FF55;
+        ">素材</div>
+        
+
+        <div class="chain-node" style="
+            position:absolute;top:416px;left:476px;
+            width:128px;height:128px;border-radius:50%;
+            background:rgba(255,255,255,0.08);border:3px solid #FF4757;
+            display:flex;align-items:center;justify-content:center;
+            font-size:28px;font-weight:800;color:#fff;
+            box-shadow:0 0 26px #FF475755;
+        ">结构</div>
+        
+
+        <div class="chain-node" style="
+            position:absolute;top:656px;left:746px;
+            width:128px;height:128px;border-radius:50%;
+            background:rgba(255,255,255,0.08);border:3px solid #FF4757;
+            display:flex;align-items:center;justify-content:center;
+            font-size:28px;font-weight:800;color:#fff;
+            box-shadow:0 0 26px #FF475755;
+        ">检索</div>
+        
+
+        <div class="tool-connector" style="
+            position:absolute;top:598.0px;left:224.37608131811558px;
+            width:361.24783736376884px;height:3px;
+            background:linear-gradient(90deg,#FF4757,rgba(37,216,255,0.2));
+            transform:rotate(-41.6335393365702deg);transform-origin:center;
+            box-shadow:0 0 12px #FF475755;
+        "></div>
+        
+
+        <div class="tool-connector" style="
+            position:absolute;top:598.0px;left:494.37608131811555px;
+            width:361.24783736376884px;height:3px;
+            background:linear-gradient(90deg,#FF4757,rgba(37,216,255,0.2));
+            transform:rotate(41.6335393365702deg);transform-origin:center;
+            box-shadow:0 0 12px #FF475755;
+        "></div>
+        
+
+        <div class="tool-connector" style="
+            position:absolute;top:718.0px;left:270.0px;
+            width:540.0px;height:3px;
+            background:linear-gradient(90deg,#FF4757,rgba(37,216,255,0.2));
+            transform:rotate(0.0deg);transform-origin:center;
+            box-shadow:0 0 12px #FF475755;
+        "></div>
+        
+
+        <div class="chain-node" style="
+            position:absolute;top:1016px;left:856px;
+            width:128px;height:128px;border-radius:50%;
+            background:rgba(255,255,255,0.04);border:3px dashed #25D8FF;
+            display:flex;align-items:center;justify-content:center;
+            font-size:28px;font-weight:800;color:#fff;opacity:0.85;
+        ">输出</div>
+        
+
+        <div class="tool-connector" style="
+            position:absolute;top:720px;left:880px;width:80px;height:0;
+            border-top:3px dotted #25D8FF;
+        "></div>
+        
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#25D8FF;opacity:0.7;">S06 · explain</div>
+
+  <div class="hud-frame"></div><div class="scan-sweep"></div>
+  <div class="hud-top"><span>EXPLAIN / HUD SYSTEM</span><b>S06</b></div>
+  <div class="hud-bottom"><span>OBSIDIAN SECOND BRAIN</span><i>VOICEOVER DRIVEN</i></div>
+</section>
+<section id="scene-s07" class="scene clip role-hook tpl-keyword_punchline" data-start="31.705" data-duration="4.549" data-track-index="1" data-visual-template="keyword_punchline">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(160deg,#0A1628 0%,#1A0A0A 50%,#0A1628 100%);">
+      <div class="bg-grid"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,#FF475728 0%,transparent 70%);"></div>
+    </div>
+    <div style="position:absolute;top:200px;left:0;right:0;text-align:center;">
+      <div style="font-size:18px;letter-spacing:0.32em;color:rgba(255,255,255,0.5);margin-bottom:16px;">KEYWORD / PUNCH</div>
+    </div>
+    <div style="position:absolute;top:280px;left:0;right:0;text-align:center;">
+      <div style="display:inline-flex;padding:32px 80px;border-radius:36px;background:linear-gradient(135deg,#FF4757,rgba(255,107,53,0.8));box-shadow:0 0 64px #FF475766;">
+        <div style="font-size:180px;font-weight:900;color:#0A1628;letter-spacing:-6px;line-height:0.9;">记住</div>
+      </div>
+    </div>
+    <div style="position:absolute;top:760px;left:120px;right:120px;text-align:center;">
+      <div style="font-size:46px;font-weight:700;color:#fff;line-height:1.32;letter-spacing:-0.4px;">你有没有这种感觉，读了很多书，记住了 10%，用到了 1%</div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#FF4757;opacity:0.7;">S07 · hook</div>
+
+  <div class="hud-frame"></div><div class="scan-sweep"></div>
+  <div class="hud-top"><span>HOOK / HUD SYSTEM</span><b>S07</b></div>
+  <div class="hud-bottom"><span>OBSIDIAN SECOND BRAIN</span><i>VOICEOVER DRIVEN</i></div>
+</section>
+<section id="scene-s08" class="scene clip role-evidence tpl-metric_dashboard" data-start="36.495" data-duration="4.759" data-track-index="1" data-visual-template="metric_dashboard">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(135deg,#0A1428 0%,#0A1A28 60%,#082016 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:210px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(46,213,115,0.12);border:1px solid #4D9FFF66;color:#4D9FFF;font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">DATA / DASHBOARD</div>
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">以前这个过程需要我自己花 1 小时「想」，现在 5 分钟搞定</div>
+    </div>
+    
+        <div class="metric-tile" style="position:absolute;top:480px;left:72px;width:432px;height:380px;background:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.14);border-radius:28px;padding:30px 28px;box-shadow:0 0 28px rgba(37,216,255,0.08);">
+            <div style="font-size:18px;letter-spacing:0.2em;color:rgba(255,255,255,0.55);margin-bottom:14px;">启动</div>
+            <div style="font-size:80px;font-weight:900;color:#4D9FFF;line-height:0.95;letter-spacing:-2px;">READY</div>
+            <div style="display:inline-flex;margin-top:14px;padding:6px 14px;border-radius:999px;background:#2ED57322;border:1px solid #2ED57366;font-size:22px;color:#2ED573;font-weight:700;">+OK</div>
+        </div>
+        
+        <div class="metric-tile" style="position:absolute;top:480px;right:72px;width:432px;height:380px;background:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.14);border-radius:28px;padding:30px 28px;box-shadow:0 0 28px rgba(37,216,255,0.08);">
+            <div style="font-size:18px;letter-spacing:0.2em;color:rgba(255,255,255,0.55);margin-bottom:14px;">闭环</div>
+            <div style="font-size:80px;font-weight:900;color:#4D9FFF;line-height:0.95;letter-spacing:-2px;">RUN</div>
+            <div style="display:inline-flex;margin-top:14px;padding:6px 14px;border-radius:999px;background:#2ED57322;border:1px solid #2ED57366;font-size:22px;color:#2ED573;font-weight:700;">+OK</div>
+        </div>
+        
+        <div class="metric-tile" style="position:absolute;top:920px;left:72px;width:432px;height:380px;background:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.14);border-radius:28px;padding:30px 28px;box-shadow:0 0 28px rgba(37,216,255,0.08);">
+            <div style="font-size:18px;letter-spacing:0.2em;color:rgba(255,255,255,0.55);margin-bottom:14px;">输出</div>
+            <div style="font-size:80px;font-weight:900;color:#4D9FFF;line-height:0.95;letter-spacing:-2px;">ON</div>
+            <div style="display:inline-flex;margin-top:14px;padding:6px 14px;border-radius:999px;background:#2ED57322;border:1px solid #2ED57366;font-size:22px;color:#2ED573;font-weight:700;">+GO</div>
+        </div>
+        
+        <div class="metric-tile" style="position:absolute;top:920px;right:72px;width:432px;height:380px;background:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.14);border-radius:28px;padding:30px 28px;box-shadow:0 0 28px rgba(37,216,255,0.08);">
+            <div style="font-size:18px;letter-spacing:0.2em;color:rgba(255,255,255,0.55);margin-bottom:14px;">复盘</div>
+            <div style="font-size:80px;font-weight:900;color:#4D9FFF;line-height:0.95;letter-spacing:-2px;">DAILY</div>
+            <div style="display:inline-flex;margin-top:14px;padding:6px 14px;border-radius:999px;background:#2ED57322;border:1px solid #2ED57366;font-size:22px;color:#2ED573;font-weight:700;">+GO</div>
+        </div>
+        
+    <div style="position:absolute;top:1340px;left:140px;right:140px;padding:18px 24px;border-top:1px solid rgba(255,255,255,0.18);text-align:center;font-size:24px;color:rgba(255,255,255,0.7);">持续跑通最小闭环后，看实际数字</div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#4D9FFF;opacity:0.7;">S08 · evidence</div>
+
+  <div class="hud-frame"></div><div class="scan-sweep"></div>
+  <div class="hud-top"><span>EVIDENCE / HUD SYSTEM</span><b>S08</b></div>
+  <div class="hud-bottom"><span>OBSIDIAN SECOND BRAIN</span><i>VOICEOVER DRIVEN</i></div>
+</section>
+<section id="scene-s09" class="scene clip role-explain tpl-myth_bust" data-start="41.496" data-duration="2.684" data-track-index="1" data-visual-template="myth_bust">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(180deg,#1A0A0A 0%,#0A1628 60%,#0A1628 100%);">
+      <div class="bg-grid"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,#25D8FF22 0%,transparent 70%);"></div>
+    </div>
+    <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(255,71,87,0.12);border:1px solid #25D8FF66;color:#25D8FF;font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">MYTH / BUST</div>
+      <div style="font-size:60px;font-weight:900;color:#fff;line-height:1.1;letter-spacing:-1.4px;">写文章最难的不是写，是开始写</div>
+    </div>
+    <div style="position:absolute;top:560px;left:120px;width:840px;background:rgba(255,71,87,0.10);border:2px solid #FF4757;border-radius:24px;padding:34px 32px;text-align:center;box-shadow:0 0 32px rgba(255,71,87,0.18);">
+        <div style="font-size:18px;letter-spacing:0.22em;color:#FF4757;margin-bottom:12px;">MYTH / 迷思</div>
+        <div style="font-size:42px;font-weight:800;color:rgba(255,255,255,0.5);text-decoration:line-through;line-height:1.18;">多就是好</div>
+    </div>
+    <div style="position:absolute;top:920px;left:0;right:0;text-align:center;">
+        <div style="display:inline-flex;padding:14px 36px;border-radius:18px;background:linear-gradient(135deg,#25D8FF,#2ED573);font-size:32px;font-weight:900;color:#0A1628;letter-spacing:-0.4px;box-shadow:0 0 40px #25D8FF66;">▼ 真相是 ▼</div>
+    </div>
+    <div style="position:absolute;top:1080px;left:120px;width:840px;background:linear-gradient(180deg,rgba(46,213,115,0.18),rgba(255,255,255,0.04));border:2px solid #2ED573;border-radius:24px;padding:34px 32px;text-align:center;box-shadow:0 0 32px rgba(46,213,115,0.18);">
+        <div style="font-size:18px;letter-spacing:0.22em;color:#2ED573;margin-bottom:12px;">TRUTH / 真相</div>
+        <div style="font-size:42px;font-weight:900;color:#fff;line-height:1.18;">对才是好</div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#25D8FF;opacity:0.7;">S09 · explain</div>
+
+  <div class="hud-frame"></div><div class="scan-sweep"></div>
+  <div class="hud-top"><span>EXPLAIN / HUD SYSTEM</span><b>S09</b></div>
+  <div class="hud-bottom"><span>OBSIDIAN SECOND BRAIN</span><i>VOICEOVER DRIVEN</i></div>
+</section>
+<section id="scene-s10" class="scene clip role-evidence tpl-case_study_card" data-start="44.422" data-duration="5.791" data-track-index="1" data-visual-template="case_study_card">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(160deg,#0A1628 0%,#0A1A28 60%,#101B32 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:220px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(77,159,255,0.12);border:1px solid #4D9FFF66;color:#4D9FFF;font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">CASE / STUDY</div>
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">以前我要「想好写什么」才能开始，现在只需要说「帮我写」，它就帮我写了</div>
+      <div style="font-size:24px;color:rgba(255,255,255,0.65);margin-top:8px;">真实案例 · 90 天实践</div>
+    </div>
+    <div style="position:absolute;top:520px;left:72px;width:432px;background:linear-gradient(180deg,rgba(255,71,87,0.12),rgba(255,255,255,0.04));border:2px solid #FF4757;border-radius:24px;padding:28px 26px;">
+        <div style="font-size:18px;letter-spacing:0.2em;color:#FF4757;margin-bottom:10px;">BEFORE / 之前</div>
+        <div style="font-size:28px;font-weight:700;color:#fff;line-height:1.4;">旧流程：信息散落，输出靠人肉拼接</div>
+    </div>
+    <div style="position:absolute;top:520px;right:72px;width:432px;background:linear-gradient(180deg,rgba(46,213,115,0.12),rgba(255,255,255,0.04));border:2px solid #2ED573;border-radius:24px;padding:28px 26px;">
+        <div style="font-size:18px;letter-spacing:0.2em;color:#2ED573;margin-bottom:10px;">AFTER / 之后</div>
+        <div style="font-size:28px;font-weight:700;color:#fff;line-height:1.4;">新流程：统一入口，结构先出来</div>
+    </div>
+    <div style="position:absolute;top:1100px;left:72px;right:72px;text-align:center;">
+        <div class="cs-highlight" style="display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:999px;background:rgba(46,213,115,0.12);border:1px solid #4D9FFF66;font-size:24px;color:#fff;margin-right:12px;margin-bottom:12px;">
+            <span style="color:#4D9FFF;font-size:22px;">●</span> 找到素材更快
+        </div>
+        
+        <div class="cs-highlight" style="display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:999px;background:rgba(46,213,115,0.12);border:1px solid #4D9FFF66;font-size:24px;color:#fff;margin-right:12px;margin-bottom:12px;">
+            <span style="color:#4D9FFF;font-size:22px;">●</span> 草稿质量提升
+        </div>
+        
+        <div class="cs-highlight" style="display:inline-flex;align-items:center;gap:8px;padding:12px 22px;border-radius:999px;background:rgba(46,213,115,0.12);border:1px solid #4D9FFF66;font-size:24px;color:#fff;margin-right:12px;margin-bottom:12px;">
+            <span style="color:#4D9FFF;font-size:22px;">●</span> 复盘变得简单
+        </div>
+        </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#4D9FFF;opacity:0.7;">S10 · evidence</div>
+
+  <div class="hud-frame"></div><div class="scan-sweep"></div>
+  <div class="hud-top"><span>EVIDENCE / HUD SYSTEM</span><b>S10</b></div>
+  <div class="hud-bottom"><span>OBSIDIAN SECOND BRAIN</span><i>VOICEOVER DRIVEN</i></div>
+</section>
+<section id="scene-s11" class="scene clip role-explain tpl-broken_chain" data-start="50.454" data-duration="6.623" data-track-index="1" data-visual-template="broken_chain">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:#050814;">
+      <div class="bg-grid"></div>
+    </div>
+    
+    <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
+        <div style="font-size:52px;font-weight:700;color:#fff;line-height:1.2;">当然，AI 写的不能直接用，还需要我改，但它帮我跨过了「开始」这个最大的障碍</div>
+    </div>
+    
+    
+    <div style="position:absolute;top:480px;left:168px;width:6px;height:524px;background:linear-gradient(180deg,#25D8FF,rgba(37,216,255,0.25));border-radius:4px;box-shadow:0 0 18px #25D8FF66;"></div>
+    
+        <div class="chain-node" style="
+            position:absolute;top:480px;left:208px;width:760px;height:110px;
+            background:rgba(255,255,255,0.06);border:2px solid #25D8FF;
+            border-radius:18px;display:flex;align-items:center;
+            padding:0 36px;font-size:34px;font-weight:700;color:#fff;
+        ">素材</div>
+        
+
+        <div class="chain-node" style="
+            position:absolute;top:618px;left:208px;width:760px;height:110px;
+            background:rgba(255,255,255,0.06);border:2px solid #FF4757;
+            border-radius:18px;display:flex;align-items:center;
+            padding:0 36px;font-size:34px;font-weight:700;color:#fff;
+        ">结构</div>
+        
+
+        <div class="chain-node" style="
+            position:absolute;top:756px;left:208px;width:760px;height:110px;
+            background:rgba(255,255,255,0.06);border:2px solid #FF4757;
+            border-radius:18px;display:flex;align-items:center;
+            padding:0 36px;font-size:34px;font-weight:700;color:#fff;
+        ">检索</div>
+        
+
+        <div class="chain-node" style="
+            position:absolute;top:894px;left:208px;width:760px;height:110px;
+            background:rgba(255,255,255,0.06);border:2px solid #25D8FF;
+            border-radius:18px;display:flex;align-items:center;
+            padding:0 36px;font-size:34px;font-weight:700;color:#fff;
+        ">输出</div>
+        
+
+            <div class="tool-connector" style="
+                position:absolute;top:590px;left:228px;width:6px;height:28px;
+                background:linear-gradient(180deg,#25D8FF,rgba(37,216,255,0.2));
+                border-radius:4px;
+            "></div>
+            
+
+            <div class="tool-connector" style="
+                position:absolute;top:728px;left:228px;width:6px;height:28px;
+                background:linear-gradient(180deg,#25D8FF,rgba(37,216,255,0.2));
+                border-radius:4px;
+            "></div>
+            
+
+            <div class="tool-connector" style="
+                position:absolute;top:866px;left:228px;width:6px;height:28px;
+                background:linear-gradient(180deg,#25D8FF,rgba(37,216,255,0.2));
+                border-radius:4px;
+            "></div>
+            
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#25D8FF;opacity:0.7;">S11 · explain</div>
+
+  <div class="hud-frame"></div><div class="scan-sweep"></div>
+  <div class="hud-top"><span>EXPLAIN / HUD SYSTEM</span><b>S11</b></div>
+  <div class="hud-bottom"><span>OBSIDIAN SECOND BRAIN</span><i>VOICEOVER DRIVEN</i></div>
+</section>
+<section id="scene-s12" class="scene clip role-evidence tpl-metric_dashboard" data-start="57.318" data-duration="7.475" data-track-index="1" data-visual-template="metric_dashboard">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(135deg,#0A1428 0%,#0A1A28 60%,#082016 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:210px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(46,213,115,0.12);border:1px solid #4D9FFF66;color:#4D9FFF;font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">DATA / DASHBOARD</div>
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">从「有想法」到「有草稿」，可能只需要 10 分钟 这个 10 分钟的跨越，是执行力最</div>
+    </div>
+    
+        <div class="metric-tile" style="position:absolute;top:480px;left:72px;width:432px;height:380px;background:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.14);border-radius:28px;padding:30px 28px;box-shadow:0 0 28px rgba(37,216,255,0.08);">
+            <div style="font-size:18px;letter-spacing:0.2em;color:rgba(255,255,255,0.55);margin-bottom:14px;">日均输出</div>
+            <div style="font-size:80px;font-weight:900;color:#4D9FFF;line-height:0.95;letter-spacing:-2px;">3.2 篇</div>
+            <div style="display:inline-flex;margin-top:14px;padding:6px 14px;border-radius:999px;background:#2ED57322;border:1px solid #2ED57366;font-size:22px;color:#2ED573;font-weight:700;">+40%</div>
+        </div>
+        
+        <div class="metric-tile" style="position:absolute;top:480px;right:72px;width:432px;height:380px;background:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.14);border-radius:28px;padding:30px 28px;box-shadow:0 0 28px rgba(37,216,255,0.08);">
+            <div style="font-size:18px;letter-spacing:0.2em;color:rgba(255,255,255,0.55);margin-bottom:14px;">素材利用率</div>
+            <div style="font-size:80px;font-weight:900;color:#4D9FFF;line-height:0.95;letter-spacing:-2px;">78%</div>
+            <div style="display:inline-flex;margin-top:14px;padding:6px 14px;border-radius:999px;background:#2ED57322;border:1px solid #2ED57366;font-size:22px;color:#2ED573;font-weight:700;">+52%</div>
+        </div>
+        
+        <div class="metric-tile" style="position:absolute;top:920px;left:72px;width:432px;height:380px;background:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.14);border-radius:28px;padding:30px 28px;box-shadow:0 0 28px rgba(37,216,255,0.08);">
+            <div style="font-size:18px;letter-spacing:0.2em;color:rgba(255,255,255,0.55);margin-bottom:14px;">检索响应</div>
+            <div style="font-size:80px;font-weight:900;color:#4D9FFF;line-height:0.95;letter-spacing:-2px;">12s</div>
+            <div style="display:inline-flex;margin-top:14px;padding:6px 14px;border-radius:999px;background:#2ED57322;border:1px solid #2ED57366;font-size:22px;color:#2ED573;font-weight:700;">-65%</div>
+        </div>
+        
+        <div class="metric-tile" style="position:absolute;top:920px;right:72px;width:432px;height:380px;background:linear-gradient(180deg,rgba(255,255,255,0.05),rgba(255,255,255,0.02));border:1px solid rgba(255,255,255,0.14);border-radius:28px;padding:30px 28px;box-shadow:0 0 28px rgba(37,216,255,0.08);">
+            <div style="font-size:18px;letter-spacing:0.2em;color:rgba(255,255,255,0.55);margin-bottom:14px;">完播率</div>
+            <div style="font-size:80px;font-weight:900;color:#4D9FFF;line-height:0.95;letter-spacing:-2px;">61%</div>
+            <div style="display:inline-flex;margin-top:14px;padding:6px 14px;border-radius:999px;background:#2ED57322;border:1px solid #2ED57366;font-size:22px;color:#2ED573;font-weight:700;">+18%</div>
+        </div>
+        
+    <div style="position:absolute;top:1340px;left:140px;right:140px;padding:18px 24px;border-top:1px solid rgba(255,255,255,0.18);text-align:center;font-size:24px;color:rgba(255,255,255,0.7);">持续跑通最小闭环后，看实际数字</div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#4D9FFF;opacity:0.7;">S12 · evidence</div>
+
+  <div class="hud-frame"></div><div class="scan-sweep"></div>
+  <div class="hud-top"><span>EVIDENCE / HUD SYSTEM</span><b>S12</b></div>
+  <div class="hud-bottom"><span>OBSIDIAN SECOND BRAIN</span><i>VOICEOVER DRIVEN</i></div>
+</section>
+<section id="scene-s13" class="scene clip role-method tpl-tool_chain_three_cols" data-start="65.034" data-duration="5.591" data-track-index="1" data-visual-template="tool_chain_three_cols">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:#0A1A28;">
+      <div class="bg-grid"></div>
+    </div>
+    
+    <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
+        <div style="font-size:52px;font-weight:700;color:#fff;line-height:1.2;">第一步，让 Claude Code 分析这周的读书笔记，推荐选题</div>
+    </div>
+    
+    
+    <div class="tool-col" style="
+        position:absolute;top:520px;left:60px;width:280px;
+        background:rgba(255,255,255,0.06);border:2px solid #2ED573;
+        border-radius:20px;padding:28px 20px;text-align:center;
+    ">
+        <div style="font-size:56px;margin-bottom:12px;">IN</div>
+        <div style="font-size:32px;font-weight:700;color:#fff;margin-bottom:8px;">统一输入</div>
+        <div style="font-size:28px;font-weight:600;color:#2ED573;margin-bottom:8px;">汇聚素材</div>
+        <div style="font-size:22px;color:rgba(255,255,255,0.55);">读书·网页·语音·视频</div>
+    </div>
+    
+<div class="tool-connector" style="position:absolute;top:580px;left:340px;width:60px;text-align:center;font-size:40px;color:#2ED573;">→</div>
+
+    <div class="tool-col" style="
+        position:absolute;top:520px;left:400px;width:280px;
+        background:rgba(255,255,255,0.06);border:2px solid #2ED573;
+        border-radius:20px;padding:28px 20px;text-align:center;
+    ">
+        <div style="font-size:56px;margin-bottom:12px;">LINK</div>
+        <div style="font-size:32px;font-weight:700;color:#fff;margin-bottom:8px;">双向链接</div>
+        <div style="font-size:28px;font-weight:600;color:#2ED573;margin-bottom:8px;">形成网络</div>
+        <div style="font-size:22px;color:rgba(255,255,255,0.55);">相关观点自动连接</div>
+    </div>
+    
+<div class="tool-connector" style="position:absolute;top:580px;left:680px;width:60px;text-align:center;font-size:40px;color:#2ED573;">→</div>
+
+    <div class="tool-col" style="
+        position:absolute;top:520px;left:740px;width:280px;
+        background:rgba(255,255,255,0.06);border:2px solid #2ED573;
+        border-radius:20px;padding:28px 20px;text-align:center;
+    ">
+        <div style="font-size:56px;margin-bottom:12px;">AI</div>
+        <div style="font-size:32px;font-weight:700;color:#fff;margin-bottom:8px;">AI 检索</div>
+        <div style="font-size:28px;font-weight:600;color:#2ED573;margin-bottom:8px;">随问随取</div>
+        <div style="font-size:22px;color:rgba(255,255,255,0.55);">整理观点和例子</div>
+    </div>
+    
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#2ED573;opacity:0.7;">S13 · method</div>
+
+  <div class="hud-frame"></div><div class="scan-sweep"></div>
+  <div class="hud-top"><span>METHOD / HUD SYSTEM</span><b>S13</b></div>
+  <div class="hud-bottom"><span>OBSIDIAN SECOND BRAIN</span><i>VOICEOVER DRIVEN</i></div>
+</section>
+<section id="scene-s14" class="scene clip role-method tpl-step_ladder" data-start="70.866" data-duration="6.643" data-track-index="1" data-visual-template="step_ladder">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(180deg,#0A1628 0%,#0A1A28 60%,#082016 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:220px;left:0;right:0;text-align:center;">
+      <div style="font-size:18px;letter-spacing:0.32em;color:#2ED573;margin-bottom:14px;">MILESTONE</div>
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">第二步，选一个选题，让它生成草稿 第三步，修改草稿，让它评分，根据评分调整</div>
+    </div>
+    
+        <div class="ladder-rung" style="position:absolute;top:460px;left:120px;right:120px;height:140px;background:linear-gradient(90deg,rgba(46,213,115,0.18),rgba(46,213,115,0.04));border:2px solid #2ED573;border-radius:18px;padding:24px 32px;display:flex;align-items:center;gap:24px;box-shadow:0 0 24px #2ED57318;">
+            <div style="width:80px;height:80px;border-radius:50%;background:#2ED573;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;color:#0A1628;flex-shrink:0;">1</div>
+            <div style="flex:1;">
+                <div style="font-size:24px;letter-spacing:0.16em;color:rgba(255,255,255,0.6);margin-bottom:6px;">1. 起步</div>
+                <div style="font-size:36px;font-weight:800;color:#fff;line-height:1.2;">建立入口</div>
+            </div>
+        </div>
+        
+        <div class="ladder-rung" style="position:absolute;top:660px;left:160px;right:80px;height:140px;background:linear-gradient(90deg,rgba(46,213,115,0.18),rgba(46,213,115,0.04));border:2px solid #2ED573;border-radius:18px;padding:24px 32px;display:flex;align-items:center;gap:24px;box-shadow:0 0 24px #2ED57318;">
+            <div style="width:80px;height:80px;border-radius:50%;background:#2ED573;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;color:#0A1628;flex-shrink:0;">2</div>
+            <div style="flex:1;">
+                <div style="font-size:24px;letter-spacing:0.16em;color:rgba(255,255,255,0.6);margin-bottom:6px;">2. 串联</div>
+                <div style="font-size:36px;font-weight:800;color:#fff;line-height:1.2;">链接结构</div>
+            </div>
+        </div>
+        
+        <div class="ladder-rung" style="position:absolute;top:860px;left:200px;right:40px;height:140px;background:linear-gradient(90deg,rgba(46,213,115,0.18),rgba(46,213,115,0.04));border:2px solid #2ED573;border-radius:18px;padding:24px 32px;display:flex;align-items:center;gap:24px;box-shadow:0 0 24px #2ED57318;">
+            <div style="width:80px;height:80px;border-radius:50%;background:#2ED573;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;color:#0A1628;flex-shrink:0;">3</div>
+            <div style="flex:1;">
+                <div style="font-size:24px;letter-spacing:0.16em;color:rgba(255,255,255,0.6);margin-bottom:6px;">3. 调用</div>
+                <div style="font-size:36px;font-weight:800;color:#fff;line-height:1.2;">随时提问</div>
+            </div>
+        </div>
+        
+        <div class="ladder-rung" style="position:absolute;top:1060px;left:240px;right:0px;height:140px;background:linear-gradient(90deg,rgba(46,213,115,0.18),rgba(46,213,115,0.04));border:2px solid #2ED573;border-radius:18px;padding:24px 32px;display:flex;align-items:center;gap:24px;box-shadow:0 0 24px #2ED57318;">
+            <div style="width:80px;height:80px;border-radius:50%;background:#2ED573;display:flex;align-items:center;justify-content:center;font-size:36px;font-weight:900;color:#0A1628;flex-shrink:0;">4</div>
+            <div style="flex:1;">
+                <div style="font-size:24px;letter-spacing:0.16em;color:rgba(255,255,255,0.6);margin-bottom:6px;">4. 产出</div>
+                <div style="font-size:36px;font-weight:800;color:#fff;line-height:1.2;">持续输出</div>
+            </div>
+        </div>
+        
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#2ED573;opacity:0.7;">S14 · method</div>
+
+  <div class="hud-frame"></div><div class="scan-sweep"></div>
+  <div class="hud-top"><span>METHOD / HUD SYSTEM</span><b>S14</b></div>
+  <div class="hud-bottom"><span>OBSIDIAN SECOND BRAIN</span><i>VOICEOVER DRIVEN</i></div>
+</section>
+<section id="scene-s15" class="scene clip role-evidence tpl-progress_tracker" data-start="77.751" data-duration="6.201" data-track-index="1" data-visual-template="progress_tracker">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(135deg,#0A1428 0%,#0A1A28 60%,#082016 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:200px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(77,159,255,0.12);border:1px solid #4D9FFF66;color:#4D9FFF;font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">PROGRESS / TRACKER</div>
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">这个流程大概 40 分钟，大部分时间是 AI 在跑，我只需要做决策和修改</div>
+    </div>
+    
+        <div class="progress-track" style="position:absolute;top:490px;left:200px;width:800px;">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;">
+                <div style="font-size:24px;letter-spacing:0.16em;color:rgba(255,255,255,0.7);font-weight:700;">能力 A</div>
+                <div style="font-size:32px;font-weight:900;color:#4D9FFF;">90<span style="font-size:18px;color:rgba(255,255,255,0.5);">%</span></div>
+            </div>
+            <div style="width:100%;height:36px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;position:relative;">
+                <div class="progress-bar" style="position:absolute;left:0;top:0;bottom:0;width:720px;background:linear-gradient(90deg,#4D9FFF,rgba(255,255,255,0.3));border-radius:999px;box-shadow:0 0 18px #4D9FFF66;"></div>
+                <div style="position:absolute;left:0;right:0;top:0;bottom:0;display:flex;justify-content:space-between;align-items:center;padding:0 14px;font-size:14px;color:rgba(255,255,255,0.45);font-family:monospace;"><span>W1</span><span>W2</span><span>W3</span><span>W4</span><span>W5</span><span>W6</span><span>W7</span><span>W8</span></div>
+            </div>
+        </div>
+        
+        <div class="progress-track" style="position:absolute;top:720px;left:200px;width:800px;">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;">
+                <div style="font-size:24px;letter-spacing:0.16em;color:rgba(255,255,255,0.7);font-weight:700;">能力 B</div>
+                <div style="font-size:32px;font-weight:900;color:#2ED573;">88<span style="font-size:18px;color:rgba(255,255,255,0.5);">%</span></div>
+            </div>
+            <div style="width:100%;height:36px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;position:relative;">
+                <div class="progress-bar" style="position:absolute;left:0;top:0;bottom:0;width:704px;background:linear-gradient(90deg,#2ED573,rgba(255,255,255,0.3));border-radius:999px;box-shadow:0 0 18px #2ED57366;"></div>
+                <div style="position:absolute;left:0;right:0;top:0;bottom:0;display:flex;justify-content:space-between;align-items:center;padding:0 14px;font-size:14px;color:rgba(255,255,255,0.45);font-family:monospace;"><span>W1</span><span>W2</span><span>W3</span><span>W4</span><span>W5</span><span>W6</span><span>W7</span><span>W8</span></div>
+            </div>
+        </div>
+        
+        <div class="progress-track" style="position:absolute;top:950px;left:200px;width:800px;">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;">
+                <div style="font-size:24px;letter-spacing:0.16em;color:rgba(255,255,255,0.7);font-weight:700;">能力 C</div>
+                <div style="font-size:32px;font-weight:900;color:#FF6B35;">86<span style="font-size:18px;color:rgba(255,255,255,0.5);">%</span></div>
+            </div>
+            <div style="width:100%;height:36px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;position:relative;">
+                <div class="progress-bar" style="position:absolute;left:0;top:0;bottom:0;width:688px;background:linear-gradient(90deg,#FF6B35,rgba(255,255,255,0.3));border-radius:999px;box-shadow:0 0 18px #FF6B3566;"></div>
+                <div style="position:absolute;left:0;right:0;top:0;bottom:0;display:flex;justify-content:space-between;align-items:center;padding:0 14px;font-size:14px;color:rgba(255,255,255,0.45);font-family:monospace;"><span>W1</span><span>W2</span><span>W3</span><span>W4</span><span>W5</span><span>W6</span><span>W7</span><span>W8</span></div>
+            </div>
+        </div>
+        
+    <div style="position:absolute;top:1200px;left:120px;right:120px;padding:18px 24px;border-top:1px solid rgba(255,255,255,0.18);text-align:center;font-size:24px;color:rgba(255,255,255,0.7);">持续跑通后，三条曲线同步进入加速段</div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#4D9FFF;opacity:0.7;">S15 · evidence</div>
+
+  <div class="hud-frame"></div><div class="scan-sweep"></div>
+  <div class="hud-top"><span>EVIDENCE / HUD SYSTEM</span><b>S15</b></div>
+  <div class="hud-bottom"><span>OBSIDIAN SECOND BRAIN</span><i>VOICEOVER DRIVEN</i></div>
+</section>
+<section id="scene-s16" class="scene clip role-explain tpl-tool_stack" data-start="84.194" data-duration="2.274" data-track-index="1" data-visual-template="tool_stack">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(180deg,#0A1628 0%,#0F0820 60%,#0A1628 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(168,85,247,0.12);border:1px solid #25D8FF66;color:#25D8FF;font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">TOOL / STACK</div>
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">不是我变强了，是工具变了</div>
+    </div>
+    
+        <div class="stack-layer" style="position:absolute;top:480px;left:180px;width:720px;height:140px;background:linear-gradient(90deg,#7C3AED22,rgba(255,255,255,0.04));border:2px solid #7C3AED;border-radius:20px;padding:20px 28px;display:flex;align-items:center;gap:24px;box-shadow:0 0 26px #7C3AED22;">
+            <div style="width:80px;height:80px;border-radius:16px;background:#7C3AED;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#0A1428;flex-shrink:0;">L1</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.1;">Layer 1</div>
+                <div style="font-size:24px;color:rgba(255,255,255,0.65);margin-top:6px;">采集</div>
+            </div>
+        </div>
+        
+        <div class="stack-layer" style="position:absolute;top:680px;left:240px;width:600px;height:140px;background:linear-gradient(90deg,#4D9FFF22,rgba(255,255,255,0.04));border:2px solid #4D9FFF;border-radius:20px;padding:20px 28px;display:flex;align-items:center;gap:24px;box-shadow:0 0 26px #4D9FFF22;">
+            <div style="width:80px;height:80px;border-radius:16px;background:#4D9FFF;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#0A1428;flex-shrink:0;">L2</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.1;">Layer 2</div>
+                <div style="font-size:24px;color:rgba(255,255,255,0.65);margin-top:6px;">加工</div>
+            </div>
+        </div>
+        
+        <div class="stack-layer" style="position:absolute;top:880px;left:300px;width:480px;height:140px;background:linear-gradient(90deg,#2ED57322,rgba(255,255,255,0.04));border:2px solid #2ED573;border-radius:20px;padding:20px 28px;display:flex;align-items:center;gap:24px;box-shadow:0 0 26px #2ED57322;">
+            <div style="width:80px;height:80px;border-radius:16px;background:#2ED573;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#0A1428;flex-shrink:0;">L3</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.1;">Layer 3</div>
+                <div style="font-size:24px;color:rgba(255,255,255,0.65);margin-top:6px;">输出</div>
+            </div>
+        </div>
+        
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#25D8FF;opacity:0.7;">S16 · explain</div>
+
+  <div class="hud-frame"></div><div class="scan-sweep"></div>
+  <div class="hud-top"><span>EXPLAIN / HUD SYSTEM</span><b>S16</b></div>
+  <div class="hud-bottom"><span>OBSIDIAN SECOND BRAIN</span><i>VOICEOVER DRIVEN</i></div>
+</section>
+<section id="scene-s17" class="scene clip role-explain tpl-concept_layers" data-start="86.709" data-duration="5.791" data-track-index="1" data-visual-template="concept_layers">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(180deg,#0A1628 0%,#0F0820 60%,#0A1628 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">个人体验和情感是我改稿的时候加进去的，不是 AI 写的，是我写的</div>
+    </div>
+    
+        <div class="layer-bar" style="position:absolute;top:480px;left:120px;width:840px;height:180px;background:linear-gradient(90deg,#25D8FF26,rgba(255,255,255,0.04));border:2px solid #25D8FF;border-radius:24px;padding:24px 32px;display:flex;align-items:center;gap:24px;box-shadow:0 0 32px #25D8FF22;">
+            <div style="width:90px;height:90px;border-radius:18px;background:#25D8FF;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:900;color:#0A1628;flex-shrink:0;">L1</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.18;">收集：素材进库</div>
+            </div>
+        </div>
+        
+        <div class="layer-bar" style="position:absolute;top:720px;left:180px;width:720px;height:180px;background:linear-gradient(90deg,#7C3AED26,rgba(255,255,255,0.04));border:2px solid #7C3AED;border-radius:24px;padding:24px 32px;display:flex;align-items:center;gap:24px;box-shadow:0 0 32px #7C3AED22;">
+            <div style="width:90px;height:90px;border-radius:18px;background:#7C3AED;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:900;color:#0A1628;flex-shrink:0;">L2</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.18;">结构：双向链接</div>
+            </div>
+        </div>
+        
+        <div class="layer-bar" style="position:absolute;top:960px;left:240px;width:600px;height:180px;background:linear-gradient(90deg,#A855F726,rgba(255,255,255,0.04));border:2px solid #A855F7;border-radius:24px;padding:24px 32px;display:flex;align-items:center;gap:24px;box-shadow:0 0 32px #A855F722;">
+            <div style="width:90px;height:90px;border-radius:18px;background:#A855F7;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:900;color:#0A1628;flex-shrink:0;">L3</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.18;">调用：AI 提问</div>
+            </div>
+        </div>
+        
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#25D8FF;opacity:0.7;">S17 · explain</div>
+
+  <div class="hud-frame"></div><div class="scan-sweep"></div>
+  <div class="hud-top"><span>EXPLAIN / HUD SYSTEM</span><b>S17</b></div>
+  <div class="hud-bottom"><span>OBSIDIAN SECOND BRAIN</span><i>VOICEOVER DRIVEN</i></div>
+</section>
+<section id="scene-s18" class="scene clip role-explain tpl-knowledge_graph" data-start="92.742" data-duration="4.548" data-track-index="1" data-visual-template="knowledge_graph">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(160deg,#0A1628 0%,#0F0820 60%,#0A1628 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:200px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(168,85,247,0.12);border:1px solid #25D8FF66;color:#25D8FF;font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">KNOWLEDGE / GRAPH</div>
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">它会学习你的写作风格，而不是输出一个通用的模板</div>
+    </div>
+    
+            <div class="kg-edge" style="position:absolute;left:600px;top:840px;width:290px;height:2px;background:linear-gradient(90deg,#25D8FF66,rgba(255,255,255,0.2));transform-origin:0 0;transform:rotate(59.275882508925deg);"></div>
+            
+            <div class="kg-edge" style="position:absolute;left:600px;top:840px;width:290px;height:2px;background:linear-gradient(90deg,#25D8FF66,rgba(255,255,255,0.2));transform-origin:0 0;transform:rotate(-59.275841629020135deg);"></div>
+            
+            <div class="kg-edge" style="position:absolute;left:310px;top:540px;width:290px;height:2px;background:linear-gradient(90deg,#25D8FF66,rgba(255,255,255,0.2));transform-origin:0 0;transform:rotate(-19.758613876340043deg);"></div>
+            
+            <div class="kg-edge" style="position:absolute;left:890px;top:540px;width:290px;height:2px;background:linear-gradient(90deg,#25D8FF66,rgba(255,255,255,0.2));transform-origin:0 0;transform:rotate(19.758627502975deg);"></div>
+            
+            <div class="kg-edge" style="position:absolute;left:310px;top:540px;width:1px;height:2px;background:linear-gradient(90deg,#25D8FF66,rgba(255,255,255,0.2));transform-origin:0 0;transform:rotate(90deg);"></div>
+            
+            <div class="kg-edge" style="position:absolute;left:890px;top:540px;width:1px;height:2px;background:linear-gradient(90deg,#25D8FF66,rgba(255,255,255,0.2));transform-origin:0 0;transform:rotate(90deg);"></div>
+            
+            <div class="kg-edge" style="position:absolute;left:600px;top:440px;width:290px;height:2px;background:linear-gradient(90deg,#25D8FF66,rgba(255,255,255,0.2));transform-origin:0 0;transform:rotate(138.3102971343803deg);"></div>
+            
+    
+        <div class="kg-node" style="position:absolute;left:540px;top:800px;width:120px;height:80px;border-radius:14px;background:#25D8FF;border:2px solid #25D8FF;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px 10px;box-shadow:0 0 22px #25D8FF44;">
+            <div style="font-size:18px;font-weight:800;color:#0A1628;line-height:1.15;">核心概念</div>
+        </div>
+        
+        <div class="kg-node" style="position:absolute;left:250px;top:500px;width:120px;height:80px;border-radius:14px;background:rgba(37,216,255,0.18);border:2px solid #25D8FF;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px 10px;box-shadow:0 0 22px #25D8FF44;">
+            <div style="font-size:16px;font-weight:800;color:#fff;line-height:1.15;">方法 A</div>
+        </div>
+        
+        <div class="kg-node" style="position:absolute;left:830px;top:500px;width:120px;height:80px;border-radius:14px;background:rgba(37,216,255,0.18);border:2px solid #25D8FF;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px 10px;box-shadow:0 0 22px #25D8FF44;">
+            <div style="font-size:16px;font-weight:800;color:#fff;line-height:1.15;">方法 B</div>
+        </div>
+        
+        <div class="kg-node" style="position:absolute;left:540px;top:400px;width:120px;height:80px;border-radius:14px;background:rgba(37,216,255,0.18);border:2px solid #25D8FF;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px 10px;box-shadow:0 0 22px #25D8FF44;">
+            <div style="font-size:16px;font-weight:800;color:#fff;line-height:1.15;">案例 1</div>
+        </div>
+        
+        <div class="kg-node" style="position:absolute;left:250px;top:1100px;width:120px;height:80px;border-radius:14px;background:rgba(37,216,255,0.18);border:2px solid #25D8FF;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px 10px;box-shadow:0 0 22px #25D8FF44;">
+            <div style="font-size:16px;font-weight:800;color:#fff;line-height:1.15;">案例 2</div>
+        </div>
+        
+        <div class="kg-node" style="position:absolute;left:830px;top:1100px;width:120px;height:80px;border-radius:14px;background:rgba(37,216,255,0.18);border:2px solid #25D8FF;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px 10px;box-shadow:0 0 22px #25D8FF44;">
+            <div style="font-size:16px;font-weight:800;color:#fff;line-height:1.15;">输出</div>
+        </div>
+        
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#25D8FF;opacity:0.7;">S18 · explain</div>
+
+  <div class="hud-frame"></div><div class="scan-sweep"></div>
+  <div class="hud-top"><span>EXPLAIN / HUD SYSTEM</span><b>S18</b></div>
+  <div class="hud-bottom"><span>OBSIDIAN SECOND BRAIN</span><i>VOICEOVER DRIVEN</i></div>
+</section>
+<section id="scene-s19" class="scene clip role-evidence tpl-before_after_compare" data-start="97.531" data-duration="6.403" data-track-index="1" data-visual-template="before_after_compare">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:#0A1428;">
+      <div class="bg-grid"></div>
+    </div>
+    
+    <div style="position:absolute;top:180px;left:72px;right:72px;text-align:center;">
+        <div style="font-size:46px;font-weight:700;color:#fff;line-height:1.2;">以前写文章最难的是「想好写什么」和「开始写」，现在这两件事都可以交给 AI</div>
+    </div>
+    
+    
+        <div style="position:absolute;top:520px;left:92px;right:92px;">
+            <div style="display:flex;align-items:center;gap:18px;margin-bottom:18px;">
+                <div style="font-size:22px;letter-spacing:0.16em;color:#FF4757;">旧路径</div>
+                <div class="tool-connector" style="flex:1;height:2px;background:linear-gradient(90deg,#FF4757,transparent);"></div>
+            </div>
+            <div><div class='compare-item' style='display:inline-flex;align-items:center;padding:14px 18px;border-radius:999px;background:rgba(255,255,255,0.05);font-size:26px;color:#fff;margin-right:14px;'>翻找素材</div><div class='compare-item' style='display:inline-flex;align-items:center;padding:14px 18px;border-radius:999px;background:rgba(255,255,255,0.05);font-size:26px;color:#fff;margin-right:14px;'>手动拼接</div><div class='compare-item' style='display:inline-flex;align-items:center;padding:14px 18px;border-radius:999px;background:rgba(255,255,255,0.05);font-size:26px;color:#fff;margin-right:14px;'>从零开写</div></div>
+        </div>
+        
+        <div style="position:absolute;top:810px;left:92px;right:92px;">
+            <div style="display:flex;align-items:center;gap:18px;margin-bottom:18px;">
+                <div style="font-size:22px;letter-spacing:0.16em;color:#4D9FFF;">新路径</div>
+                <div class="tool-connector" style="flex:1;height:2px;background:linear-gradient(90deg,#4D9FFF,transparent);"></div>
+            </div>
+            <div><div class='compare-item' style='display:inline-flex;align-items:center;padding:14px 18px;border-radius:999px;background:rgba(255,255,255,0.05);font-size:26px;color:#fff;margin-right:14px;'>直接提问</div><div class='compare-item' style='display:inline-flex;align-items:center;padding:14px 18px;border-radius:999px;background:rgba(255,255,255,0.05);font-size:26px;color:#fff;margin-right:14px;'>检索笔记</div><div class='compare-item' style='display:inline-flex;align-items:center;padding:14px 18px;border-radius:999px;background:rgba(255,255,255,0.05);font-size:26px;color:#fff;margin-right:14px;'>拿到素材包</div></div>
+        </div>
+        
+    <div style="position:absolute;top:1120px;left:118px;right:118px;padding:20px 24px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.14);border-radius:18px;text-align:center;font-size:28px;color:rgba(255,255,255,0.72);">旧流程在找，新的流程在直接调用。</div>
+    
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#4D9FFF;opacity:0.7;">S19 · evidence</div>
+
+  <div class="hud-frame"></div><div class="scan-sweep"></div>
+  <div class="hud-top"><span>EVIDENCE / HUD SYSTEM</span><b>S19</b></div>
+  <div class="hud-bottom"><span>OBSIDIAN SECOND BRAIN</span><i>VOICEOVER DRIVEN</i></div>
+</section>
+<section id="scene-s20" class="scene clip role-explain tpl-framework_quadrant" data-start="104.175" data-duration="6.232" data-track-index="1" data-visual-template="framework_quadrant">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(135deg,#0A1628 0%,#0A1A28 60%,#0A1428 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:220px;left:72px;right:72px;text-align:center;">
+      <div style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">选题，选 AI 给的建议里最顺眼的 改稿，把 AI 写的改成我自己的语言</div>
+    </div>
+    
+        <div class="framework-quad" style="position:absolute;top:420px;left:120px;width:380px;height:380px;background:rgba(255,255,255,0.05);border:2px solid #4D9FFF;border-radius:30px;padding:30px 26px;box-shadow:0 0 32px #4D9FFF22;">
+            <div style="font-size:20px;letter-spacing:0.18em;color:#4D9FFF;margin-bottom:10px;">Q1 输入</div>
+            <div style="font-size:32px;font-weight:800;color:#fff;line-height:1.2;margin-top:6px;">统一入口</div>
+        </div>
+        
+        <div class="framework-quad" style="position:absolute;top:420px;right:120px;width:380px;height:380px;background:rgba(255,255,255,0.05);border:2px solid #2ED573;border-radius:30px;padding:30px 26px;box-shadow:0 0 32px #2ED57322;">
+            <div style="font-size:20px;letter-spacing:0.18em;color:#2ED573;margin-bottom:10px;">Q2 结构</div>
+            <div style="font-size:32px;font-weight:800;color:#fff;line-height:1.2;margin-top:6px;">组织整理</div>
+        </div>
+        
+        <div class="framework-quad" style="position:absolute;top:900px;left:120px;width:380px;height:380px;background:rgba(255,255,255,0.05);border:2px solid #FF6B35;border-radius:30px;padding:30px 26px;box-shadow:0 0 32px #FF6B3522;">
+            <div style="font-size:20px;letter-spacing:0.18em;color:#FF6B35;margin-bottom:10px;">Q3 检索</div>
+            <div style="font-size:32px;font-weight:800;color:#fff;line-height:1.2;margin-top:6px;">按需调用</div>
+        </div>
+        
+        <div class="framework-quad" style="position:absolute;top:900px;right:120px;width:380px;height:380px;background:rgba(255,255,255,0.05);border:2px solid #A855F7;border-radius:30px;padding:30px 26px;box-shadow:0 0 32px #A855F722;">
+            <div style="font-size:20px;letter-spacing:0.18em;color:#A855F7;margin-bottom:10px;">Q4 输出</div>
+            <div style="font-size:32px;font-weight:800;color:#fff;line-height:1.2;margin-top:6px;">持续产出</div>
+        </div>
+        
+    <div style="position:absolute;top:660px;left:430px;width:220px;height:220px;border-radius:50%;background:linear-gradient(135deg,rgba(37,216,255,0.18),rgba(46,213,115,0.18));border:2px solid #25D8FF;display:flex;align-items:center;justify-content:center;">
+        <div style="text-align:center;">
+            <div style="font-size:14px;letter-spacing:0.22em;color:rgba(255,255,255,0.55);">CENTER</div>
+            <div style="font-size:32px;font-weight:900;color:#fff;margin-top:4px;">AI</div>
+        </div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#25D8FF;opacity:0.7;">S20 · explain</div>
+
+  <div class="hud-frame"></div><div class="scan-sweep"></div>
+  <div class="hud-top"><span>EXPLAIN / HUD SYSTEM</span><b>S20</b></div>
+  <div class="hud-bottom"><span>OBSIDIAN SECOND BRAIN</span><i>VOICEOVER DRIVEN</i></div>
+</section>
+<section id="scene-s21" class="scene clip role-cta tpl-checklist_cta" data-start="110.649" data-duration="5.56" data-track-index="1" data-visual-template="checklist_cta">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(160deg,#0A1428 0%,#0A1A28 55%,#0F2A1A 100%);">
+      <div class="bg-grid"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,#2ED57328 0%,transparent 70%);"></div>
+      <div class="bg-glow bg-glow-2" style="background:radial-gradient(circle,#2ED57318 0%,transparent 72%);"></div>
+    </div>
+    <div style="position:absolute;top:140px;left:0;right:0;text-align:center;">
+      <div style="font-size:22px;letter-spacing:0.32em;color:rgba(255,255,255,0.5);">CHAPTER CLOSE</div>
+      <div style="font-size:20px;letter-spacing:0.2em;color:#2ED573;margin-top:12px;">本章掌握度</div>
+    </div>
+    <div style="position:absolute;top:230px;left:0;right:0;text-align:center;">
+      <div style="font-size:280px;font-weight:900;line-height:0.9;color:#2ED573;text-shadow:0 0 64px #2ED57380;letter-spacing:-6px;">100</div>
+      <div style="font-size:36px;font-weight:700;color:rgba(255,255,255,0.78);margin-top:8px;letter-spacing:0.08em;">/ 100</div>
+    </div>
+    <div style="position:absolute;top:680px;left:72px;right:72px;padding:24px 26px;border:1px solid rgba(255,255,255,0.16);border-radius:24px;background:rgba(255,255,255,0.05);text-align:center;">
+      <div style="font-size:42px;font-weight:800;color:#fff;line-height:1.2;">这种工作流让我保持了稳定的输出，从每周一篇变成了每天一篇</div>
+    </div>
+    <div style="position:absolute;top:880px;left:0;right:0;text-align:center;">
+      <div style="font-size:18px;letter-spacing:0.32em;color:#2ED573;margin-bottom:14px;">NEXT / PREVIEW</div>
+      <div style="display:inline-flex;padding:16px 32px;border-radius:18px;background:rgba(46,213,115,0.12);border:1px solid #2ED57366;font-size:30px;color:#fff;font-weight:600;">下期讲：把检索真正接进 AI 流程</div>
+    </div>
+    <div style="position:absolute;top:1130px;left:140px;right:140px;padding:18px 22px;border-radius:18px;background:rgba(255,255,255,0.04);text-align:center;font-size:26px;color:rgba(255,255,255,0.68);line-height:1.4;">把记住外包出去，把精力留给创造</div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#2ED573;opacity:0.7;">S21 · cta</div>
+
+  <div class="hud-frame"></div><div class="scan-sweep"></div>
+  <div class="hud-top"><span>CTA / HUD SYSTEM</span><b>S21</b></div>
+  <div class="hud-bottom"><span>OBSIDIAN SECOND BRAIN</span><i>VOICEOVER DRIVEN</i></div>
+</section>
+<div id="caption-s01_c01" class="caption clip" data-start="0.0" data-duration="3.17" data-track-index="2">用 Claude Code 写公众号三个月后</div><div id="caption-s01_c02" class="caption clip" data-start="3.19" data-duration="3.17" data-track-index="2">我发现它提升的不只是效率</div><div id="caption-s02_c01" class="caption clip" data-start="6.63" data-duration="3.91" data-track-index="2">用 Claude Code 写公众号三个月了</div><div id="caption-s03_c01" class="caption clip" data-start="10.8" data-duration="3.38" data-track-index="2">一开始我只是想找个工具帮我写代码</div><div id="caption-s03_c02" class="caption clip" data-start="14.21" data-duration="3.38" data-track-index="2">结果用它做自媒体创作比写代码还顺手</div><div id="caption-s04_c01" class="caption clip" data-start="17.85" data-duration="2.86" data-track-index="2">以前写一篇公众号文章是这样的</div><div id="caption-s05_c01" class="caption clip" data-start="20.97" data-duration="2.13" data-track-index="2">改稿 1 小时</div><div id="caption-s06_c01" class="caption clip" data-start="23.36" data-duration="4.0" data-track-index="2">不是 Claude Code 帮我写了文章</div><div id="caption-s06_c02" class="caption clip" data-start="27.38" data-duration="4.0" data-track-index="2">是它帮我把「想」和「等灵感」的时间压缩到了几乎为零</div><div id="caption-s07_c01" class="caption clip" data-start="31.64" data-duration="2.25" data-track-index="2">你有没有这种感觉</div><div id="caption-s07_c02" class="caption clip" data-start="33.91" data-duration="2.25" data-track-index="2">读了很多书 记住了 10% 用到了 1%</div><div id="caption-s08_c01" class="caption clip" data-start="36.42" data-duration="2.36" data-track-index="2">以前这个过程需要我自己花 1 小时「想」</div><div id="caption-s08_c02" class="caption clip" data-start="38.8" data-duration="2.36" data-track-index="2">现在 5 分钟搞定</div><div id="caption-s09_c01" class="caption clip" data-start="41.41" data-duration="2.66" data-track-index="2">写文章最难的不是写 是开始写</div><div id="caption-s10_c01" class="caption clip" data-start="44.33" data-duration="1.91" data-track-index="2">以前我要「想好写什么」才能开始</div><div id="caption-s10_c02" class="caption clip" data-start="46.26" data-duration="1.91" data-track-index="2">现在只需要说「帮我写」</div><div id="caption-s10_c03" class="caption clip" data-start="48.18" data-duration="1.91" data-track-index="2">它就帮我写了</div><div id="caption-s11_c01" class="caption clip" data-start="50.35" data-duration="3.28" data-track-index="2">当然 AI 写的不能直接用 还需要我改</div><div id="caption-s11_c02" class="caption clip" data-start="53.66" data-duration="3.28" data-track-index="2">但它帮我跨过了「开始」这个最大的障碍</div><div id="caption-s12_c01" class="caption clip" data-start="57.2" data-duration="3.49" data-track-index="2">从「有想法」到「有草稿」 可能只需要 10 分钟</div><div id="caption-s13_c01" class="caption clip" data-start="60.95" data-duration="3.69" data-track-index="2">这个 10 分钟的跨越 是执行力最大的提升</div><div id="caption-s14_c01" class="caption clip" data-start="64.9" data-duration="1.84" data-track-index="2">第一步</div><div id="caption-s14_c02" class="caption clip" data-start="66.76" data-duration="1.84" data-track-index="2">让 Claude Code 分析这周的读书笔记</div><div id="caption-s14_c03" class="caption clip" data-start="68.62" data-duration="1.84" data-track-index="2">推荐选题</div><div id="caption-s15_c01" class="caption clip" data-start="70.72" data-duration="2.86" data-track-index="2">第二步 选一个选题 让它生成草稿</div><div id="caption-s16_c01" class="caption clip" data-start="73.84" data-duration="3.49" data-track-index="2">第三步 修改草稿 让它评分 根据评分调整</div><div id="caption-s17_c01" class="caption clip" data-start="77.59" data-duration="2.04" data-track-index="2">这个流程大概 40 分钟</div><div id="caption-s17_c02" class="caption clip" data-start="79.65" data-duration="2.04" data-track-index="2">大部分时间是 AI 在跑</div><div id="caption-s17_c03" class="caption clip" data-start="81.72" data-duration="2.04" data-track-index="2">我只需要做决策和修改</div><div id="caption-s18_c01" class="caption clip" data-start="84.02" data-duration="2.25" data-track-index="2">不是我变强了 是工具变了</div><div id="caption-s19_c01" class="caption clip" data-start="86.53" data-duration="2.87" data-track-index="2">个人体验和情感是我改稿的时候加进去的</div><div id="caption-s19_c02" class="caption clip" data-start="89.42" data-duration="2.87" data-track-index="2">不是 AI 写的 是我写的</div><div id="caption-s20_c01" class="caption clip" data-start="92.55" data-duration="4.52" data-track-index="2">它会学习你的写作风格 而不是输出一个通用的模板</div><div id="caption-s21_c01" class="caption clip" data-start="97.33" data-duration="3.18" data-track-index="2">以前写文章最难的是「想好写什么」和「开始写」</div><div id="caption-s21_c02" class="caption clip" data-start="100.53" data-duration="3.17" data-track-index="2">现在这两件事都可以交给 AI</div><div id="caption-s22_c01" class="caption clip" data-start="103.96" data-duration="2.86" data-track-index="2">选题 选 AI 给的建议里最顺眼的</div><div id="caption-s23_c01" class="caption clip" data-start="107.08" data-duration="3.08" data-track-index="2">改稿 把 AI 写的改成我自己的语言</div><div id="caption-s24_c01" class="caption clip" data-start="110.42" data-duration="2.75" data-track-index="2">这种工作流让我保持了稳定的输出</div><div id="caption-s24_c02" class="caption clip" data-start="113.19" data-duration="2.76" data-track-index="2">从每周一篇变成了每天一篇</div>
+</div>
+<script>window.__timelines=window.__timelines||{};</script>
+</body></html>

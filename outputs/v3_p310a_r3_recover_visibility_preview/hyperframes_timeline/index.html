@@ -1,0 +1,1298 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><title>---</title>
+<style>
+/* V3-P3.9R1 — stronger contrast, brighter text, clearer hierarchy */
+:root {
+  --hf-cyan: #38E1FF;
+  --hf-amber: #FFC83D;
+  --hf-red: #FF5577;
+  --hf-green: #2EE874;
+  --hf-purple: #C77DFF;
+  --hf-text: #F8FAFC;
+  --hf-text-dim: rgba(248,250,252,0.78);
+  --hf-muted: rgba(248,250,252,0.62);
+  --hf-bg: #04060C;
+  --hf-bg-deep: #02030A;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--hf-bg);color:var(--hf-text);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+#root,.scene{position:absolute;inset:0;overflow:hidden}
+
+/* Per-scene cinematic background (replaces the old flat #050812 + grid).
+   Each role gets a different temperature via the .hf-bg-cta modifier. */
+.hf-bg-cinematic{
+  background:
+    radial-gradient(ellipse 1200px 900px at 78% 18%, rgba(37,216,255,0.10), transparent 65%),
+    radial-gradient(ellipse 1100px 800px at 18% 78%, rgba(168,85,247,0.08), transparent 60%),
+    linear-gradient(180deg, #050812 0%, #0a0d1a 50%, #050812 100%);
+}
+.hf-bg-hook{background:
+  radial-gradient(ellipse 1400px 1100px at 80% 12%, rgba(56,225,255,0.28), transparent 55%),
+  radial-gradient(ellipse 1100px 800px at 15% 75%, rgba(255,200,61,0.18), transparent 60%),
+  linear-gradient(180deg, #04060C 0%, #061a2a 50%, #04060C 100%)}
+.hf-bg-pain{background:
+  radial-gradient(ellipse 1300px 1000px at 75% 18%, rgba(255,85,119,0.24), transparent 55%),
+  radial-gradient(ellipse 1100px 800px at 15% 75%, rgba(255,200,61,0.16), transparent 60%),
+  linear-gradient(180deg, #100408 0%, #1a0610 50%, #04060C 100%)}
+.hf-bg-method{background:
+  radial-gradient(ellipse 1300px 1000px at 75% 18%, rgba(46,232,116,0.26), transparent 55%),
+  radial-gradient(ellipse 1100px 800px at 18% 75%, rgba(56,225,255,0.16), transparent 60%),
+  linear-gradient(180deg, #04060C 0%, #061a10 50%, #04060C 100%)}
+.hf-bg-evidence{background:
+  radial-gradient(ellipse 1300px 1000px at 78% 18%, rgba(255,200,61,0.26), transparent 55%),
+  radial-gradient(ellipse 1100px 800px at 18% 75%, rgba(56,225,255,0.18), transparent 60%),
+  linear-gradient(180deg, #04060C 0%, #1a0e08 50%, #04060C 100%)}
+.hf-bg-explain{background:
+  radial-gradient(ellipse 1300px 1000px at 78% 18%, rgba(199,125,255,0.28), transparent 55%),
+  radial-gradient(ellipse 1100px 800px at 18% 75%, rgba(56,225,255,0.18), transparent 60%),
+  linear-gradient(180deg, #04060C 0%, #100618 50%, #04060C 100%)}
+.hf-bg-cta{background:
+  radial-gradient(ellipse 1400px 1100px at 50% 28%, rgba(46,232,116,0.32), transparent 55%),
+  radial-gradient(ellipse 1100px 800px at 50% 78%, rgba(56,225,255,0.18), transparent 60%),
+  linear-gradient(180deg, #04060C 0%, #061a10 50%, #04060C 100%)}
+.hf-bg-proof, .hf-bg-input, .hf-bg-memory, .hf-bg-retrieval, .hf-bg-summary, .hf-bg-ready {
+  background: radial-gradient(ellipse 1200px 900px at 75% 18%, rgba(37,216,255,0.10), transparent 60%),
+    linear-gradient(180deg, #050812 0%, #0a0d1a 50%, #050812 100%);
+}
+
+/* Subtle film grain (CSS noise) — single low-cost SVG via data URI */
+.hf-bg-cinematic::before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.4 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* Vignette overlay — softer so small text stays readable */
+.hf-vignette{
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 120% 100% at 50% 50%, transparent 55%, rgba(0,0,0,0.32) 100%);
+  z-index:1;
+}
+
+/* Ambient scan beam — slow top-to-bottom */
+.hf-scan-beam{
+  position:absolute;left:0;right:0;height:3px;top:-4%;
+  background:linear-gradient(90deg,transparent,rgba(37,216,255,0.65),transparent);
+  box-shadow:0 0 22px rgba(37,216,255,0.6);
+  animation:hf-beam 5.5s linear infinite;
+  pointer-events:none;z-index:2;
+}
+
+/* HUD header — top-left English uppercase + accent vertical bar + Chinese sub-line */
+.hf-hud-header{
+  position:absolute;top:46px;left:60px;right:60px;display:flex;align-items:center;gap:16px;
+  z-index:5;pointer-events:none;
+}
+.hf-hud-bar{
+  display:inline-block;width:5px;height:36px;background:var(--hf-cyan);
+  box-shadow:0 0 16px var(--hf-cyan);border-radius:2px;
+}
+.hf-hud-en{
+  font:800 24px/1 "SF Mono","JetBrains Mono",ui-monospace,monospace;
+  letter-spacing:.22em;color:#FFFFFF;text-transform:uppercase;
+  text-shadow:0 0 14px rgba(56,225,255,0.7);
+}
+.hf-hud-sid{
+  margin-left:auto;font:800 24px/1 "SF Mono","JetBrains Mono",ui-monospace,monospace;
+  letter-spacing:.16em;color:rgba(248,250,252,0.72);
+}
+.hf-hud-zh{
+  position:absolute;top:104px;left:80px;font:600 18px/1 "PingFang SC",sans-serif;
+  letter-spacing:.18em;color:rgba(248,250,252,0.78);
+}
+
+/* Glass panel — base for cards (deeper, brighter, stronger border) */
+.hf-glass-panel{
+  background:rgba(2,4,12,0.62);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border:1.5px solid rgba(56,225,255,0.5);
+  box-shadow:0 0 48px rgba(56,225,255,0.18), inset 0 1px 0 rgba(255,255,255,0.10);
+  border-radius:22px;
+  position:relative;
+}
+.hf-glass-panel::before, .hf-glass-panel::after{
+  content:"";position:absolute;width:22px;height:22px;border:3px solid var(--hf-cyan);
+  opacity:0.85;
+}
+.hf-glass-panel::before{top:-1px;left:-1px;border-right:none;border-bottom:none;}
+.hf-glass-panel::after{bottom:-1px;right:-1px;border-left:none;border-top:none;}
+
+/* Glass panel color variants — brighter borders, deeper bg, stronger glow */
+.hf-glass-cyan{border-color:rgba(56,225,255,0.7);box-shadow:0 0 48px rgba(56,225,255,0.24), inset 0 1px 0 rgba(255,255,255,0.10);}
+.hf-glass-cyan::before, .hf-glass-cyan::after{border-color:var(--hf-cyan);}
+.hf-glass-amber{border-color:rgba(255,200,61,0.75);box-shadow:0 0 48px rgba(255,200,61,0.24), inset 0 1px 0 rgba(255,255,255,0.10);}
+.hf-glass-amber::before, .hf-glass-amber::after{border-color:var(--hf-amber);}
+.hf-glass-red{border-color:rgba(255,85,119,0.75);box-shadow:0 0 48px rgba(255,85,119,0.24), inset 0 1px 0 rgba(255,255,255,0.10);}
+.hf-glass-red::before, .hf-glass-red::after{border-color:var(--hf-red);}
+.hf-glass-green{border-color:rgba(46,232,116,0.78);box-shadow:0 0 48px rgba(46,232,116,0.28), inset 0 1px 0 rgba(255,255,255,0.10);}
+.hf-glass-green::before, .hf-glass-green::after{border-color:var(--hf-green);}
+.hf-glass-purple{border-color:rgba(199,125,255,0.72);box-shadow:0 0 48px rgba(199,125,255,0.24), inset 0 1px 0 rgba(255,255,255,0.10);}
+.hf-glass-purple::before, .hf-glass-purple::after{border-color:var(--hf-purple);}
+
+/* Hero typography — V3-P3.9R1: 24px hud, 56-72px sub, 120-180px super, 220-360px numbers */
+.hf-big-title{
+  font-weight:900;line-height:1.05;letter-spacing:-.025em;
+  font-size:clamp(72px,9vw,108px);
+  color:#FFFFFF;
+  text-shadow:0 6px 36px rgba(0,0,0,0.7);
+  word-break:keep-all;
+  overflow:visible;
+  white-space:pre-line;
+}
+.hf-big-title .accent{color:var(--hf-amber);text-shadow:0 0 28px rgba(255,200,61,0.6);}
+.hf-big-title .accent-cyan{color:var(--hf-cyan);text-shadow:0 0 28px rgba(56,225,255,0.6);}
+.hf-big-title .accent-green{color:var(--hf-green);text-shadow:0 0 28px rgba(46,232,116,0.6);}
+
+.hf-sub-title{
+  font:700 28px/1.3 "PingFang SC",sans-serif;
+  letter-spacing:.06em;color:var(--hf-text-dim);
+  margin-top:20px;
+}
+
+.hf-big-number{
+  font:900 320px/0.92 "SF Pro Display","Helvetica Neue",Arial,sans-serif;
+  letter-spacing:-.04em;color:var(--hf-cyan);
+  text-shadow:0 0 40px rgba(56,225,255,0.6);
+  display:inline-block;line-height:1;
+}
+.hf-big-number.amber{color:var(--hf-amber);text-shadow:0 0 40px rgba(255,200,61,0.6);}
+.hf-big-number.green{color:var(--hf-green);text-shadow:0 0 40px rgba(46,232,116,0.6);}
+.hf-big-number.purple{color:var(--hf-purple);text-shadow:0 0 40px rgba(199,125,255,0.6);}
+.hf-big-number.white{color:#FFFFFF;text-shadow:0 0 40px rgba(255,255,255,0.5);}
+
+.hf-step-number{
+  font:900 160px/1 "SF Pro Display","Helvetica Neue",Arial,sans-serif;
+  color:var(--hf-cyan);text-shadow:0 0 28px rgba(56,225,255,0.55);
+  display:inline-block;line-height:1;
+}
+.hf-step-number.amber{color:var(--hf-amber);text-shadow:0 0 28px rgba(255,200,61,0.55);}
+.hf-step-number.green{color:var(--hf-green);text-shadow:0 0 28px rgba(46,232,116,0.55);}
+
+/* Status stamp badge */
+.hf-status-stamp{
+  display:inline-block;padding:6px 14px;border:1.5px solid currentColor;border-radius:4px;
+  font:800 14px/1 "SF Mono",ui-monospace,monospace;letter-spacing:.22em;
+  text-transform:uppercase;background:rgba(6,8,16,0.7);
+}
+.hf-status-live{color:var(--hf-cyan);}
+.hf-status-viral{color:var(--hf-amber);}
+.hf-status-pass{color:var(--hf-green);}
+.hf-status-ready{color:var(--hf-cyan);}
+.hf-status-risk{color:var(--hf-red);}
+
+/* Metric card */
+.hf-metric-card{
+  background:rgba(6,8,16,0.5);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(37,216,255,0.32);
+  border-radius:18px;padding:32px 28px;
+  box-shadow:0 0 28px rgba(37,216,255,0.10);
+  display:flex;flex-direction:column;gap:10px;
+}
+.hf-metric-label{font:600 14px/1 "SF Mono",ui-monospace,monospace;letter-spacing:.18em;
+  text-transform:uppercase;color:rgba(244,247,255,0.55);}
+.hf-metric-value{font:900 56px/1 "SF Pro Display",Arial,sans-serif;color:var(--hf-text);}
+.hf-metric-delta{font:700 16px/1 "SF Mono",ui-monospace,monospace;}
+
+/* Progress bar (0→100%) */
+.hf-progress{position:relative;height:8px;background:rgba(244,247,255,0.08);border-radius:4px;overflow:hidden;}
+.hf-progress > .hf-progress-fill{
+  position:absolute;left:0;top:0;bottom:0;width:0%;
+  background:linear-gradient(90deg,var(--hf-cyan),var(--hf-amber));
+  box-shadow:0 0 12px var(--hf-cyan);
+  animation:hf-progress-fill 1.2s cubic-bezier(.2,.7,.2,1) forwards;
+}
+
+/* Animations */
+@keyframes hf-beam{0%{top:-4%}100%{top:104%}}
+@keyframes hf-scale-in{0%{transform:scale(.85);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes hf-count-up{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes hf-stagger-in{0%{transform:translateY(20px);opacity:0}100%{transform:translateY(0);opacity:1}}
+@keyframes hf-progress-fill{0%{width:0%}100%{width:var(--hf-target,100%)}}
+@keyframes hf-stamp-pop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.18);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes hf-pulse{0%,100%{box-shadow:0 0 28px rgba(46,213,115,.18)}50%{box-shadow:0 0 48px rgba(46,213,115,.42)}}
+.hf-scale-in{animation:hf-scale-in .6s cubic-bezier(.2,.7,.2,1) both;}
+.hf-count-up{animation:hf-count-up .9s cubic-bezier(.2,.7,.2,1) both;}
+.hf-stagger-in{animation:hf-stagger-in .5s cubic-bezier(.2,.7,.2,1) both;}
+.hf-stamp-pop{animation:hf-stamp-pop .4s cubic-bezier(.2,.7,.2,1) both;}
+.hf-pulse{animation:hf-pulse 2.4s ease-in-out infinite;}
+
+/* Old classes (kept so the 15 untouched templates still render) */
+.bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(37,216,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(37,216,255,.08) 1px,transparent 1px);background-size:64px 64px}
+.bg-glow{position:absolute;width:720px;height:720px;border-radius:50%;filter:blur(36px);animation:glow 3.4s ease-in-out infinite}
+.bg-glow-1{left:-220px;top:120px}.bg-glow-2{right:-240px;bottom:160px}
+.hud-frame{position:absolute;inset:28px;border:1px solid rgba(37,216,255,.32);clip-path:polygon(0 0,100% 0,100% 94%,94% 100%,0 100%);pointer-events:none}
+.hud-top,.hud-bottom{position:absolute;left:52px;right:52px;display:flex;justify-content:space-between;color:#25d8ff;font:800 18px/1 monospace;letter-spacing:.16em}
+.hud-top{top:52px}.hud-bottom{bottom:318px}.hud-bottom i{font-style:normal;color:rgba(255,255,255,.55)}
+.scan-sweep{position:absolute;left:0;right:0;height:3px;top:-4%;background:linear-gradient(90deg,transparent,rgba(37,216,255,.7),transparent);box-shadow:0 0 22px rgba(37,216,255,.7);animation:scan 4.5s linear infinite;pointer-events:none}
+
+/* Caption — bottom safe zone with blur + glow, never occluded */
+.caption{
+  position:absolute;left:54px;right:54px;bottom:88px;
+  padding:22px 32px;
+  border:1.5px solid rgba(56,225,255,0.55);
+  border-radius:22px;
+  background:rgba(2,4,12,0.82);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  box-shadow:0 0 42px rgba(56,225,255,0.22), inset 0 1px 0 rgba(255,255,255,0.10);
+  font-size:48px;line-height:1.28;font-weight:850;text-align:center;
+  color:#FFFFFF;
+  z-index:6;
+}
+
+/* Scene bottom safe-zone — reserves 280px so cards never occlude captions */
+.hf-safe-zone{padding-bottom:280px;}
+
+@keyframes glow{0%,100%{opacity:.58;transform:scale(1)}50%{opacity:.92;transform:scale(1.12)}}
+@keyframes scan{0%{top:-4%}100%{top:104%}}
+
+/* V3-P3.10A — Smooth scene transition compatible with native opacity toggle */
+.scene {
+  transition: opacity 0.5s cubic-bezier(.2,.7,.2,1),
+              transform 0.5s cubic-bezier(.2,.7,.2,1) !important;
+}
+
+/* V3-P3.10A — Old-template overlay降级.
+   让 data-motion-target="scene-bg" 变成半透明 dimming 层，
+   Section 自身的 hf-bg-cinematic / hf-bg-cta 渐变现在可见。
+   不用 z-index — 模板 div 在 section 内，opacity 已能透出。 */
+[data-motion-target="scene-bg"] {
+  background: rgba(2, 4, 12, 0.22) !important;
+}
+[data-motion-target="scene-bg"] .bg-grid { opacity: 0.18 !important; }
+
+/* V3-P3.10A — Three light composition classes for vertical center-of-gravity. */
+.hf-comp-upper  { padding-top: 200px; }
+.hf-comp-center { padding-top: 320px; }
+.hf-comp-lower  { padding-top: 460px; }
+
+/* V3-P3.10A — Per-scene entrance keyframes.
+   These fire only when the section has class .hf-entering, which is
+   added/removed by the inline window.__hf.seek IIFE in the body. */
+@keyframes hf-scale-in {
+  0%  { transform: scale(.85); opacity: 0; }
+  100%{ transform: scale(1);  opacity: 1; }
+}
+@keyframes hf-count-up {
+  0%  { transform: scale(.6);  opacity: 0; }
+  60% { transform: scale(1.08); opacity: 1; }
+  100%{ transform: scale(1);   opacity: 1; }
+}
+@keyframes hf-stagger-in {
+  0%  { transform: translateY(20px); opacity: 0; }
+  100%{ transform: translateY(0);    opacity: 1; }
+}
+@keyframes hf-progress-fill {
+  0%  { width: 0%; }
+  100%{ width: var(--hf-target, 100%); }
+}
+@keyframes hf-stamp-pop {
+  0%  { transform: scale(0);    opacity: 0; }
+  60% { transform: scale(1.18); opacity: 1; }
+  100%{ transform: scale(1);    opacity: 1; }
+}
+@keyframes hf-pulse {
+  0%, 100% { box-shadow: 0 0 28px rgba(46,232,116,.18); }
+  50%      { box-shadow: 0 0 48px rgba(46,232,116,.42); }
+}
+
+/* V3-P3.10A-R3 — Default VISIBLE so contact sheet / static captures
+   never black out. Animation fires on .hf-entering only; if animation
+   doesn't trigger, elements remain fully visible. */
+.hf-animate-title,
+.hf-animate-card,
+.hf-animate-number,
+.hf-animate-line,
+.hf-animate-stamp {
+  opacity: 1;
+  transform: none;
+}
+
+.hf-entering .hf-animate-title  { animation: hf-scale-in      0.6s cubic-bezier(.2,.7,.2,1) both; }
+.hf-entering .hf-animate-card   { animation: hf-stagger-in    0.5s cubic-bezier(.2,.7,.2,1) both; }
+.hf-entering .hf-animate-number { animation: hf-count-up      0.9s cubic-bezier(.2,.7,.2,1) both; }
+.hf-entering .hf-animate-line   { animation: hf-progress-fill 1.2s cubic-bezier(.2,.7,.2,1) both; }
+.hf-entering .hf-animate-stamp  { animation: hf-stamp-pop     0.4s cubic-bezier(.2,.7,.2,1) both; }
+</style></head><body>
+<div id="root" data-composition-id="v3_p310a_r3_recover_visibility_preview" data-start="0" data-width="1080" data-height="1920" data-duration="116.21">
+<audio id="voiceover-audio" data-start="0" data-duration="116.21" data-track-index="0" data-volume="1" src="assets/voiceover.mp3"></audio>
+
+<section id="scene-s01" class="scene clip role-hook tpl-hook_big_claim hf-bg-cinematic hf-bg-hook hf-comp-center" data-start="0.0" data-duration="6.402" data-track-index="1" data-visual-template="hook_big_claim" data-role="hook">
+  
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:#0A1628;">
+      <div class="bg-grid" style="opacity:.25"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,rgba(56,225,255,0.28) 0%,transparent 70%);"></div>
+      <div class="bg-glow bg-glow-2" style="background:radial-gradient(circle,rgba(255,200,61,0.18) 0%,transparent 70%);"></div>
+    </div>
+    <div data-motion-target="hook-main" class="hook-main hf-safe-zone" style="position:absolute;top:500px;left:60px;right:60px;text-align:left;">
+      <div class="hf-animate-stamp" style="position:absolute;top:-110px;left:0;display:inline-flex;align-items:center;gap:14px;padding:14px 24px;border-radius:14px;background:rgba(56,225,255,0.18);border:1.5px solid #38E1FF;box-shadow:0 0 18px rgba(56,225,255,0.4);"><span style="font:800 18px/1 &quot;SF Mono&quot;,monospace;letter-spacing:.22em;color:#38E1FF;text-transform:uppercase;">REAL EFFICIENCY SHIFT</span><span style="font-size:24px;font-weight:700;color:#FFFFFF;letter-spacing:.04em;">真实效率变化</span></div>
+      <div style="position:absolute;top:-110px;right:0;display:flex;gap:10px;flex-direction:column;align-items:flex-end;"><div class="hf-status-stamp hf-status-live hf-animate-stamp" style="font-size:16px;padding:10px 18px;color:#38E1FF;border-width:2px;">AGENT / 12 SEC</div><div class="hf-status-stamp hf-status-viral hf-animate-stamp" style="font-size:16px;padding:10px 18px;color:#FFC83D;border-width:2px;">+12 HRS / WEEK</div><div class="hf-status-stamp hf-status-pass hf-animate-stamp" style="font-size:16px;padding:10px 18px;color:#2EE874;border-width:2px;">3 STAGES</div></div>
+      <h1 class="hf-big-title hf-animate-title" style="margin:0;line-height:1.06;max-width:960px;font-size:clamp(56px,8vw,76px);word-break:keep-all;overflow-wrap:break-word;">用 <span class="accent-cyan">Claude Code</span> 写公众号<span class="accent">三个月后</span><br>我<br></h1>
+      <div class='hf-sub-title hf-animate-title' style='margin-top:32px;line-height:1.4;max-width:920px;font-size:30px;color:rgba(248,250,252,0.82);'>真正缺的不是努力，而是一个可检索的第二大脑</div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#FF4757;opacity:0.7;">S01 · hook</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">LIVE TIMELINE · AI HOT</span><b class="hf-hud-sid">S01</b><i class="hf-hud-zh">开场 · 第一印象</i></div>
+</section>
+<section id="scene-s02" class="scene clip role-explain tpl-concept_layers hf-bg-cinematic hf-bg-explain hf-comp-lower" data-start="6.644" data-duration="3.937" data-track-index="1" data-visual-template="concept_layers" data-role="explain">
+  
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(180deg,#0A1628 0%,#0F0820 60%,#0A1628 100%);">
+      <div class="bg-grid" style="opacity:.3"></div>
+    </div>
+    <div class="hf-safe-zone" style="position:absolute;top:220px;left:96px;right:96px;">
+      <h2 class="hf-animate-title" style="margin:0;font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">用 Claude Code 写公众号三个月了</h2>
+    </div>
+    
+        <div class="layer-bar hf-glass-panel hf-glass-cyan hf-animate-card" style="position:absolute;top:500px;left:80px;width:920px;height:160px;padding:0 32px;display:flex;align-items:center;gap:28px;background:linear-gradient(90deg,#25D8FF33,rgba(6,8,16,0.55) 60%);">
+            <div style="position:absolute;left:0;top:0;bottom:0;width:6px;background:#25D8FF;box-shadow:0 0 18px #25D8FF66;"></div>
+            <div style="width:96px;height:96px;border-radius:18px;background:#25D8FF;display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:900;color:#0A1628;flex-shrink:0;box-shadow:0 0 24px #25D8FF66;">L1</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.18;">现象：散落</div>
+            </div>
+        </div>
+        
+        <div class="layer-bar hf-glass-panel hf-glass-purple hf-animate-card" style="position:absolute;top:700px;left:160px;width:760px;height:160px;padding:0 32px;display:flex;align-items:center;gap:28px;background:linear-gradient(90deg,#7C3AED33,rgba(6,8,16,0.55) 60%);">
+            <div style="position:absolute;left:0;top:0;bottom:0;width:6px;background:#7C3AED;box-shadow:0 0 18px #7C3AED66;"></div>
+            <div style="width:96px;height:96px;border-radius:18px;background:#7C3AED;display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:900;color:#0A1628;flex-shrink:0;box-shadow:0 0 24px #7C3AED66;">L2</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.18;">结构：可检索</div>
+            </div>
+        </div>
+        
+        <div class="layer-bar hf-glass-panel hf-glass-purple hf-animate-card" style="position:absolute;top:900px;left:240px;width:600px;height:160px;padding:0 32px;display:flex;align-items:center;gap:28px;background:linear-gradient(90deg,#A855F733,rgba(6,8,16,0.55) 60%);">
+            <div style="position:absolute;left:0;top:0;bottom:0;width:6px;background:#A855F7;box-shadow:0 0 18px #A855F766;"></div>
+            <div style="width:96px;height:96px;border-radius:18px;background:#A855F7;display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:900;color:#0A1628;flex-shrink:0;box-shadow:0 0 24px #A855F766;">L3</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.18;">调用：随用随取</div>
+            </div>
+        </div>
+        
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#25D8FF;opacity:0.7;">S02 · explain</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">LAYERS / CONCEPT</span><b class="hf-hud-sid">S02</b><i class="hf-hud-zh">概念 · 底层到顶层</i></div>
+</section>
+<section id="scene-s03" class="scene clip role-explain tpl-tool_stack hf-bg-cinematic hf-bg-explain hf-comp-upper" data-start="10.822" data-duration="6.823" data-track-index="1" data-visual-template="tool_stack" data-role="explain">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(180deg,#0A1628 0%,#0F0820 60%,#0A1628 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(168,85,247,0.12);border:1px solid #25D8FF66;color:#25D8FF;font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">TOOL / STACK</div>
+      <div class="hf-animate-title" style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">一开始我只是想找个工具帮我写代码，结果用它做自媒</div>
+    </div>
+    
+        <div class="stack-layer hf-animate-card" style="position:absolute;top:480px;left:180px;width:720px;height:140px;background:linear-gradient(90deg,#7C3AED22,rgba(255,255,255,0.04));border:2px solid #7C3AED;border-radius:20px;padding:20px 28px;display:flex;align-items:center;gap:24px;box-shadow:0 0 26px #7C3AED22;">
+            <div style="width:80px;height:80px;border-radius:16px;background:#7C3AED;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#0A1428;flex-shrink:0;">L1</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.1;">Layer 1</div>
+                <div style="font-size:24px;color:rgba(255,255,255,0.65);margin-top:6px;">采集</div>
+            </div>
+        </div>
+        
+        <div class="stack-layer hf-animate-card" style="position:absolute;top:680px;left:240px;width:600px;height:140px;background:linear-gradient(90deg,#4D9FFF22,rgba(255,255,255,0.04));border:2px solid #4D9FFF;border-radius:20px;padding:20px 28px;display:flex;align-items:center;gap:24px;box-shadow:0 0 26px #4D9FFF22;">
+            <div style="width:80px;height:80px;border-radius:16px;background:#4D9FFF;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#0A1428;flex-shrink:0;">L2</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.1;">Layer 2</div>
+                <div style="font-size:24px;color:rgba(255,255,255,0.65);margin-top:6px;">加工</div>
+            </div>
+        </div>
+        
+        <div class="stack-layer hf-animate-card" style="position:absolute;top:880px;left:300px;width:480px;height:140px;background:linear-gradient(90deg,#2ED57322,rgba(255,255,255,0.04));border:2px solid #2ED573;border-radius:20px;padding:20px 28px;display:flex;align-items:center;gap:24px;box-shadow:0 0 26px #2ED57322;">
+            <div style="width:80px;height:80px;border-radius:16px;background:#2ED573;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#0A1428;flex-shrink:0;">L3</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.1;">Layer 3</div>
+                <div style="font-size:24px;color:rgba(255,255,255,0.65);margin-top:6px;">输出</div>
+            </div>
+        </div>
+        
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#25D8FF;opacity:0.7;">S03 · explain</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">EXPLAIN / HUD SYSTEM</span><b class="hf-hud-sid">S03</b></div>
+</section>
+<section id="scene-s04" class="scene clip role-evidence tpl-case_study_card hf-bg-cinematic hf-bg-evidence hf-comp-center" data-start="17.887" data-duration="2.885" data-track-index="1" data-visual-template="case_study_card" data-role="evidence">
+  
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(160deg,#0A1628 0%,#0A1A28 60%,#101B32 100%);">
+      <div class="bg-grid" style="opacity:.25"></div>
+    </div>
+    <div class="hf-safe-zone" style="position:absolute;top:180px;left:80px;right:80px;">
+      <div class="hf-status-stamp hf-status-viral hf-animate-stamp" style="display:inline-flex;margin-bottom:14px;font-size:18px;padding:10px 22px;">真实案例 · 90 天实践</div>
+      <h2 class="hf-animate-title" style="margin:0 0 6px 0;font-size:64px;font-weight:900;color:#FFFFFF;line-height:1.1;letter-spacing:-.02em;">以前写一篇公众号文章是这样的</h2>
+      <div class="hf-animate-title" style="font-size:28px;color:rgba(248,250,252,0.78);margin-top:4px;letter-spacing:.04em;">真实案例 · 90 天实践</div>
+    </div>
+    <div class="hf-glass-panel hf-glass-red hf-animate-card" style="position:absolute;top:560px;left:80px;width:880px;padding:48px 44px;background:linear-gradient(180deg,rgba(255,85,119,0.22),rgba(2,4,12,0.62) 60%);">
+      <div class="hf-status-stamp hf-status-risk hf-animate-stamp" style="position:absolute;top:24px;right:24px;font-size:18px;padding:8px 18px;border-width:2px;">BEFORE</div>
+      <div style="font:800 22px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.22em;color:#FF5577;margin-bottom:14px;text-transform:uppercase;">之前 · OLD WAY</div>
+      <div style="font-size:44px;font-weight:800;color:#FFFFFF;line-height:1.2;letter-spacing:-.01em;">旧流程：信息散落，输出靠人肉拼接</div>
+    </div>
+    <div class="hf-glass-panel hf-glass-green hf-animate-card" style="position:absolute;top:600px;right:80px;width:480px;padding:48px 40px;background:linear-gradient(180deg,rgba(46,232,116,0.22),rgba(2,4,12,0.62) 60%);">
+      <div class="hf-status-stamp hf-status-pass hf-animate-stamp" style="position:absolute;top:24px;right:24px;font-size:18px;padding:8px 18px;border-width:2px;">AFTER</div>
+      <div style="font:800 22px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.22em;color:#2EE874;margin-bottom:14px;text-transform:uppercase;">之后 · NEW WAY</div>
+      <div style="font-size:38px;font-weight:800;color:#FFFFFF;line-height:1.2;letter-spacing:-.01em;">新流程：统一入口，结构先出来</div>
+    </div>
+    <div class="hf-animate-card" style="position:absolute;top:1110px;left:50%;transform:translateX(-50%);display:flex;gap:14px;align-items:center;font:800 18px/1 &quot;SF Mono&quot;,monospace;letter-spacing:.22em;color:#FFFFFF;text-transform:uppercase;">
+      <span style="color:#FF5577;">BEFORE</span>
+      <span style="font-size:36px;color:#FFC83D;text-shadow:0 0 14px #FFC83Daa;">→</span>
+      <span style="color:#2EE874;">AFTER</span>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#4D9FFF;opacity:0.7;">S04 · evidence</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">CASE / STUDY</span><b class="hf-hud-sid">S04</b><i class="hf-hud-zh">真实案例 · 90 天实践</i></div>
+</section>
+<section id="scene-s05" class="scene clip role-explain tpl-framework_quadrant hf-bg-cinematic hf-bg-explain hf-comp-lower" data-start="21.013" data-duration="2.154" data-track-index="1" data-visual-template="framework_quadrant" data-role="explain">
+  
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(135deg,#0A1628 0%,#0A1A28 60%,#0A1428 100%);">
+      <div class="bg-grid" style="opacity:.3"></div>
+    </div>
+    <div class="hf-safe-zone" style="position:absolute;top:200px;left:96px;right:96px;">
+      <h2 class="hf-animate-title" style="margin:0;font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">改稿，1 小时</h2>
+    </div>
+    
+        <div class="framework-quad hf-glass-panel hf-glass-cyan hf-animate-card" style="position:absolute;top:480px;left:120px;width:380px;height:400px;padding:34px 30px;">
+            <div class="hf-step-number" style="font-size:88px;color:#4D9FFF;text-shadow:0 0 18px #4D9FFF66;line-height:1;margin-bottom:18px;">q1</div>
+            <div style="font-size:18px;letter-spacing:0.18em;color:#4D9FFF;margin-bottom:8px;">Q1 输入</div>
+            <div style="font-size:30px;font-weight:800;color:#fff;line-height:1.2;">统一入口</div>
+        </div>
+        
+        <div class="framework-quad hf-glass-panel hf-glass-green hf-animate-card" style="position:absolute;top:480px;right:120px;width:380px;height:400px;padding:34px 30px;">
+            <div class="hf-step-number" style="font-size:88px;color:#2ED573;text-shadow:0 0 18px #2ED57366;line-height:1;margin-bottom:18px;">q2</div>
+            <div style="font-size:18px;letter-spacing:0.18em;color:#2ED573;margin-bottom:8px;">Q2 结构</div>
+            <div style="font-size:30px;font-weight:800;color:#fff;line-height:1.2;">组织整理</div>
+        </div>
+        
+        <div class="framework-quad hf-glass-panel hf-glass-amber hf-animate-card" style="position:absolute;top:980px;left:120px;width:380px;height:400px;padding:34px 30px;">
+            <div class="hf-step-number" style="font-size:88px;color:#FF6B35;text-shadow:0 0 18px #FF6B3566;line-height:1;margin-bottom:18px;">q3</div>
+            <div style="font-size:18px;letter-spacing:0.18em;color:#FF6B35;margin-bottom:8px;">Q3 检索</div>
+            <div style="font-size:30px;font-weight:800;color:#fff;line-height:1.2;">按需调用</div>
+        </div>
+        
+        <div class="framework-quad hf-glass-panel hf-glass-purple hf-animate-card" style="position:absolute;top:980px;right:120px;width:380px;height:400px;padding:34px 30px;">
+            <div class="hf-step-number" style="font-size:88px;color:#A855F7;text-shadow:0 0 18px #A855F766;line-height:1;margin-bottom:18px;">q4</div>
+            <div style="font-size:18px;letter-spacing:0.18em;color:#A855F7;margin-bottom:8px;">Q4 输出</div>
+            <div style="font-size:30px;font-weight:800;color:#fff;line-height:1.2;">持续产出</div>
+        </div>
+        
+    <div class="hf-glass-panel hf-glass-purple hf-animate-card" style="position:absolute;top:730px;left:430px;width:220px;height:220px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(168,85,247,0.22),rgba(37,216,255,0.10));">
+        <div style="text-align:center;">
+            <div style="font-size:13px;letter-spacing:0.22em;color:rgba(255,255,255,0.55);">CENTER</div>
+            <div style="font-size:32px;font-weight:900;color:#fff;margin-top:4px;">Hub</div>
+        </div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#25D8FF;opacity:0.7;">S05 · explain</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">FRAMEWORK / 2X2</span><b class="hf-hud-sid">S05</b><i class="hf-hud-zh">四象限 · 概念分层</i></div>
+</section>
+<section id="scene-s06" class="scene clip role-explain tpl-broken_chain hf-bg-cinematic hf-bg-explain hf-comp-upper" data-start="23.408" data-duration="8.056" data-track-index="1" data-visual-template="broken_chain" data-role="explain">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:#050814;">
+      <div class="bg-grid"></div>
+    </div>
+    
+    <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
+        <div class="hf-animate-title" style="font-size:52px;font-weight:700;color:#fff;line-height:1.2;">不是 Claude Code 帮我写了文章，是它</div>
+    </div>
+    
+    
+        <div class="chain-node hf-animate-card" style="
+            position:absolute;top:656px;left:206px;
+            width:128px;height:128px;border-radius:50%;
+            background:rgba(255,255,255,0.08);border:3px solid #25D8FF;
+            display:flex;align-items:center;justify-content:center;
+            font-size:28px;font-weight:800;color:#fff;
+            box-shadow:0 0 26px #25D8FF55;
+        ">素材</div>
+        
+
+        <div class="chain-node hf-animate-card" style="
+            position:absolute;top:416px;left:476px;
+            width:128px;height:128px;border-radius:50%;
+            background:rgba(255,255,255,0.08);border:3px solid #FF4757;
+            display:flex;align-items:center;justify-content:center;
+            font-size:28px;font-weight:800;color:#fff;
+            box-shadow:0 0 26px #FF475755;
+        ">结构</div>
+        
+
+        <div class="chain-node hf-animate-card" style="
+            position:absolute;top:656px;left:746px;
+            width:128px;height:128px;border-radius:50%;
+            background:rgba(255,255,255,0.08);border:3px solid #FF4757;
+            display:flex;align-items:center;justify-content:center;
+            font-size:28px;font-weight:800;color:#fff;
+            box-shadow:0 0 26px #FF475755;
+        ">检索</div>
+        
+
+        <div class="tool-connector" style="
+            position:absolute;top:598.0px;left:224.37608131811558px;
+            width:361.24783736376884px;height:3px;
+            background:linear-gradient(90deg,#FF4757,rgba(37,216,255,0.2));
+            transform:rotate(-41.6335393365702deg);transform-origin:center;
+            box-shadow:0 0 12px #FF475755;
+        "></div>
+        
+
+        <div class="tool-connector" style="
+            position:absolute;top:598.0px;left:494.37608131811555px;
+            width:361.24783736376884px;height:3px;
+            background:linear-gradient(90deg,#FF4757,rgba(37,216,255,0.2));
+            transform:rotate(41.6335393365702deg);transform-origin:center;
+            box-shadow:0 0 12px #FF475755;
+        "></div>
+        
+
+        <div class="tool-connector" style="
+            position:absolute;top:718.0px;left:270.0px;
+            width:540.0px;height:3px;
+            background:linear-gradient(90deg,#FF4757,rgba(37,216,255,0.2));
+            transform:rotate(0.0deg);transform-origin:center;
+            box-shadow:0 0 12px #FF475755;
+        "></div>
+        
+
+        <div class="chain-node hf-animate-card" style="
+            position:absolute;top:1016px;left:856px;
+            width:128px;height:128px;border-radius:50%;
+            background:rgba(255,255,255,0.04);border:3px dashed #25D8FF;
+            display:flex;align-items:center;justify-content:center;
+            font-size:28px;font-weight:800;color:#fff;opacity:0.85;
+        ">输出</div>
+        
+
+        <div class="tool-connector" style="
+            position:absolute;top:720px;left:880px;width:80px;height:0;
+            border-top:3px dotted #25D8FF;
+        "></div>
+        
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#25D8FF;opacity:0.7;">S06 · explain</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">EXPLAIN / HUD SYSTEM</span><b class="hf-hud-sid">S06</b></div>
+</section>
+<section id="scene-s07" class="scene clip role-hook tpl-keyword_punchline hf-bg-cinematic hf-bg-hook hf-comp-center" data-start="31.705" data-duration="4.549" data-track-index="1" data-visual-template="keyword_punchline" data-role="hook">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(160deg,#0A1628 0%,#1A0A0A 50%,#0A1628 100%);">
+      <div class="bg-grid"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,#FF475728 0%,transparent 70%);"></div>
+    </div>
+    <div style="position:absolute;top:200px;left:0;right:0;text-align:center;">
+      <div style="font-size:18px;letter-spacing:0.32em;color:rgba(255,255,255,0.5);margin-bottom:16px;">KEYWORD / PUNCH</div>
+    </div>
+    <div style="position:absolute;top:280px;left:0;right:0;text-align:center;">
+      <div style="display:inline-flex;padding:32px 80px;border-radius:36px;background:linear-gradient(135deg,#FF4757,rgba(255,107,53,0.8));box-shadow:0 0 64px #FF475766;">
+        <div class="hf-animate-title" style="font-size:180px;font-weight:900;color:#0A1628;letter-spacing:-6px;line-height:0.9;">记住</div>
+      </div>
+    </div>
+    <div style="position:absolute;top:760px;left:120px;right:120px;text-align:center;">
+      <div class="hf-animate-card" style="font-size:46px;font-weight:700;color:#fff;line-height:1.32;letter-spacing:-0.4px;">你有没有这种感觉，读了很多书，记住了 10%，用到了 1%</div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#FF4757;opacity:0.7;">S07 · hook</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">HOOK / HUD SYSTEM</span><b class="hf-hud-sid">S07</b></div>
+</section>
+<section id="scene-s08" class="scene clip role-evidence tpl-metric_dashboard hf-bg-cinematic hf-bg-evidence hf-comp-lower" data-start="36.495" data-duration="4.759" data-track-index="1" data-visual-template="metric_dashboard" data-role="evidence">
+  
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(135deg,#0A1428 0%,#0A1A28 60%,#082016 100%);">
+      <div class="bg-grid" style="opacity:.25"></div>
+    </div>
+    <div class="hf-safe-zone" style="position:absolute;top:170px;left:80px;right:80px;text-align:left;">
+      <div class="hf-status-stamp hf-status-live hf-animate-stamp" style="display:inline-flex;margin-bottom:14px;font-size:18px;padding:10px 22px;border-width:2px;">LIVE METRICS · 实时数据</div>
+      <h2 class="hf-animate-title" style="margin:0;font-size:64px;font-weight:900;color:#FFFFFF;line-height:1.1;letter-spacing:-.02em;">以前这个过程需要我自己花 1 小时「想」，现在 </h2>
+    </div>
+    
+    <div class="hf-glass-panel hf-animate-card" style="position:absolute;top:380px;left:60px;width:520px;height:560px;padding:52px 48px;background:linear-gradient(180deg,rgba(2,4,12,0.78),rgba(2,4,12,0.62) 80%);">
+      <div class="hf-status-stamp hf-status-viral hf-animate-stamp" style="position:absolute;top:24px;right:24px;font-size:14px;padding:6px 14px;border-width:2px;">VIRAL</div>
+      <div style="font:800 20px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.22em;color:rgba(248,250,252,0.72);text-transform:uppercase;">启动</div>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-top:32px;">
+        <span class="hf-big-number  hf-animate-number" style="font-size:240px;">READY</span>
+        <span style="font:800 56px/1 &quot;SF Mono&quot;,monospace;letter-spacing:.04em;color:#FFFFFF;text-shadow:0 0 14px rgba(255,255,255,0.4);"></span>
+      </div>
+      <div class="hf-progress" style="margin-top:30px;--hf-target:78%;height:14px;border-radius:7px;">
+        <div class="hf-progress-fill" style="background:linear-gradient(90deg,#38E1FF,#FFC83D);box-shadow:0 0 16px #38E1FFcc;"></div>
+      </div>
+      <div style="font:800 40px/1 &quot;SF Mono&quot;,monospace;color:#2EE874;margin-top:20px;letter-spacing:.04em;">+OK vs 起点</div>
+    </div>
+    
+        <div class="hf-glass-panel hf-animate-card" style="position:absolute;top:380px;right:60px;width:280px;padding:24px 26px;background:rgba(2,4,12,0.62);">
+          <div style="font:700 16px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.22em;color:rgba(248,250,252,0.72);text-transform:uppercase;">闭环</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-top:12px;">
+            <span style="font:900 64px/1 &quot;SF Pro Display&quot;,Arial,sans-serif;color:#FFFFFF;letter-spacing:-.02em;text-shadow:0 0 12px rgba(255,255,255,0.3);">RUN</span>
+            <span style="font:800 24px/1 &quot;SF Mono&quot;,monospace;color:#4D9FFF;"></span>
+          </div>
+          <div style="font:700 18px/1 &quot;SF Mono&quot;,monospace;color:#2EE874;margin-top:8px;">+OK</div>
+        </div>
+        
+        <div class="hf-glass-panel hf-animate-card" style="position:absolute;top:580px;right:60px;width:280px;padding:24px 26px;background:rgba(2,4,12,0.62);">
+          <div style="font:700 16px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.22em;color:rgba(248,250,252,0.72);text-transform:uppercase;">输出</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-top:12px;">
+            <span style="font:900 64px/1 &quot;SF Pro Display&quot;,Arial,sans-serif;color:#FFFFFF;letter-spacing:-.02em;text-shadow:0 0 12px rgba(255,255,255,0.3);">ON</span>
+            <span style="font:800 24px/1 &quot;SF Mono&quot;,monospace;color:#4D9FFF;"></span>
+          </div>
+          <div style="font:700 18px/1 &quot;SF Mono&quot;,monospace;color:#2EE874;margin-top:8px;">+GO</div>
+        </div>
+        
+        <div class="hf-glass-panel hf-animate-card" style="position:absolute;top:780px;right:60px;width:280px;padding:24px 26px;background:rgba(2,4,12,0.62);">
+          <div style="font:700 16px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.22em;color:rgba(248,250,252,0.72);text-transform:uppercase;">复盘</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-top:12px;">
+            <span style="font:900 64px/1 &quot;SF Pro Display&quot;,Arial,sans-serif;color:#FFFFFF;letter-spacing:-.02em;text-shadow:0 0 12px rgba(255,255,255,0.3);">DAILY</span>
+            <span style="font:800 24px/1 &quot;SF Mono&quot;,monospace;color:#4D9FFF;"></span>
+          </div>
+          <div style="font:700 18px/1 &quot;SF Mono&quot;,monospace;color:#2EE874;margin-top:8px;">+GO</div>
+        </div>
+        
+    <div style="position:absolute;top:1340px;left:140px;right:140px;padding:20px 28px;border-top:2px solid rgba(255,200,61,0.4);text-align:center;font:800 26px/1 &quot;SF Mono&quot;,monospace;letter-spacing:.18em;color:#FFC83D;text-transform:uppercase;">持续跑通最小闭环后，看实际数字</div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#4D9FFF;opacity:0.7;">S08 · evidence</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">DATA / DASHBOARD</span><b class="hf-hud-sid">S08</b><i class="hf-hud-zh">数据 · 关键指标</i></div>
+</section>
+<section id="scene-s09" class="scene clip role-explain tpl-myth_bust hf-bg-cinematic hf-bg-explain hf-comp-upper" data-start="41.496" data-duration="2.684" data-track-index="1" data-visual-template="myth_bust" data-role="explain">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(180deg,#1A0A0A 0%,#0A1628 60%,#0A1628 100%);">
+      <div class="bg-grid"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,#25D8FF22 0%,transparent 70%);"></div>
+    </div>
+    <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(255,71,87,0.12);border:1px solid #25D8FF66;color:#25D8FF;font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">MYTH / BUST</div>
+      <div class="hf-animate-title" style="font-size:60px;font-weight:900;color:#fff;line-height:1.1;letter-spacing:-1.4px;">写文章最难的不是写，是开始写</div>
+    </div>
+    <div class="hf-animate-card" style="position:absolute;top:560px;left:120px;width:840px;background:rgba(255,71,87,0.10);border:2px solid #FF4757;border-radius:24px;padding:34px 32px;text-align:center;box-shadow:0 0 32px rgba(255,71,87,0.18);">
+        <div style="font-size:18px;letter-spacing:0.22em;color:#FF4757;margin-bottom:12px;">MYTH / 迷思</div>
+        <div style="font-size:42px;font-weight:800;color:rgba(255,255,255,0.5);text-decoration:line-through;line-height:1.18;">多就是好</div>
+    </div>
+    <div style="position:absolute;top:920px;left:0;right:0;text-align:center;">
+        <div style="display:inline-flex;padding:14px 36px;border-radius:18px;background:linear-gradient(135deg,#25D8FF,#2ED573);font-size:32px;font-weight:900;color:#0A1628;letter-spacing:-0.4px;box-shadow:0 0 40px #25D8FF66;">▼ 真相是 ▼</div>
+    </div>
+    <div class="hf-animate-card" style="position:absolute;top:1080px;left:120px;width:840px;background:linear-gradient(180deg,rgba(46,213,115,0.18),rgba(255,255,255,0.04));border:2px solid #2ED573;border-radius:24px;padding:34px 32px;text-align:center;box-shadow:0 0 32px rgba(46,213,115,0.18);">
+        <div style="font-size:18px;letter-spacing:0.22em;color:#2ED573;margin-bottom:12px;">TRUTH / 真相</div>
+        <div style="font-size:42px;font-weight:900;color:#fff;line-height:1.18;">对才是好</div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#25D8FF;opacity:0.7;">S09 · explain</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">EXPLAIN / HUD SYSTEM</span><b class="hf-hud-sid">S09</b></div>
+</section>
+<section id="scene-s10" class="scene clip role-evidence tpl-case_study_card hf-bg-cinematic hf-bg-evidence hf-comp-center" data-start="44.422" data-duration="5.791" data-track-index="1" data-visual-template="case_study_card" data-role="evidence">
+  
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(160deg,#0A1628 0%,#0A1A28 60%,#101B32 100%);">
+      <div class="bg-grid" style="opacity:.25"></div>
+    </div>
+    <div class="hf-safe-zone" style="position:absolute;top:180px;left:80px;right:80px;">
+      <div class="hf-status-stamp hf-status-viral hf-animate-stamp" style="display:inline-flex;margin-bottom:14px;font-size:18px;padding:10px 22px;">真实案例 · 90 天实践</div>
+      <h2 class="hf-animate-title" style="margin:0 0 6px 0;font-size:64px;font-weight:900;color:#FFFFFF;line-height:1.1;letter-spacing:-.02em;">以前我要「想好写什么」才能开始，现在只需要说「帮</h2>
+      <div class="hf-animate-title" style="font-size:28px;color:rgba(248,250,252,0.78);margin-top:4px;letter-spacing:.04em;">真实案例 · 90 天实践</div>
+    </div>
+    <div class="hf-glass-panel hf-glass-red hf-animate-card" style="position:absolute;top:560px;left:80px;width:880px;padding:48px 44px;background:linear-gradient(180deg,rgba(255,85,119,0.22),rgba(2,4,12,0.62) 60%);">
+      <div class="hf-status-stamp hf-status-risk hf-animate-stamp" style="position:absolute;top:24px;right:24px;font-size:18px;padding:8px 18px;border-width:2px;">BEFORE</div>
+      <div style="font:800 22px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.22em;color:#FF5577;margin-bottom:14px;text-transform:uppercase;">之前 · OLD WAY</div>
+      <div style="font-size:44px;font-weight:800;color:#FFFFFF;line-height:1.2;letter-spacing:-.01em;">旧流程：信息散落，输出靠人肉拼接</div>
+    </div>
+    <div class="hf-glass-panel hf-glass-green hf-animate-card" style="position:absolute;top:600px;right:80px;width:480px;padding:48px 40px;background:linear-gradient(180deg,rgba(46,232,116,0.22),rgba(2,4,12,0.62) 60%);">
+      <div class="hf-status-stamp hf-status-pass hf-animate-stamp" style="position:absolute;top:24px;right:24px;font-size:18px;padding:8px 18px;border-width:2px;">AFTER</div>
+      <div style="font:800 22px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.22em;color:#2EE874;margin-bottom:14px;text-transform:uppercase;">之后 · NEW WAY</div>
+      <div style="font-size:38px;font-weight:800;color:#FFFFFF;line-height:1.2;letter-spacing:-.01em;">新流程：统一入口，结构先出来</div>
+    </div>
+    <div class="hf-animate-card" style="position:absolute;top:1110px;left:50%;transform:translateX(-50%);display:flex;gap:14px;align-items:center;font:800 18px/1 &quot;SF Mono&quot;,monospace;letter-spacing:.22em;color:#FFFFFF;text-transform:uppercase;">
+      <span style="color:#FF5577;">BEFORE</span>
+      <span style="font-size:36px;color:#FFC83D;text-shadow:0 0 14px #FFC83Daa;">→</span>
+      <span style="color:#2EE874;">AFTER</span>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#4D9FFF;opacity:0.7;">S10 · evidence</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">CASE / STUDY</span><b class="hf-hud-sid">S10</b><i class="hf-hud-zh">真实案例 · 90 天实践</i></div>
+</section>
+<section id="scene-s11" class="scene clip role-explain tpl-broken_chain hf-bg-cinematic hf-bg-explain hf-comp-lower" data-start="50.454" data-duration="6.623" data-track-index="1" data-visual-template="broken_chain" data-role="explain">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:#050814;">
+      <div class="bg-grid"></div>
+    </div>
+    
+    <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
+        <div class="hf-animate-title" style="font-size:52px;font-weight:700;color:#fff;line-height:1.2;">当然，AI 写的不能直接用，还需要我改，但它帮我</div>
+    </div>
+    
+    
+    <div style="position:absolute;top:480px;left:168px;width:6px;height:524px;background:linear-gradient(180deg,#25D8FF,rgba(37,216,255,0.25));border-radius:4px;box-shadow:0 0 18px #25D8FF66;"></div>
+    
+        <div class="chain-node hf-animate-card" style="
+            position:absolute;top:480px;left:208px;width:760px;height:110px;
+            background:rgba(255,255,255,0.06);border:2px solid #25D8FF;
+            border-radius:18px;display:flex;align-items:center;
+            padding:0 36px;font-size:34px;font-weight:700;color:#fff;
+        ">素材</div>
+        
+
+        <div class="chain-node hf-animate-card" style="
+            position:absolute;top:618px;left:208px;width:760px;height:110px;
+            background:rgba(255,255,255,0.06);border:2px solid #FF4757;
+            border-radius:18px;display:flex;align-items:center;
+            padding:0 36px;font-size:34px;font-weight:700;color:#fff;
+        ">结构</div>
+        
+
+        <div class="chain-node hf-animate-card" style="
+            position:absolute;top:756px;left:208px;width:760px;height:110px;
+            background:rgba(255,255,255,0.06);border:2px solid #FF4757;
+            border-radius:18px;display:flex;align-items:center;
+            padding:0 36px;font-size:34px;font-weight:700;color:#fff;
+        ">检索</div>
+        
+
+        <div class="chain-node hf-animate-card" style="
+            position:absolute;top:894px;left:208px;width:760px;height:110px;
+            background:rgba(255,255,255,0.06);border:2px solid #25D8FF;
+            border-radius:18px;display:flex;align-items:center;
+            padding:0 36px;font-size:34px;font-weight:700;color:#fff;
+        ">输出</div>
+        
+
+            <div class="tool-connector" style="
+                position:absolute;top:590px;left:228px;width:6px;height:28px;
+                background:linear-gradient(180deg,#25D8FF,rgba(37,216,255,0.2));
+                border-radius:4px;
+            "></div>
+            
+
+            <div class="tool-connector" style="
+                position:absolute;top:728px;left:228px;width:6px;height:28px;
+                background:linear-gradient(180deg,#25D8FF,rgba(37,216,255,0.2));
+                border-radius:4px;
+            "></div>
+            
+
+            <div class="tool-connector" style="
+                position:absolute;top:866px;left:228px;width:6px;height:28px;
+                background:linear-gradient(180deg,#25D8FF,rgba(37,216,255,0.2));
+                border-radius:4px;
+            "></div>
+            
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#25D8FF;opacity:0.7;">S11 · explain</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">EXPLAIN / HUD SYSTEM</span><b class="hf-hud-sid">S11</b></div>
+</section>
+<section id="scene-s12" class="scene clip role-evidence tpl-metric_dashboard hf-bg-cinematic hf-bg-evidence hf-comp-upper" data-start="57.318" data-duration="7.475" data-track-index="1" data-visual-template="metric_dashboard" data-role="evidence">
+  
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(135deg,#0A1428 0%,#0A1A28 60%,#082016 100%);">
+      <div class="bg-grid" style="opacity:.25"></div>
+    </div>
+    <div class="hf-safe-zone" style="position:absolute;top:170px;left:80px;right:80px;text-align:left;">
+      <div class="hf-status-stamp hf-status-live hf-animate-stamp" style="display:inline-flex;margin-bottom:14px;font-size:18px;padding:10px 22px;border-width:2px;">LIVE METRICS · 实时数据</div>
+      <h2 class="hf-animate-title" style="margin:0;font-size:64px;font-weight:900;color:#FFFFFF;line-height:1.1;letter-spacing:-.02em;">从「有想法」到「有草稿」，可能只需要 10 分钟</h2>
+    </div>
+    
+    <div class="hf-glass-panel hf-animate-card" style="position:absolute;top:380px;left:60px;width:520px;height:560px;padding:52px 48px;background:linear-gradient(180deg,rgba(2,4,12,0.78),rgba(2,4,12,0.62) 80%);">
+      <div class="hf-status-stamp hf-status-viral hf-animate-stamp" style="position:absolute;top:24px;right:24px;font-size:14px;padding:6px 14px;border-width:2px;">VIRAL</div>
+      <div style="font:800 20px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.22em;color:rgba(248,250,252,0.72);text-transform:uppercase;">日均输出</div>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-top:32px;">
+        <span class="hf-big-number  hf-animate-number" style="font-size:240px;">3.2</span>
+        <span style="font:800 56px/1 &quot;SF Mono&quot;,monospace;letter-spacing:.04em;color:#FFFFFF;text-shadow:0 0 14px rgba(255,255,255,0.4);">篇</span>
+      </div>
+      <div class="hf-progress" style="margin-top:30px;--hf-target:78%;height:14px;border-radius:7px;">
+        <div class="hf-progress-fill" style="background:linear-gradient(90deg,#38E1FF,#FFC83D);box-shadow:0 0 16px #38E1FFcc;"></div>
+      </div>
+      <div style="font:800 40px/1 &quot;SF Mono&quot;,monospace;color:#2EE874;margin-top:20px;letter-spacing:.04em;">+40% vs 起点</div>
+    </div>
+    
+        <div class="hf-glass-panel hf-animate-card" style="position:absolute;top:380px;right:60px;width:280px;padding:24px 26px;background:rgba(2,4,12,0.62);">
+          <div style="font:700 16px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.22em;color:rgba(248,250,252,0.72);text-transform:uppercase;">素材利用率</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-top:12px;">
+            <span style="font:900 64px/1 &quot;SF Pro Display&quot;,Arial,sans-serif;color:#FFFFFF;letter-spacing:-.02em;text-shadow:0 0 12px rgba(255,255,255,0.3);">78</span>
+            <span style="font:800 24px/1 &quot;SF Mono&quot;,monospace;color:#4D9FFF;">%</span>
+          </div>
+          <div style="font:700 18px/1 &quot;SF Mono&quot;,monospace;color:#2EE874;margin-top:8px;">+52%</div>
+        </div>
+        
+        <div class="hf-glass-panel hf-animate-card" style="position:absolute;top:580px;right:60px;width:280px;padding:24px 26px;background:rgba(2,4,12,0.62);">
+          <div style="font:700 16px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.22em;color:rgba(248,250,252,0.72);text-transform:uppercase;">检索响应</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-top:12px;">
+            <span style="font:900 64px/1 &quot;SF Pro Display&quot;,Arial,sans-serif;color:#FFFFFF;letter-spacing:-.02em;text-shadow:0 0 12px rgba(255,255,255,0.3);">12</span>
+            <span style="font:800 24px/1 &quot;SF Mono&quot;,monospace;color:#4D9FFF;">s</span>
+          </div>
+          <div style="font:700 18px/1 &quot;SF Mono&quot;,monospace;color:#FF5577;margin-top:8px;">-65%</div>
+        </div>
+        
+        <div class="hf-glass-panel hf-animate-card" style="position:absolute;top:780px;right:60px;width:280px;padding:24px 26px;background:rgba(2,4,12,0.62);">
+          <div style="font:700 16px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.22em;color:rgba(248,250,252,0.72);text-transform:uppercase;">完播率</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-top:12px;">
+            <span style="font:900 64px/1 &quot;SF Pro Display&quot;,Arial,sans-serif;color:#FFFFFF;letter-spacing:-.02em;text-shadow:0 0 12px rgba(255,255,255,0.3);">61</span>
+            <span style="font:800 24px/1 &quot;SF Mono&quot;,monospace;color:#4D9FFF;">%</span>
+          </div>
+          <div style="font:700 18px/1 &quot;SF Mono&quot;,monospace;color:#2EE874;margin-top:8px;">+18%</div>
+        </div>
+        
+    <div style="position:absolute;top:1340px;left:140px;right:140px;padding:20px 28px;border-top:2px solid rgba(255,200,61,0.4);text-align:center;font:800 26px/1 &quot;SF Mono&quot;,monospace;letter-spacing:.18em;color:#FFC83D;text-transform:uppercase;">持续跑通最小闭环后，看实际数字</div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#4D9FFF;opacity:0.7;">S12 · evidence</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">DATA / DASHBOARD</span><b class="hf-hud-sid">S12</b><i class="hf-hud-zh">数据 · 关键指标</i></div>
+</section>
+<section id="scene-s13" class="scene clip role-method tpl-tool_chain_three_cols hf-bg-cinematic hf-bg-method hf-comp-center" data-start="65.034" data-duration="5.591" data-track-index="1" data-visual-template="tool_chain_three_cols" data-role="method">
+  
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:#0A1A28;">
+      <div class="bg-grid" style="opacity:.3"></div>
+    </div>
+    
+    <div class="hf-safe-zone" style="position:absolute;top:200px;left:96px;right:96px;">
+      <div class="hf-status-stamp hf-status-pass hf-animate-stamp" style="display:inline-flex;margin-bottom:14px;">STEP 1/3 · 流程</div>
+      <h2 class="hf-animate-title" style="margin:0;font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">第一步，让 Claude Code 分析这周的读</h2>
+    </div>
+    
+    
+    <div class="tool-col hf-glass-panel hf-animate-card hf-pulse" style="
+        position:absolute;top:540px;left:40px;width:300px;
+        padding:28px 20px;text-align:center;
+    ">
+        <div class="hf-step-number" style="font-size:64px;color:#2ED573;text-shadow:0 0 18px #2ED57366;line-height:1;margin-bottom:8px;">IN</div>
+        <div style="font-size:32px;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:.04em;">统一输入</div>
+        <div style="font-size:22px;font-weight:700;color:#2ED573;margin-bottom:6px;letter-spacing:.12em;">汇聚素材</div>
+        <div style="font-size:20px;color:rgba(255,255,255,0.6);line-height:1.35;">读书·网页·语音·视频</div>
+    </div>
+    
+<div class="tool-connector hf-animate-title" style="position:absolute;top:600px;left:340px;width:50px;text-align:center;font-size:48px;color:#2ED573;text-shadow:0 0 12px #2ED573;">→</div>
+
+    <div class="tool-col hf-glass-panel hf-animate-card" style="
+        position:absolute;top:540px;left:390px;width:300px;
+        padding:28px 20px;text-align:center;
+    ">
+        <div class="hf-step-number" style="font-size:64px;color:#2ED573;text-shadow:0 0 18px #2ED57366;line-height:1;margin-bottom:8px;">LINK</div>
+        <div style="font-size:32px;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:.04em;">双向链接</div>
+        <div style="font-size:22px;font-weight:700;color:#2ED573;margin-bottom:6px;letter-spacing:.12em;">形成网络</div>
+        <div style="font-size:20px;color:rgba(255,255,255,0.6);line-height:1.35;">相关观点自动连接</div>
+    </div>
+    
+<div class="tool-connector hf-animate-title" style="position:absolute;top:600px;left:690px;width:50px;text-align:center;font-size:48px;color:#2ED573;text-shadow:0 0 12px #2ED573;">→</div>
+
+    <div class="tool-col hf-glass-panel hf-animate-card" style="
+        position:absolute;top:540px;left:740px;width:300px;
+        padding:28px 20px;text-align:center;
+    ">
+        <div class="hf-step-number" style="font-size:64px;color:#2ED573;text-shadow:0 0 18px #2ED57366;line-height:1;margin-bottom:8px;">AI</div>
+        <div style="font-size:32px;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:.04em;">AI 检索</div>
+        <div style="font-size:22px;font-weight:700;color:#2ED573;margin-bottom:6px;letter-spacing:.12em;">随问随取</div>
+        <div style="font-size:20px;color:rgba(255,255,255,0.6);line-height:1.35;">整理观点和例子</div>
+    </div>
+    
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#2ED573;opacity:0.7;">S13 · method</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">STEP 1/3 · 流程</span><b class="hf-hud-sid">S13</b><i class="hf-hud-zh">输入、链接、检索 · 闭环</i></div>
+</section>
+<section id="scene-s14" class="scene clip role-method tpl-step_ladder hf-bg-cinematic hf-bg-method hf-comp-lower" data-start="70.866" data-duration="6.643" data-track-index="1" data-visual-template="step_ladder" data-role="method">
+  
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(180deg,#0A1628 0%,#0A1A28 60%,#082016 100%);">
+      <div class="bg-grid" style="opacity:.25"></div>
+    </div>
+    <div class="hf-safe-zone" style="position:absolute;top:180px;left:80px;right:80px;text-align:left;">
+      <div class="hf-status-stamp hf-status-pass hf-animate-stamp" style="display:inline-flex;margin-bottom:12px;font-size:18px;padding:10px 22px;border-width:2px;">STEP 1/4 · MILESTONE</div>
+      <h2 class="hf-animate-title" style="margin:0;font-size:48px;font-weight:900;color:#FFFFFF;line-height:1.1;letter-spacing:-.02em;">第二步，选一个选题，让它生成草稿 第三步，修改草</h2>
+    </div>
+    
+    <div style="position:absolute;top:760px;left:60px;width:6px;height:390px;
+        background:linear-gradient(180deg,rgba(46,232,116,0.85),rgba(46,232,116,0.25));
+        box-shadow:0 0 18px rgba(46,232,116,0.6);border-radius:3px;z-index:3;"></div>
+    
+    
+        <div class="ladder-rung hf-glass-panel hf-glass-green hf-animate-card hf-pulse" style="position:absolute;top:710px;left:110px;right:110px;height:110px;padding:14px 32px;display:flex;align-items:center;gap:28px;background:linear-gradient(90deg,rgba(46,232,116,0.28),rgba(2,4,12,0.7) 70%);border-color:#2EE874;">
+            <div style="width:90px;height:90px;border-radius:50%;background:rgba(46,232,116,0.18);border:4px solid #2EE874;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:900;color:#2EE874;flex-shrink:0;box-shadow:0 0 32px rgba(46,232,116,0.75);line-height:1;">1</div>
+            <div style="flex:1;">
+                <div style="font:800 18px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.18em;color:#2EE874;margin-bottom:6px;text-transform:uppercase;">1. 起步</div>
+                <div style="font-size:36px;font-weight:800;color:#FFFFFF;line-height:1.18;letter-spacing:-.01em;">建立入口</div>
+            </div>
+        </div>
+        
+        <div class="ladder-rung hf-glass-panel hf-glass-green hf-animate-card" style="position:absolute;top:840px;left:140px;right:80px;height:110px;padding:14px 32px;display:flex;align-items:center;gap:28px;background:linear-gradient(90deg,rgba(46,232,116,0.12),rgba(2,4,12,0.7) 70%);border-color:rgba(46,232,116,0.45);">
+            <div style="width:90px;height:90px;border-radius:50%;background:rgba(46,232,116,0.18);border:4px solid #2EE874;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:900;color:#2EE874;flex-shrink:0;box-shadow:0 0 18px rgba(46,232,116,0.4);line-height:1;">2</div>
+            <div style="flex:1;">
+                <div style="font:800 18px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.18em;color:#2EE874;margin-bottom:6px;text-transform:uppercase;">2. 串联</div>
+                <div style="font-size:36px;font-weight:800;color:#FFFFFF;line-height:1.18;letter-spacing:-.01em;">链接结构</div>
+            </div>
+        </div>
+        
+        <div class="ladder-rung hf-glass-panel hf-glass-green hf-animate-card" style="position:absolute;top:970px;left:170px;right:50px;height:110px;padding:14px 32px;display:flex;align-items:center;gap:28px;background:linear-gradient(90deg,rgba(46,232,116,0.12),rgba(2,4,12,0.7) 70%);border-color:rgba(46,232,116,0.45);">
+            <div style="width:90px;height:90px;border-radius:50%;background:rgba(46,232,116,0.18);border:4px solid #2EE874;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:900;color:#2EE874;flex-shrink:0;box-shadow:0 0 18px rgba(46,232,116,0.4);line-height:1;">3</div>
+            <div style="flex:1;">
+                <div style="font:800 18px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.18em;color:#2EE874;margin-bottom:6px;text-transform:uppercase;">3. 调用</div>
+                <div style="font-size:36px;font-weight:800;color:#FFFFFF;line-height:1.18;letter-spacing:-.01em;">随时提问</div>
+            </div>
+        </div>
+        
+        <div class="ladder-rung hf-glass-panel hf-glass-green hf-animate-card" style="position:absolute;top:1100px;left:200px;right:20px;height:110px;padding:14px 32px;display:flex;align-items:center;gap:28px;background:linear-gradient(90deg,rgba(46,232,116,0.12),rgba(2,4,12,0.7) 70%);border-color:rgba(46,232,116,0.45);">
+            <div style="width:90px;height:90px;border-radius:50%;background:rgba(46,232,116,0.18);border:4px solid #2EE874;display:flex;align-items:center;justify-content:center;font-size:48px;font-weight:900;color:#2EE874;flex-shrink:0;box-shadow:0 0 18px rgba(46,232,116,0.4);line-height:1;">4</div>
+            <div style="flex:1;">
+                <div style="font:800 18px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.18em;color:#2EE874;margin-bottom:6px;text-transform:uppercase;">4. 产出</div>
+                <div style="font-size:36px;font-weight:800;color:#FFFFFF;line-height:1.18;letter-spacing:-.01em;">持续输出</div>
+            </div>
+        </div>
+        
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#2ED573;opacity:0.7;">S14 · method</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">STEP 1/4 · 步骤</span><b class="hf-hud-sid">S14</b><i class="hf-hud-zh">起步、串联、调用、输出</i></div>
+</section>
+<section id="scene-s15" class="scene clip role-evidence tpl-progress_tracker hf-bg-cinematic hf-bg-evidence hf-comp-upper" data-start="77.751" data-duration="6.201" data-track-index="1" data-visual-template="progress_tracker" data-role="evidence">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(135deg,#0A1428 0%,#0A1A28 60%,#082016 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:200px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(77,159,255,0.12);border:1px solid #4D9FFF66;color:#4D9FFF;font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">PROGRESS / TRACKER</div>
+      <div class="hf-animate-title" style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">这个流程大概 40 分钟，大部分时间是 AI 在</div>
+    </div>
+    
+        <div class="progress-track hf-animate-card" style="position:absolute;top:490px;left:200px;width:800px;">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;">
+                <div style="font-size:24px;letter-spacing:0.16em;color:rgba(255,255,255,0.7);font-weight:700;">能力 A</div>
+                <div style="font-size:32px;font-weight:900;color:#4D9FFF;">90<span style="font-size:18px;color:rgba(255,255,255,0.5);">%</span></div>
+            </div>
+            <div style="width:100%;height:36px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;position:relative;">
+                <div class="progress-bar" style="position:absolute;left:0;top:0;bottom:0;width:720px;background:linear-gradient(90deg,#4D9FFF,rgba(255,255,255,0.3));border-radius:999px;box-shadow:0 0 18px #4D9FFF66;"></div>
+                <div style="position:absolute;left:0;right:0;top:0;bottom:0;display:flex;justify-content:space-between;align-items:center;padding:0 14px;font-size:14px;color:rgba(255,255,255,0.45);font-family:monospace;"><span>W1</span><span>W2</span><span>W3</span><span>W4</span><span>W5</span><span>W6</span><span>W7</span><span>W8</span></div>
+            </div>
+        </div>
+        
+        <div class="progress-track hf-animate-card" style="position:absolute;top:720px;left:200px;width:800px;">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;">
+                <div style="font-size:24px;letter-spacing:0.16em;color:rgba(255,255,255,0.7);font-weight:700;">能力 B</div>
+                <div style="font-size:32px;font-weight:900;color:#2ED573;">88<span style="font-size:18px;color:rgba(255,255,255,0.5);">%</span></div>
+            </div>
+            <div style="width:100%;height:36px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;position:relative;">
+                <div class="progress-bar" style="position:absolute;left:0;top:0;bottom:0;width:704px;background:linear-gradient(90deg,#2ED573,rgba(255,255,255,0.3));border-radius:999px;box-shadow:0 0 18px #2ED57366;"></div>
+                <div style="position:absolute;left:0;right:0;top:0;bottom:0;display:flex;justify-content:space-between;align-items:center;padding:0 14px;font-size:14px;color:rgba(255,255,255,0.45);font-family:monospace;"><span>W1</span><span>W2</span><span>W3</span><span>W4</span><span>W5</span><span>W6</span><span>W7</span><span>W8</span></div>
+            </div>
+        </div>
+        
+        <div class="progress-track hf-animate-card" style="position:absolute;top:950px;left:200px;width:800px;">
+            <div style="display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px;">
+                <div style="font-size:24px;letter-spacing:0.16em;color:rgba(255,255,255,0.7);font-weight:700;">能力 C</div>
+                <div style="font-size:32px;font-weight:900;color:#FF6B35;">86<span style="font-size:18px;color:rgba(255,255,255,0.5);">%</span></div>
+            </div>
+            <div style="width:100%;height:36px;background:rgba(255,255,255,0.06);border-radius:999px;overflow:hidden;position:relative;">
+                <div class="progress-bar" style="position:absolute;left:0;top:0;bottom:0;width:688px;background:linear-gradient(90deg,#FF6B35,rgba(255,255,255,0.3));border-radius:999px;box-shadow:0 0 18px #FF6B3566;"></div>
+                <div style="position:absolute;left:0;right:0;top:0;bottom:0;display:flex;justify-content:space-between;align-items:center;padding:0 14px;font-size:14px;color:rgba(255,255,255,0.45);font-family:monospace;"><span>W1</span><span>W2</span><span>W3</span><span>W4</span><span>W5</span><span>W6</span><span>W7</span><span>W8</span></div>
+            </div>
+        </div>
+        
+    <div style="position:absolute;top:1200px;left:120px;right:120px;padding:18px 24px;border-top:1px solid rgba(255,255,255,0.18);text-align:center;font-size:24px;color:rgba(255,255,255,0.7);">持续跑通后，三条曲线同步进入加速段</div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#4D9FFF;opacity:0.7;">S15 · evidence</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">EVIDENCE / HUD SYSTEM</span><b class="hf-hud-sid">S15</b></div>
+</section>
+<section id="scene-s16" class="scene clip role-explain tpl-tool_stack hf-bg-cinematic hf-bg-explain hf-comp-center" data-start="84.194" data-duration="2.274" data-track-index="1" data-visual-template="tool_stack" data-role="explain">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(180deg,#0A1628 0%,#0F0820 60%,#0A1628 100%);">
+      <div class="bg-grid"></div>
+    </div>
+    <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(168,85,247,0.12);border:1px solid #25D8FF66;color:#25D8FF;font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">TOOL / STACK</div>
+      <div class="hf-animate-title" style="font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">不是我变强了，是工具变了</div>
+    </div>
+    
+        <div class="stack-layer hf-animate-card" style="position:absolute;top:480px;left:180px;width:720px;height:140px;background:linear-gradient(90deg,#7C3AED22,rgba(255,255,255,0.04));border:2px solid #7C3AED;border-radius:20px;padding:20px 28px;display:flex;align-items:center;gap:24px;box-shadow:0 0 26px #7C3AED22;">
+            <div style="width:80px;height:80px;border-radius:16px;background:#7C3AED;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#0A1428;flex-shrink:0;">L1</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.1;">Layer 1</div>
+                <div style="font-size:24px;color:rgba(255,255,255,0.65);margin-top:6px;">采集</div>
+            </div>
+        </div>
+        
+        <div class="stack-layer hf-animate-card" style="position:absolute;top:680px;left:240px;width:600px;height:140px;background:linear-gradient(90deg,#4D9FFF22,rgba(255,255,255,0.04));border:2px solid #4D9FFF;border-radius:20px;padding:20px 28px;display:flex;align-items:center;gap:24px;box-shadow:0 0 26px #4D9FFF22;">
+            <div style="width:80px;height:80px;border-radius:16px;background:#4D9FFF;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#0A1428;flex-shrink:0;">L2</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.1;">Layer 2</div>
+                <div style="font-size:24px;color:rgba(255,255,255,0.65);margin-top:6px;">加工</div>
+            </div>
+        </div>
+        
+        <div class="stack-layer hf-animate-card" style="position:absolute;top:880px;left:300px;width:480px;height:140px;background:linear-gradient(90deg,#2ED57322,rgba(255,255,255,0.04));border:2px solid #2ED573;border-radius:20px;padding:20px 28px;display:flex;align-items:center;gap:24px;box-shadow:0 0 26px #2ED57322;">
+            <div style="width:80px;height:80px;border-radius:16px;background:#2ED573;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900;color:#0A1428;flex-shrink:0;">L3</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.1;">Layer 3</div>
+                <div style="font-size:24px;color:rgba(255,255,255,0.65);margin-top:6px;">输出</div>
+            </div>
+        </div>
+        
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#25D8FF;opacity:0.7;">S16 · explain</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">EXPLAIN / HUD SYSTEM</span><b class="hf-hud-sid">S16</b></div>
+</section>
+<section id="scene-s17" class="scene clip role-explain tpl-concept_layers hf-bg-cinematic hf-bg-explain hf-comp-lower" data-start="86.709" data-duration="5.791" data-track-index="1" data-visual-template="concept_layers" data-role="explain">
+  
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(180deg,#0A1628 0%,#0F0820 60%,#0A1628 100%);">
+      <div class="bg-grid" style="opacity:.3"></div>
+    </div>
+    <div class="hf-safe-zone" style="position:absolute;top:220px;left:96px;right:96px;">
+      <h2 class="hf-animate-title" style="margin:0;font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">个人体验和情感是我改稿的时候加进去的，不是 AI</h2>
+    </div>
+    
+        <div class="layer-bar hf-glass-panel hf-glass-cyan hf-animate-card" style="position:absolute;top:500px;left:80px;width:920px;height:160px;padding:0 32px;display:flex;align-items:center;gap:28px;background:linear-gradient(90deg,#25D8FF33,rgba(6,8,16,0.55) 60%);">
+            <div style="position:absolute;left:0;top:0;bottom:0;width:6px;background:#25D8FF;box-shadow:0 0 18px #25D8FF66;"></div>
+            <div style="width:96px;height:96px;border-radius:18px;background:#25D8FF;display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:900;color:#0A1628;flex-shrink:0;box-shadow:0 0 24px #25D8FF66;">L1</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.18;">收集：素材进库</div>
+            </div>
+        </div>
+        
+        <div class="layer-bar hf-glass-panel hf-glass-purple hf-animate-card" style="position:absolute;top:700px;left:160px;width:760px;height:160px;padding:0 32px;display:flex;align-items:center;gap:28px;background:linear-gradient(90deg,#7C3AED33,rgba(6,8,16,0.55) 60%);">
+            <div style="position:absolute;left:0;top:0;bottom:0;width:6px;background:#7C3AED;box-shadow:0 0 18px #7C3AED66;"></div>
+            <div style="width:96px;height:96px;border-radius:18px;background:#7C3AED;display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:900;color:#0A1628;flex-shrink:0;box-shadow:0 0 24px #7C3AED66;">L2</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.18;">结构：双向链接</div>
+            </div>
+        </div>
+        
+        <div class="layer-bar hf-glass-panel hf-glass-purple hf-animate-card" style="position:absolute;top:900px;left:240px;width:600px;height:160px;padding:0 32px;display:flex;align-items:center;gap:28px;background:linear-gradient(90deg,#A855F733,rgba(6,8,16,0.55) 60%);">
+            <div style="position:absolute;left:0;top:0;bottom:0;width:6px;background:#A855F7;box-shadow:0 0 18px #A855F766;"></div>
+            <div style="width:96px;height:96px;border-radius:18px;background:#A855F7;display:flex;align-items:center;justify-content:center;font-size:42px;font-weight:900;color:#0A1628;flex-shrink:0;box-shadow:0 0 24px #A855F766;">L3</div>
+            <div style="flex:1;">
+                <div style="font-size:38px;font-weight:800;color:#fff;line-height:1.18;">调用：AI 提问</div>
+            </div>
+        </div>
+        
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#25D8FF;opacity:0.7;">S17 · explain</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">LAYERS / CONCEPT</span><b class="hf-hud-sid">S17</b><i class="hf-hud-zh">概念 · 底层到顶层</i></div>
+</section>
+<section id="scene-s18" class="scene clip role-explain tpl-knowledge_graph hf-bg-cinematic hf-bg-explain hf-comp-upper" data-start="92.742" data-duration="4.548" data-track-index="1" data-visual-template="knowledge_graph" data-role="explain">
+  
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(160deg,#0A1628 0%,#0F0820 60%,#0A1628 100%);">
+      <div class="bg-grid" style="opacity:.25"></div>
+    </div>
+    <div class="hf-safe-zone" style="position:absolute;top:170px;left:80px;right:80px;">
+      <div class="hf-status-stamp hf-status-viral hf-animate-stamp" style="display:inline-flex;margin-bottom:12px;font-size:18px;padding:10px 22px;border-width:2px;">KNOWLEDGE GRAPH · 知识系统</div>
+      <h2 class="hf-animate-title" style="margin:0;font-size:64px;font-weight:900;color:#FFFFFF;line-height:1.1;letter-spacing:-.02em;">它会学习你的写作风格，而不是输出一个通用的模板</h2>
+    </div>
+    
+            <div class="kg-edge" style="position:absolute;left:630px;top:860px;width:290px;height:4px;background:linear-gradient(90deg,#C77DFFcc,rgba(56,225,255,0.4));transform-origin:0 0;transform:rotate(63.22760800951999deg);box-shadow:0 0 18px #C77DFFaa;"></div>
+            
+            <div class="kg-edge" style="position:absolute;left:630px;top:860px;width:290px;height:4px;background:linear-gradient(90deg,#C77DFFcc,rgba(56,225,255,0.4));transform-origin:0 0;transform:rotate(-63.227564404288145deg);box-shadow:0 0 18px #C77DFFaa;"></div>
+            
+            <div class="kg-edge" style="position:absolute;left:340px;top:560px;width:290px;height:4px;background:linear-gradient(90deg,#C77DFFcc,rgba(56,225,255,0.4));transform-origin:0 0;transform:rotate(-23.710336651608053deg);box-shadow:0 0 18px #C77DFFaa;"></div>
+            
+            <div class="kg-edge" style="position:absolute;left:920px;top:560px;width:290px;height:4px;background:linear-gradient(90deg,#C77DFFcc,rgba(56,225,255,0.4));transform-origin:0 0;transform:rotate(23.71035300357deg);box-shadow:0 0 18px #C77DFFaa;"></div>
+            
+            <div class="kg-edge" style="position:absolute;left:340px;top:560px;width:1px;height:4px;background:linear-gradient(90deg,#C77DFFcc,rgba(56,225,255,0.4));transform-origin:0 0;transform:rotate(90deg);box-shadow:0 0 18px #C77DFFaa;"></div>
+            
+            <div class="kg-edge" style="position:absolute;left:920px;top:560px;width:1px;height:4px;background:linear-gradient(90deg,#C77DFFcc,rgba(56,225,255,0.4));transform-origin:0 0;transform:rotate(90deg);box-shadow:0 0 18px #C77DFFaa;"></div>
+            
+            <div class="kg-edge" style="position:absolute;left:630px;top:460px;width:290px;height:4px;background:linear-gradient(90deg,#C77DFFcc,rgba(56,225,255,0.4));transform-origin:0 0;transform:rotate(134.3585743591123deg);box-shadow:0 0 18px #C77DFFaa;"></div>
+            
+    
+            <div class="kg-node hf-glass-panel hf-glass-purple hf-animate-card hf-pulse" style="position:absolute;left:500px;top:775px;width:260px;height:160px;border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 16px;box-shadow:0 0 56px #C77DFFaa;background:linear-gradient(180deg,rgba(199,125,255,0.35),rgba(2,4,12,0.7));">
+              <div class="hf-status-stamp hf-status-viral hf-animate-stamp" style="margin-bottom:8px;font-size:16px;padding:8px 16px;border-width:2px;">CORE HUB</div>
+              <div style="font:900 36px/1.1 &quot;PingFang SC&quot;,sans-serif;color:#FFFFFF;line-height:1.1;text-align:center;letter-spacing:-.01em;text-shadow:0 0 20px #C77DFF66;">核心概念</div>
+            </div>
+            
+            <div class="kg-node hf-glass-panel hf-animate-card" style="position:absolute;left:250px;top:500px;width:180px;height:80px;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px 12px;background:rgba(2,4,12,0.7);border-color:rgba(199,125,255,0.4);">
+              <div style="font:800 25px/1.15 &quot;PingFang SC&quot;,sans-serif;color:#FFFFFF;line-height:1.15;letter-spacing:-.005em;">方法 A</div>
+            </div>
+            
+            <div class="kg-node hf-glass-panel hf-animate-card" style="position:absolute;left:830px;top:500px;width:180px;height:80px;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px 12px;background:rgba(2,4,12,0.7);border-color:rgba(199,125,255,0.4);">
+              <div style="font:800 25px/1.15 &quot;PingFang SC&quot;,sans-serif;color:#FFFFFF;line-height:1.15;letter-spacing:-.005em;">方法 B</div>
+            </div>
+            
+            <div class="kg-node hf-glass-panel hf-animate-card" style="position:absolute;left:540px;top:400px;width:180px;height:80px;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px 12px;background:rgba(2,4,12,0.7);border-color:rgba(199,125,255,0.4);">
+              <div style="font:800 25px/1.15 &quot;PingFang SC&quot;,sans-serif;color:#FFFFFF;line-height:1.15;letter-spacing:-.005em;">案例 1</div>
+            </div>
+            
+            <div class="kg-node hf-glass-panel hf-animate-card" style="position:absolute;left:250px;top:1100px;width:180px;height:80px;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px 12px;background:rgba(2,4,12,0.7);border-color:rgba(199,125,255,0.4);">
+              <div style="font:800 25px/1.15 &quot;PingFang SC&quot;,sans-serif;color:#FFFFFF;line-height:1.15;letter-spacing:-.005em;">案例 2</div>
+            </div>
+            
+            <div class="kg-node hf-glass-panel hf-animate-card" style="position:absolute;left:830px;top:1100px;width:180px;height:80px;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px 12px;background:rgba(2,4,12,0.7);border-color:rgba(199,125,255,0.4);">
+              <div style="font:800 25px/1.15 &quot;PingFang SC&quot;,sans-serif;color:#FFFFFF;line-height:1.15;letter-spacing:-.005em;">输出</div>
+            </div>
+            
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#25D8FF;opacity:0.7;">S18 · explain</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">GRAPH / NETWORK</span><b class="hf-hud-sid">S18</b><i class="hf-hud-zh">知识图谱 · 节点与连接</i></div>
+</section>
+<section id="scene-s19" class="scene clip role-evidence tpl-before_after_compare hf-bg-cinematic hf-bg-evidence hf-comp-center" data-start="97.531" data-duration="6.403" data-track-index="1" data-visual-template="before_after_compare" data-role="evidence">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:#0A1428;">
+      <div class="bg-grid"></div>
+    </div>
+    
+    <div style="position:absolute;top:180px;left:72px;right:72px;text-align:center;">
+        <div style="font-size:46px;font-weight:700;color:#fff;line-height:1.2;">以前写文章最难的是「想好写什么」和「开始写」，现</div>
+    </div>
+    
+    
+        <div style="position:absolute;top:520px;left:92px;right:92px;">
+            <div style="display:flex;align-items:center;gap:18px;margin-bottom:18px;">
+                <div style="font-size:22px;letter-spacing:0.16em;color:#FF4757;">旧路径</div>
+                <div class="tool-connector" style="flex:1;height:2px;background:linear-gradient(90deg,#FF4757,transparent);"></div>
+            </div>
+            <div><div class='compare-item' style='display:inline-flex;align-items:center;padding:14px 18px;border-radius:999px;background:rgba(255,255,255,0.05);font-size:26px;color:#fff;margin-right:14px;'>翻找素材</div><div class='compare-item' style='display:inline-flex;align-items:center;padding:14px 18px;border-radius:999px;background:rgba(255,255,255,0.05);font-size:26px;color:#fff;margin-right:14px;'>手动拼接</div><div class='compare-item' style='display:inline-flex;align-items:center;padding:14px 18px;border-radius:999px;background:rgba(255,255,255,0.05);font-size:26px;color:#fff;margin-right:14px;'>从零开写</div></div>
+        </div>
+        
+        <div style="position:absolute;top:810px;left:92px;right:92px;">
+            <div style="display:flex;align-items:center;gap:18px;margin-bottom:18px;">
+                <div style="font-size:22px;letter-spacing:0.16em;color:#4D9FFF;">新路径</div>
+                <div class="tool-connector" style="flex:1;height:2px;background:linear-gradient(90deg,#4D9FFF,transparent);"></div>
+            </div>
+            <div><div class='compare-item' style='display:inline-flex;align-items:center;padding:14px 18px;border-radius:999px;background:rgba(255,255,255,0.05);font-size:26px;color:#fff;margin-right:14px;'>直接提问</div><div class='compare-item' style='display:inline-flex;align-items:center;padding:14px 18px;border-radius:999px;background:rgba(255,255,255,0.05);font-size:26px;color:#fff;margin-right:14px;'>检索笔记</div><div class='compare-item' style='display:inline-flex;align-items:center;padding:14px 18px;border-radius:999px;background:rgba(255,255,255,0.05);font-size:26px;color:#fff;margin-right:14px;'>拿到素材包</div></div>
+        </div>
+        
+    <div style="position:absolute;top:1120px;left:118px;right:118px;padding:20px 24px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.14);border-radius:18px;text-align:center;font-size:28px;color:rgba(255,255,255,0.72);">旧流程在找，新的流程在直接调用。</div>
+    
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#4D9FFF;opacity:0.7;">S19 · evidence</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">EVIDENCE / HUD SYSTEM</span><b class="hf-hud-sid">S19</b></div>
+</section>
+<section id="scene-s20" class="scene clip role-explain tpl-framework_quadrant hf-bg-cinematic hf-bg-explain hf-comp-lower" data-start="104.175" data-duration="6.232" data-track-index="1" data-visual-template="framework_quadrant" data-role="explain">
+  
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(135deg,#0A1628 0%,#0A1A28 60%,#0A1428 100%);">
+      <div class="bg-grid" style="opacity:.3"></div>
+    </div>
+    <div class="hf-safe-zone" style="position:absolute;top:200px;left:96px;right:96px;">
+      <h2 class="hf-animate-title" style="margin:0;font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">选题，选 AI 给的建议里最顺眼的 改稿，把 A</h2>
+    </div>
+    
+        <div class="framework-quad hf-glass-panel hf-glass-cyan hf-animate-card" style="position:absolute;top:480px;left:120px;width:380px;height:400px;padding:34px 30px;">
+            <div class="hf-step-number" style="font-size:88px;color:#4D9FFF;text-shadow:0 0 18px #4D9FFF66;line-height:1;margin-bottom:18px;">q1</div>
+            <div style="font-size:18px;letter-spacing:0.18em;color:#4D9FFF;margin-bottom:8px;">Q1 输入</div>
+            <div style="font-size:30px;font-weight:800;color:#fff;line-height:1.2;">统一入口</div>
+        </div>
+        
+        <div class="framework-quad hf-glass-panel hf-glass-green hf-animate-card" style="position:absolute;top:480px;right:120px;width:380px;height:400px;padding:34px 30px;">
+            <div class="hf-step-number" style="font-size:88px;color:#2ED573;text-shadow:0 0 18px #2ED57366;line-height:1;margin-bottom:18px;">q2</div>
+            <div style="font-size:18px;letter-spacing:0.18em;color:#2ED573;margin-bottom:8px;">Q2 结构</div>
+            <div style="font-size:30px;font-weight:800;color:#fff;line-height:1.2;">组织整理</div>
+        </div>
+        
+        <div class="framework-quad hf-glass-panel hf-glass-amber hf-animate-card" style="position:absolute;top:980px;left:120px;width:380px;height:400px;padding:34px 30px;">
+            <div class="hf-step-number" style="font-size:88px;color:#FF6B35;text-shadow:0 0 18px #FF6B3566;line-height:1;margin-bottom:18px;">q3</div>
+            <div style="font-size:18px;letter-spacing:0.18em;color:#FF6B35;margin-bottom:8px;">Q3 检索</div>
+            <div style="font-size:30px;font-weight:800;color:#fff;line-height:1.2;">按需调用</div>
+        </div>
+        
+        <div class="framework-quad hf-glass-panel hf-glass-purple hf-animate-card" style="position:absolute;top:980px;right:120px;width:380px;height:400px;padding:34px 30px;">
+            <div class="hf-step-number" style="font-size:88px;color:#A855F7;text-shadow:0 0 18px #A855F766;line-height:1;margin-bottom:18px;">q4</div>
+            <div style="font-size:18px;letter-spacing:0.18em;color:#A855F7;margin-bottom:8px;">Q4 输出</div>
+            <div style="font-size:30px;font-weight:800;color:#fff;line-height:1.2;">持续产出</div>
+        </div>
+        
+    <div class="hf-glass-panel hf-glass-purple hf-animate-card" style="position:absolute;top:730px;left:430px;width:220px;height:220px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(168,85,247,0.22),rgba(37,216,255,0.10));">
+        <div style="text-align:center;">
+            <div style="font-size:13px;letter-spacing:0.22em;color:rgba(255,255,255,0.55);">CENTER</div>
+            <div style="font-size:32px;font-weight:900;color:#fff;margin-top:4px;">AI</div>
+        </div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#25D8FF;opacity:0.7;">S20 · explain</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">FRAMEWORK / 2X2</span><b class="hf-hud-sid">S20</b><i class="hf-hud-zh">四象限 · 概念分层</i></div>
+</section>
+<section id="scene-s21" class="scene clip role-cta tpl-checklist_cta hf-bg-cinematic hf-bg-cta hf-comp-upper" data-start="110.649" data-duration="5.56" data-track-index="1" data-visual-template="checklist_cta" data-role="cta">
+  
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(160deg,#04060C 0%,#0a1a14 55%,#0a1a14 100%);">
+      <div class="bg-grid" style="opacity:.2"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,rgba(46,232,116,0.45) 0%,transparent 65%);"></div>
+      <div class="bg-glow bg-glow-2" style="background:radial-gradient(circle,rgba(255,200,61,0.18) 0%,transparent 72%);"></div>
+    </div>
+    <div class="hf-safe-zone" style="position:absolute;top:150px;left:0;right:0;text-align:center;">
+      <div style="display:flex;justify-content:center;gap:14px;margin-bottom:18px;">
+        <div class="hf-status-stamp hf-status-pass hf-animate-stamp" style="font-size:18px;padding:10px 22px;border-width:2px;">DONE</div>
+        <div class="hf-status-stamp hf-status-viral hf-animate-stamp" style="font-size:18px;padding:10px 22px;border-width:2px;color:#FFC83D;">COMPLETE</div>
+      </div>
+      <div class="hf-animate-number" style="font-size:380px;font-weight:900;line-height:0.92;color:#2EE874;text-shadow:0 0 72px #2EE874cc;letter-spacing:-12px;">100</div>
+      <div style="font:800 40px/1 &quot;SF Mono&quot;,monospace;color:#FFFFFF;margin-top:10px;letter-spacing:.18em;text-shadow:0 0 14px rgba(255,255,255,0.4);">/ 100 · CHAPTER CLOSE</div>
+      <div style="font:700 18px/1 &quot;SF Mono&quot;,monospace;letter-spacing:.22em;color:#2EE874;margin-top:14px;text-transform:uppercase;">本章掌握度</div>
+    </div>
+    <div class="hf-glass-panel hf-glass-green hf-pulse" style="position:absolute;top:820px;left:80px;right:80px;padding:36px 40px;background:linear-gradient(180deg,rgba(46,232,116,0.22),rgba(2,4,12,0.7) 80%);">
+      <div style="font-size:48px;font-weight:800;color:#FFFFFF;line-height:1.18;text-align:center;letter-spacing:-.01em;">这种工作流让我保持了稳定的输出，从每周一篇变成了</div>
+    </div>
+    <div style="position:absolute;top:1000px;left:0;right:0;text-align:center;">
+      <div style="font:800 18px/1 &quot;SF Mono&quot;,monospace;letter-spacing:.32em;color:#2EE874;margin-bottom:14px;">NEXT / PREVIEW</div>
+      <div class="hf-animate-stamp" style="display:inline-flex;padding:20px 40px;border-radius:18px;background:rgba(46,232,116,0.22);border:2.5px solid #2EE874;font:800 32px/1 &quot;PingFang SC&quot;,sans-serif;color:#FFFFFF;box-shadow:0 0 32px #2EE87477;letter-spacing:.04em;">下期讲：把检索真正接进 AI 流程</div>
+    </div>
+    <div style="position:absolute;top:1130px;left:140px;right:140px;padding:20px 24px;border-radius:18px;background:rgba(255,255,255,0.06);text-align:center;font-size:26px;color:rgba(248,250,252,0.82);line-height:1.4;letter-spacing:.02em;">把记住外包出去，把精力留给创造</div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#2ED573;opacity:0.7;">S21 · cta</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">FINAL SCORE · COMPLETE</span><b class="hf-hud-sid">S21</b><i class="hf-hud-zh">本集掌握度 · 下期预告</i></div>
+</section>
+<div id="caption-s01_c01" class="caption clip" data-start="0.0" data-duration="3.17" data-track-index="2">用 Claude Code 写公众号三个月后</div><div id="caption-s01_c02" class="caption clip" data-start="3.19" data-duration="3.17" data-track-index="2">我发现它提升的不只是效率</div><div id="caption-s02_c01" class="caption clip" data-start="6.63" data-duration="3.91" data-track-index="2">用 Claude Code 写公众号三个月了</div><div id="caption-s03_c01" class="caption clip" data-start="10.8" data-duration="3.38" data-track-index="2">一开始我只是想找个工具帮我写代码</div><div id="caption-s03_c02" class="caption clip" data-start="14.21" data-duration="3.38" data-track-index="2">结果用它做自媒体创作比写代码还顺手</div><div id="caption-s04_c01" class="caption clip" data-start="17.85" data-duration="2.86" data-track-index="2">以前写一篇公众号文章是这样的</div><div id="caption-s05_c01" class="caption clip" data-start="20.97" data-duration="2.13" data-track-index="2">改稿 1 小时</div><div id="caption-s06_c01" class="caption clip" data-start="23.36" data-duration="4.0" data-track-index="2">不是 Claude Code 帮我写了文章</div><div id="caption-s06_c02" class="caption clip" data-start="27.38" data-duration="4.0" data-track-index="2">是它帮我把「想」和「等灵感」的时间压缩到了几乎为零</div><div id="caption-s07_c01" class="caption clip" data-start="31.64" data-duration="2.25" data-track-index="2">你有没有这种感觉</div><div id="caption-s07_c02" class="caption clip" data-start="33.91" data-duration="2.25" data-track-index="2">读了很多书 记住了 10% 用到了 1%</div><div id="caption-s08_c01" class="caption clip" data-start="36.42" data-duration="2.36" data-track-index="2">以前这个过程需要我自己花 1 小时「想」</div><div id="caption-s08_c02" class="caption clip" data-start="38.8" data-duration="2.36" data-track-index="2">现在 5 分钟搞定</div><div id="caption-s09_c01" class="caption clip" data-start="41.41" data-duration="2.66" data-track-index="2">写文章最难的不是写 是开始写</div><div id="caption-s10_c01" class="caption clip" data-start="44.33" data-duration="1.91" data-track-index="2">以前我要「想好写什么」才能开始</div><div id="caption-s10_c02" class="caption clip" data-start="46.26" data-duration="1.91" data-track-index="2">现在只需要说「帮我写」</div><div id="caption-s10_c03" class="caption clip" data-start="48.18" data-duration="1.91" data-track-index="2">它就帮我写了</div><div id="caption-s11_c01" class="caption clip" data-start="50.35" data-duration="3.28" data-track-index="2">当然 AI 写的不能直接用 还需要我改</div><div id="caption-s11_c02" class="caption clip" data-start="53.66" data-duration="3.28" data-track-index="2">但它帮我跨过了「开始」这个最大的障碍</div><div id="caption-s12_c01" class="caption clip" data-start="57.2" data-duration="3.49" data-track-index="2">从「有想法」到「有草稿」 可能只需要 10 分钟</div><div id="caption-s13_c01" class="caption clip" data-start="60.95" data-duration="3.69" data-track-index="2">这个 10 分钟的跨越 是执行力最大的提升</div><div id="caption-s14_c01" class="caption clip" data-start="64.9" data-duration="1.84" data-track-index="2">第一步</div><div id="caption-s14_c02" class="caption clip" data-start="66.76" data-duration="1.84" data-track-index="2">让 Claude Code 分析这周的读书笔记</div><div id="caption-s14_c03" class="caption clip" data-start="68.62" data-duration="1.84" data-track-index="2">推荐选题</div><div id="caption-s15_c01" class="caption clip" data-start="70.72" data-duration="2.86" data-track-index="2">第二步 选一个选题 让它生成草稿</div><div id="caption-s16_c01" class="caption clip" data-start="73.84" data-duration="3.49" data-track-index="2">第三步 修改草稿 让它评分 根据评分调整</div><div id="caption-s17_c01" class="caption clip" data-start="77.59" data-duration="2.04" data-track-index="2">这个流程大概 40 分钟</div><div id="caption-s17_c02" class="caption clip" data-start="79.65" data-duration="2.04" data-track-index="2">大部分时间是 AI 在跑</div><div id="caption-s17_c03" class="caption clip" data-start="81.72" data-duration="2.04" data-track-index="2">我只需要做决策和修改</div><div id="caption-s18_c01" class="caption clip" data-start="84.02" data-duration="2.25" data-track-index="2">不是我变强了 是工具变了</div><div id="caption-s19_c01" class="caption clip" data-start="86.53" data-duration="2.87" data-track-index="2">个人体验和情感是我改稿的时候加进去的</div><div id="caption-s19_c02" class="caption clip" data-start="89.42" data-duration="2.87" data-track-index="2">不是 AI 写的 是我写的</div><div id="caption-s20_c01" class="caption clip" data-start="92.55" data-duration="4.52" data-track-index="2">它会学习你的写作风格 而不是输出一个通用的模板</div><div id="caption-s21_c01" class="caption clip" data-start="97.33" data-duration="3.18" data-track-index="2">以前写文章最难的是「想好写什么」和「开始写」</div><div id="caption-s21_c02" class="caption clip" data-start="100.53" data-duration="3.17" data-track-index="2">现在这两件事都可以交给 AI</div><div id="caption-s22_c01" class="caption clip" data-start="103.96" data-duration="2.86" data-track-index="2">选题 选 AI 给的建议里最顺眼的</div><div id="caption-s23_c01" class="caption clip" data-start="107.08" data-duration="3.08" data-track-index="2">改稿 把 AI 写的改成我自己的语言</div><div id="caption-s24_c01" class="caption clip" data-start="110.42" data-duration="2.75" data-track-index="2">这种工作流让我保持了稳定的输出</div><div id="caption-s24_c02" class="caption clip" data-start="113.19" data-duration="2.76" data-track-index="2">从每周一篇变成了每天一篇</div>
+</div>
+<script>(function() {
+  var sections = Array.prototype.slice.call(document.querySelectorAll('section.scene'));
+  var active = {};
+  function apply(t) {
+    sections.forEach(function(s) {
+      var start = parseFloat(s.dataset.start || 0);
+      var dur = parseFloat(s.dataset.duration || 0);
+      var isActive = t >= start && t < start + dur;
+      if (isActive) {
+        s.style.opacity = '1';
+        if (!active[s.id]) {
+          s.classList.remove('hf-entering');
+          void s.offsetHeight; /* force reflow so animation re-triggers */
+          s.classList.add('hf-entering');
+          active[s.id] = true;
+        }
+      } else {
+        s.style.opacity = '0';
+        if (active[s.id]) {
+          s.classList.remove('hf-entering');
+          delete active[s.id];
+        }
+      }
+    });
+    /* Caption visibility */
+    var caps = document.querySelectorAll('.caption.clip');
+    caps.forEach(function(c) {
+      var cs = parseFloat(c.dataset.start || 0);
+      var cd = parseFloat(c.dataset.duration || 0);
+      c.style.display = (t >= cs && t < cs + cd) ? '' : 'none';
+    });
+  }
+  var prior = window.__hf;
+  window.__hf = {
+    seek: function(t) { if (prior && prior.seek) { prior.seek(t); } apply(t); },
+    get duration() {
+      var r = document.getElementById('root');
+      return r ? parseFloat(r.dataset.duration || 0) : 0;
+    }
+  };
+  /* V3-P3.10A-R2 fail-safe: apply(0) immediately so the first scene
+     gets hf-entering even before Studio calls seek(). Prevents blank
+     contact sheets / review frames from opacity:0 initial state. */
+  apply(0);
+})();
+window.__timelines = window.__timelines || {};</script>
+</body></html>

@@ -1,0 +1,17 @@
+{
+  "status": "PASS",
+  "render_status": "PASS",
+  "project_id": "demo_v3_preview",
+  "render_path": "hyperframes_studio_native",
+  "timeline_dir": "/Users/muzi/video-director-v3/outputs/demo_v3_preview/hyperframes_timeline",
+  "audio_source": "/Users/muzi/video-director-v3/outputs/demo_v3_preview/hyperframes_timeline/assets/voiceover.mp3",
+  "native_render": "/Users/muzi/video-director-v3/outputs/demo_v3_preview/rendered_smoke/native_render.mp4",
+  "silent_video": "/Users/muzi/video-director-v3/outputs/demo_v3_preview/rendered_smoke/silent_video.mp4",
+  "final_video": "/Users/muzi/video-director-v3/outputs/demo_v3_preview/rendered_smoke/final_video_smoke.mp4",
+  "final_video_duration": 5.0,
+  "final_video_has_video_stream": true,
+  "final_video_has_audio_stream": true,
+  "sync_status": "PASS",
+  "sync_report": "/Users/muzi/video-director-v3/outputs/demo_v3_preview/rendered_smoke/sync_report.json",
+  "issues": []
+}

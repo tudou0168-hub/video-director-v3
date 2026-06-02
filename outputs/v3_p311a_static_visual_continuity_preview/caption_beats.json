@@ -1,0 +1,239 @@
+{
+  "caption_beats": [
+    {
+      "scene_id": "S01",
+      "caption_id": "S01_C01",
+      "start": 0.0,
+      "duration": 2.05,
+      "text": "你有没有这种感觉 读了很多书",
+      "source_sentence": "你有没有这种感觉 读了很多书",
+      "visible": true
+    },
+    {
+      "scene_id": "S01",
+      "caption_id": "S01_C02",
+      "start": 2.05,
+      "duration": 2.05,
+      "text": "真正需要的时候",
+      "source_sentence": "真正需要的时候",
+      "visible": true
+    },
+    {
+      "scene_id": "S01",
+      "caption_id": "S01_C03",
+      "start": 4.09,
+      "duration": 2.05,
+      "text": "却一句都想不起来？",
+      "source_sentence": "却一句都想不起来？",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S02_C01",
+      "start": 6.39,
+      "duration": 2.26,
+      "text": "我之前也是 读了 100 本书",
+      "source_sentence": "我之前也是 读了 100 本书",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S02_C02",
+      "start": 8.65,
+      "duration": 2.26,
+      "text": "能记住的不到 10 本",
+      "source_sentence": "能记住的不到 10 本",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S02_C03",
+      "start": 10.92,
+      "duration": 2.26,
+      "text": "真正能用上的不到 1 本",
+      "source_sentence": "真正能用上的不到 1 本",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S03_C01",
+      "start": 13.43,
+      "duration": 3.29,
+      "text": "后来我把 Obsidian 打造成了第二大脑",
+      "source_sentence": "后来我把 Obsidian 打造成了第二大脑",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S03_C02",
+      "start": 16.71,
+      "duration": 3.29,
+      "text": "再让 AI 帮我找回知识",
+      "source_sentence": "再让 AI 帮我找回知识",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S04_C01",
+      "start": 20.25,
+      "duration": 5.05,
+      "text": "简单讲 大脑负责思考和创造 第二大脑负责存储和检索",
+      "source_sentence": "简单讲 大脑负责思考和创造 第二大脑负责存储和检索",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S05_C01",
+      "start": 25.55,
+      "duration": 3.22,
+      "text": "第一步 把输入汇聚到一个地方",
+      "source_sentence": "第一步 把输入汇聚到一个地方",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S05_C02",
+      "start": 28.77,
+      "duration": 3.22,
+      "text": "微信读书笔记 网页剪藏",
+      "source_sentence": "微信读书笔记 网页剪藏",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S05_C03",
+      "start": 31.98,
+      "duration": 3.22,
+      "text": "语音转写和视频笔记 全部进入 Obsidian",
+      "source_sentence": "语音转写和视频笔记 全部进入 Obsidian",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S06_C01",
+      "start": 35.45,
+      "duration": 2.48,
+      "text": "第二步 用双向链接组织笔记",
+      "source_sentence": "第二步 用双向链接组织笔记",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S06_C02",
+      "start": 37.93,
+      "duration": 2.48,
+      "text": "文件夹只负责收纳",
+      "source_sentence": "文件夹只负责收纳",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S06_C03",
+      "start": 40.42,
+      "duration": 2.48,
+      "text": "相关观点会自己连接成知识网络",
+      "source_sentence": "相关观点会自己连接成知识网络",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S07_C01",
+      "start": 43.15,
+      "duration": 4.61,
+      "text": "第三步 需要素材时直接问 AI 它不只是搜索关键词",
+      "source_sentence": "第三步 需要素材时直接问 AI 它不只是搜索关键词",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S07_C02",
+      "start": 47.75,
+      "duration": 4.61,
+      "text": "而是从你的笔记里找到观点和例子 整理成答案",
+      "source_sentence": "而是从你的笔记里找到观点和例子 整理成答案",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S08_C01",
+      "start": 52.61,
+      "duration": 2.48,
+      "text": "以前写文章 要翻遍好几个 App",
+      "source_sentence": "以前写文章 要翻遍好几个 App",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S08_C02",
+      "start": 55.09,
+      "duration": 2.48,
+      "text": "现在从找素材到拿到素材包",
+      "source_sentence": "现在从找素材到拿到素材包",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S08_C03",
+      "start": 57.58,
+      "duration": 2.48,
+      "text": "可能只需要 30 秒",
+      "source_sentence": "可能只需要 30 秒",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S09_C01",
+      "start": 60.31,
+      "duration": 4.82,
+      "text": "但别一上来装 30 个插件 也别花几天设计完美分类",
+      "source_sentence": "但别一上来装 30 个插件 也别花几天设计完美分类",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S10_C01",
+      "start": 65.38,
+      "duration": 3.73,
+      "text": "先跑通一个最小闭环 输入 存储 检索 输出",
+      "source_sentence": "先跑通一个最小闭环 输入 存储 检索 输出",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S11_C01",
+      "start": 69.36,
+      "duration": 2.74,
+      "text": "把记住这件事交给第二大脑",
+      "source_sentence": "把记住这件事交给第二大脑",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S11_C02",
+      "start": 72.1,
+      "duration": 2.74,
+      "text": "你才能把精力留给真正的创造",
+      "source_sentence": "你才能把精力留给真正的创造",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S12_C01",
+      "start": 75.09,
+      "duration": 2.88,
+      "text": "这套 Obsidian 第二大脑流程",
+      "source_sentence": "这套 Obsidian 第二大脑流程",
+      "visible": true
+    },
+    {
+      "scene_id": "S12",
+      "caption_id": "S12_C02",
+      "start": 77.97,
+      "duration": 2.88,
+      "text": "建议先收藏 照着搭一遍",
+      "source_sentence": "建议先收藏 照着搭一遍",
+      "visible": true
+    }
+  ],
+  "caption_count": 26
+}

@@ -18,11 +18,35 @@ CTA_KEYWORDS = ["收藏", "关注", "照着搭", "跑一遍", "最小闭环", "�
 EXPLAIN_KEYWORDS = ["简单讲", "本质", "不是", "而是", "负责", "系统"]
 
 
+# V3-P3.8: Source/footer metadata (e.g. "情报来源,…") must never appear in
+# narration, captions, or CTA. Strip at the earliest possible moment.
+_METADATA_LINE_PATTERN = re.compile(
+    r"^[ \t]*(?:[*_`~]+[ \t]*)?(?:情报来源|来源[ \t]*[:：][ \t]*|资料来源|本文参考|本视频[ \t]*[:：]?|参考[ \t]*[:：][ \t]*|数据来源|本文根据).*?$",
+    re.M,
+)
+_METADATA_SENTENCE_PATTERN = re.compile(
+    r"^\s*(?:[*_`~]+\s*)?(?:情报来源|来源\s*[:：]\s*|资料来源|本文参考|本视频|参考\s*[:：]\s*|数据来源|本文根据)"
+)
+
+DEFAULT_CTA_FALLBACK = "先收藏这条，跑一遍工作流，下期接着讲。"
+DEFAULT_CTA_FALLBACK_POOL = [
+    "先收藏这条，跑一遍工作流，下期接着讲。",
+    "想要提升效率，评论区告诉我，下一期细讲。",
+    "按这个流程跑一遍，最小闭环先跑通。",
+]
+
+
+def _is_metadata_line(line: str) -> bool:
+    return bool(_METADATA_SENTENCE_PATTERN.match(line.strip()))
+
+
 def clean_text(raw_script: str) -> str:
     text = re.sub(r"\A---\s*\n.*?\n---\s*\n", "", raw_script, flags=re.S)
     text = re.sub(r"```.*?```", "", text, flags=re.S)
     text = re.sub(r"^#+\s*", "", text, flags=re.M)
     text = re.sub(r"\[[^\]]+\]", "", text)
+    text = _METADATA_LINE_PATTERN.sub("", text)
+    text = re.sub(r"\n{3,}", "\n\n", text)
     return text.strip()
 
 
@@ -46,6 +70,9 @@ def split_sentences(text: str) -> list[str]:
         # Remove bold markers
         p = re.sub(r"\*\*", "", p)
         p = p.strip()
+        # V3-P3.8: drop sentences that are entirely footer/source metadata
+        if _is_metadata_line(p):
+            continue
         if len(p) >= 4:
             result.append(p)
     return result
@@ -147,6 +174,15 @@ def _build_scenes_from_sentences(sentences: list[dict[str, Any]], target_duratio
         })
         cursor += duration
         sent_idx = min(sent_idx + 1, len(sentences) - 1)
+
+    # V3-P3.8: the last scene is the CTA. If its narration is still footer/
+    # source metadata (defense in depth — should already be stripped), replace
+    # it with a real CTA fallback so the spoken line and the on-screen text
+    # carry a real call-to-action, not a citation.
+    if scenes:
+        last = scenes[-1]
+        if last["role"] == "cta" and _is_metadata_line(last["narration"]):
+            last["narration"] = DEFAULT_CTA_FALLBACK
 
     return scenes
 

@@ -1,0 +1,11 @@
+{
+  "phase": "V3-P3.1-Audio-First",
+  "project": "v3_p39r1_visual_readability_fix_preview",
+  "canvas": {
+    "width": 1080,
+    "height": 1920
+  },
+  "audio_duration": 116.21,
+  "scene_count": 21,
+  "caption_count": 39
+}

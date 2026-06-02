@@ -1,0 +1,21 @@
+{
+  "status": "PASS",
+  "checks": {
+    "audio_duration_seconds": 5.0,
+    "video_duration_seconds": 5.0,
+    "caption_end_seconds": 5.0,
+    "scene_end_seconds": 5.0,
+    "video_audio_drift_seconds": 0.0,
+    "caption_audio_drift_seconds": 0.0,
+    "scene_audio_drift_seconds": 0.0,
+    "has_video_stream": true,
+    "has_audio_stream": true,
+    "volume": {
+      "checked": true,
+      "mean_volume": "-24.3 dB",
+      "max_volume": "-4.0 dB"
+    },
+    "max_drift_seconds": 0.0
+  },
+  "issues": []
+}

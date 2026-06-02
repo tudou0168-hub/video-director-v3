@@ -1,0 +1,352 @@
+{
+  "scenes": [
+    {
+      "scene_id": "S01",
+      "role": "hook",
+      "visual_beats": [
+        {
+          "beat_id": "S01_VB01",
+          "type": "scene_enter",
+          "start": 0.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S01_VB02",
+          "type": "headline_pulse",
+          "start": 1.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S01_VB03",
+          "type": "headline_pulse",
+          "start": 3.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S01_VB04",
+          "type": "headline_pulse",
+          "start": 5.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S01_VB05",
+          "type": "scene_hold",
+          "start": 6.0,
+          "duration": 0.16
+        }
+      ]
+    },
+    {
+      "scene_id": "S02",
+      "role": "pain",
+      "visual_beats": [
+        {
+          "beat_id": "S02_VB01",
+          "type": "scene_enter",
+          "start": 0.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S02_VB02",
+          "type": "card_focus",
+          "start": 1.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S02_VB03",
+          "type": "card_focus",
+          "start": 5.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S02_VB04",
+          "type": "scene_hold",
+          "start": 6.0,
+          "duration": 0.81
+        }
+      ]
+    },
+    {
+      "scene_id": "S03",
+      "role": "method",
+      "visual_beats": [
+        {
+          "beat_id": "S03_VB01",
+          "type": "scene_enter",
+          "start": 0.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S03_VB02",
+          "type": "step_reveal",
+          "start": 1.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S03_VB03",
+          "type": "step_reveal",
+          "start": 4.5,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S03_VB04",
+          "type": "scene_hold",
+          "start": 5.5,
+          "duration": 1.09
+        }
+      ]
+    },
+    {
+      "scene_id": "S04",
+      "role": "explain",
+      "visual_beats": [
+        {
+          "beat_id": "S04_VB01",
+          "type": "scene_enter",
+          "start": 0.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S04_VB02",
+          "type": "panel_shift",
+          "start": 1.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S04_VB03",
+          "type": "scene_hold",
+          "start": 2.0,
+          "duration": 3.07
+        }
+      ]
+    },
+    {
+      "scene_id": "S05",
+      "role": "method",
+      "visual_beats": [
+        {
+          "beat_id": "S05_VB01",
+          "type": "scene_enter",
+          "start": 0.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S05_VB02",
+          "type": "step_reveal",
+          "start": 1.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S05_VB03",
+          "type": "step_reveal",
+          "start": 4.5,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S05_VB04",
+          "type": "step_reveal",
+          "start": 8.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S05_VB05",
+          "type": "scene_hold",
+          "start": 9.0,
+          "duration": 0.68
+        }
+      ]
+    },
+    {
+      "scene_id": "S06",
+      "role": "proof",
+      "visual_beats": [
+        {
+          "beat_id": "S06_VB01",
+          "type": "scene_enter",
+          "start": 0.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S06_VB02",
+          "type": "compare_shift",
+          "start": 1.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S06_VB03",
+          "type": "compare_shift",
+          "start": 4.5,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S06_VB04",
+          "type": "scene_hold",
+          "start": 5.5,
+          "duration": 1.97
+        }
+      ]
+    },
+    {
+      "scene_id": "S07",
+      "role": "method",
+      "visual_beats": [
+        {
+          "beat_id": "S07_VB01",
+          "type": "scene_enter",
+          "start": 0.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S07_VB02",
+          "type": "step_reveal",
+          "start": 1.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S07_VB03",
+          "type": "step_reveal",
+          "start": 4.5,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S07_VB04",
+          "type": "step_reveal",
+          "start": 8.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S07_VB05",
+          "type": "scene_hold",
+          "start": 9.0,
+          "duration": 0.24
+        }
+      ]
+    },
+    {
+      "scene_id": "S08",
+      "role": "evidence",
+      "visual_beats": [
+        {
+          "beat_id": "S08_VB01",
+          "type": "scene_enter",
+          "start": 0.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S08_VB02",
+          "type": "proof_focus",
+          "start": 1.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S08_VB03",
+          "type": "proof_focus",
+          "start": 4.5,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S08_VB04",
+          "type": "scene_hold",
+          "start": 5.5,
+          "duration": 1.97
+        }
+      ]
+    },
+    {
+      "scene_id": "S09",
+      "role": "explain",
+      "visual_beats": [
+        {
+          "beat_id": "S09_VB01",
+          "type": "scene_enter",
+          "start": 0.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S09_VB02",
+          "type": "panel_shift",
+          "start": 1.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S09_VB03",
+          "type": "scene_hold",
+          "start": 2.0,
+          "duration": 2.83
+        }
+      ]
+    },
+    {
+      "scene_id": "S10",
+      "role": "cta",
+      "visual_beats": [
+        {
+          "beat_id": "S10_VB01",
+          "type": "scene_enter",
+          "start": 0.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S10_VB02",
+          "type": "check_pop",
+          "start": 1.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S10_VB03",
+          "type": "scene_hold",
+          "start": 2.0,
+          "duration": 1.74
+        }
+      ]
+    },
+    {
+      "scene_id": "S11",
+      "role": "proof",
+      "visual_beats": [
+        {
+          "beat_id": "S11_VB01",
+          "type": "scene_enter",
+          "start": 0.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S11_VB02",
+          "type": "compare_shift",
+          "start": 1.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S11_VB03",
+          "type": "compare_shift",
+          "start": 4.5,
+          "duration": 1.0
+        }
+      ]
+    },
+    {
+      "scene_id": "S12",
+      "role": "cta",
+      "visual_beats": [
+        {
+          "beat_id": "S12_VB01",
+          "type": "scene_enter",
+          "start": 0.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S12_VB02",
+          "type": "check_pop",
+          "start": 1.0,
+          "duration": 1.0
+        },
+        {
+          "beat_id": "S12_VB03",
+          "type": "check_pop",
+          "start": 5.0,
+          "duration": 0.78
+        }
+      ]
+    }
+  ]
+}

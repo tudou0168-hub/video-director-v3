@@ -1,0 +1,893 @@
+{
+  "total_duration_sec": 116.21,
+  "scenes": [
+    {
+      "scene_id": "S01",
+      "role": "hook",
+      "start": 0.0,
+      "duration": 6.403,
+      "end": 6.39,
+      "narration": "用 Claude Code 写公众号三个月后，我发现它提升的不只是效率",
+      "sentence_ids": [
+        "S01"
+      ],
+      "scene_framework": "scene.hook.hero_center",
+      "visual_template": "hook_big_claim",
+      "accent": "#FF4757",
+      "density": "high",
+      "headline": "用 Claude Code 写公众号三个月后，我发现它提升的不只是效率",
+      "hud_label_en": "LIVE TIMELINE · AI HOT",
+      "hud_label_zh": "开场 · 第一印象",
+      "keyword": "",
+      "subheadline": "真正缺的不是努力，而是一个可检索的第二大脑",
+      "layout_variant": "center_claim",
+      "id": "S01",
+      "start_time": 0.0,
+      "end_time": 6.403
+    },
+    {
+      "scene_id": "S02",
+      "role": "explain",
+      "start": 6.644,
+      "duration": 3.938,
+      "end": 10.56,
+      "narration": "用 Claude Code 写公众号三个月了",
+      "sentence_ids": [
+        "S02"
+      ],
+      "scene_framework": "scene.method.concept_layers",
+      "visual_template": "concept_layers",
+      "accent": "#A855F7",
+      "density": "medium",
+      "headline": "用 Claude Code 写公众号三个月了",
+      "hud_label_en": "LAYERS / CONCEPT",
+      "hud_label_zh": "概念 · 底层到顶层",
+      "layers": [
+        {
+          "level": "L1",
+          "text": "现象：散落"
+        },
+        {
+          "level": "L2",
+          "text": "结构：可检索"
+        },
+        {
+          "level": "L3",
+          "text": "调用：随用随取"
+        }
+      ],
+      "id": "S02",
+      "start_time": 6.644,
+      "end_time": 10.582
+    },
+    {
+      "scene_id": "S03",
+      "role": "explain",
+      "start": 10.822,
+      "duration": 6.824,
+      "end": 17.61,
+      "narration": "一开始我只是想找个工具帮我写代码，结果用它做自媒体创作比写代码还顺手",
+      "sentence_ids": [
+        "S03"
+      ],
+      "scene_framework": "scene.method.tool_stack",
+      "visual_template": "tool_stack",
+      "accent": "#A855F7",
+      "density": "medium",
+      "headline": "一开始我只是想找个工具帮我写代码，结果用它做自媒体创作比写代码还顺手",
+      "stack_layers": [
+        {
+          "name": "Layer 1",
+          "role": "采集",
+          "color": "#7C3AED"
+        },
+        {
+          "name": "Layer 2",
+          "role": "加工",
+          "color": "#4D9FFF"
+        },
+        {
+          "name": "Layer 3",
+          "role": "输出",
+          "color": "#2ED573"
+        }
+      ],
+      "id": "S03",
+      "start_time": 10.822,
+      "end_time": 17.646
+    },
+    {
+      "scene_id": "S04",
+      "role": "evidence",
+      "start": 17.887,
+      "duration": 2.886,
+      "end": 20.73,
+      "narration": "以前写一篇公众号文章是这样的",
+      "sentence_ids": [
+        "S04"
+      ],
+      "scene_framework": "scene.evidence.case_study_card",
+      "visual_template": "case_study_card",
+      "accent": "#4D9FFF",
+      "density": "medium",
+      "headline": "以前写一篇公众号文章是这样的",
+      "hud_label_en": "CASE / STUDY",
+      "hud_label_zh": "真实案例 · 90 天实践",
+      "case_subject": "真实案例 · 90 天实践",
+      "before": "旧流程：信息散落，输出靠人肉拼接",
+      "after": "新流程：统一入口，结构先出来",
+      "highlights": [
+        "找到素材更快",
+        "草稿质量提升",
+        "复盘变得简单"
+      ],
+      "id": "S04",
+      "start_time": 17.887,
+      "end_time": 20.773
+    },
+    {
+      "scene_id": "S05",
+      "role": "explain",
+      "start": 21.013,
+      "duration": 2.155,
+      "end": 23.12,
+      "narration": "改稿，1 小时",
+      "sentence_ids": [
+        "S05"
+      ],
+      "scene_framework": "scene.method.framework_quadrant",
+      "visual_template": "framework_quadrant",
+      "accent": "#4D9FFF",
+      "density": "high",
+      "headline": "改稿，1 小时",
+      "hud_label_en": "FRAMEWORK / 2X2",
+      "hud_label_zh": "四象限 · 概念分层",
+      "quadrants": [
+        {
+          "label": "Q1 输入",
+          "text": "统一入口",
+          "color": "#4D9FFF"
+        },
+        {
+          "label": "Q2 结构",
+          "text": "组织整理",
+          "color": "#2ED573"
+        },
+        {
+          "label": "Q3 检索",
+          "text": "按需调用",
+          "color": "#FF6B35"
+        },
+        {
+          "label": "Q4 输出",
+          "text": "持续产出",
+          "color": "#A855F7"
+        }
+      ],
+      "center_label": "Hub",
+      "id": "S05",
+      "start_time": 21.013,
+      "end_time": 23.168
+    },
+    {
+      "scene_id": "S06",
+      "role": "explain",
+      "start": 23.408,
+      "duration": 8.057,
+      "end": 31.4,
+      "narration": "不是 Claude Code 帮我写了文章，是它帮我把「想」和「等灵感」的时间压缩到了几乎为零",
+      "sentence_ids": [
+        "S06"
+      ],
+      "scene_framework": "scene.memory.proof_overlay",
+      "visual_template": "broken_chain",
+      "accent": "#A855F7",
+      "density": "medium",
+      "headline": "不是 Claude Code 帮我写了文章，是它帮我把「想」和「等灵感」的时间压缩到",
+      "chain_nodes": [
+        "素材",
+        "结构",
+        "检索",
+        "输出"
+      ],
+      "broken_slots": [
+        1,
+        2
+      ],
+      "layout_variant": "knowledge_triangle",
+      "left_panel": {
+        "label": "断点",
+        "title": "知识链条断开",
+        "items": [
+          "收集很多",
+          "回查很慢",
+          "输出时还得重找"
+        ]
+      },
+      "right_panel": {
+        "label": "目标",
+        "title": "形成可检索系统",
+        "items": [
+          "统一入口",
+          "链接上下文",
+          "需要时直接调用"
+        ]
+      },
+      "footer_note": "不是多一个工具，而是把链路接通。",
+      "id": "S06",
+      "start_time": 23.408,
+      "end_time": 31.465
+    },
+    {
+      "scene_id": "S07",
+      "role": "hook",
+      "start": 31.705,
+      "duration": 4.55,
+      "end": 36.18,
+      "narration": "你有没有这种感觉，读了很多书，记住了 10%，用到了 1%",
+      "sentence_ids": [
+        "S07"
+      ],
+      "scene_framework": "scene.hook.keyword_punchline",
+      "visual_template": "keyword_punchline",
+      "accent": "#FF6B35",
+      "density": "medium",
+      "headline": "你有没有这种感觉，读了很多书，记住了 10%，用到了 1%",
+      "keyword": "记住",
+      "punchline": "你有没有这种感觉，读了很多书，记住了 10%，用到了 1%",
+      "id": "S07",
+      "start_time": 31.705,
+      "end_time": 36.255
+    },
+    {
+      "scene_id": "S08",
+      "role": "evidence",
+      "start": 36.495,
+      "duration": 4.76,
+      "end": 41.17,
+      "narration": "以前这个过程需要我自己花 1 小时「想」，现在 5 分钟搞定",
+      "sentence_ids": [
+        "S08"
+      ],
+      "scene_framework": "scene.evidence.metric_dashboard",
+      "visual_template": "metric_dashboard",
+      "accent": "#2ED573",
+      "density": "high",
+      "headline": "以前这个过程需要我自己花 1 小时「想」，现在 5 分钟搞定",
+      "hud_label_en": "DATA / DASHBOARD",
+      "hud_label_zh": "数据 · 关键指标",
+      "metrics": [
+        {
+          "label": "启动",
+          "value": "READY",
+          "delta": "+OK"
+        },
+        {
+          "label": "闭环",
+          "value": "RUN",
+          "delta": "+OK"
+        },
+        {
+          "label": "输出",
+          "value": "ON",
+          "delta": "+GO"
+        },
+        {
+          "label": "复盘",
+          "value": "DAILY",
+          "delta": "+GO"
+        }
+      ],
+      "trend_caption": "持续跑通最小闭环后，看实际数字",
+      "id": "S08",
+      "start_time": 36.495,
+      "end_time": 41.255
+    },
+    {
+      "scene_id": "S09",
+      "role": "explain",
+      "start": 41.496,
+      "duration": 2.685,
+      "end": 44.09,
+      "narration": "写文章最难的不是写，是开始写",
+      "sentence_ids": [
+        "S09"
+      ],
+      "scene_framework": "scene.hook.myth_bust",
+      "visual_template": "myth_bust",
+      "accent": "#FF4757",
+      "density": "high",
+      "headline": "写文章最难的不是写，是开始写",
+      "myth": "多就是好",
+      "truth": "对才是好",
+      "id": "S09",
+      "start_time": 41.496,
+      "end_time": 44.181
+    },
+    {
+      "scene_id": "S10",
+      "role": "evidence",
+      "start": 44.422,
+      "duration": 5.792,
+      "end": 50.11,
+      "narration": "以前我要「想好写什么」才能开始，现在只需要说「帮我写」，它就帮我写了",
+      "sentence_ids": [
+        "S10"
+      ],
+      "scene_framework": "scene.evidence.case_study_card",
+      "visual_template": "case_study_card",
+      "accent": "#4D9FFF",
+      "density": "medium",
+      "headline": "以前我要「想好写什么」才能开始，现在只需要说「帮我写」，它就帮我写了",
+      "hud_label_en": "CASE / STUDY",
+      "hud_label_zh": "真实案例 · 90 天实践",
+      "case_subject": "真实案例 · 90 天实践",
+      "before": "旧流程：信息散落，输出靠人肉拼接",
+      "after": "新流程：统一入口，结构先出来",
+      "highlights": [
+        "找到素材更快",
+        "草稿质量提升",
+        "复盘变得简单"
+      ],
+      "id": "S10",
+      "start_time": 44.422,
+      "end_time": 50.214
+    },
+    {
+      "scene_id": "S11",
+      "role": "explain",
+      "start": 50.454,
+      "duration": 6.624,
+      "end": 56.96,
+      "narration": "当然，AI 写的不能直接用，还需要我改，但它帮我跨过了「开始」这个最大的障碍",
+      "sentence_ids": [
+        "S11"
+      ],
+      "scene_framework": "scene.memory.proof_overlay",
+      "visual_template": "broken_chain",
+      "accent": "#A855F7",
+      "density": "medium",
+      "headline": "当然，AI 写的不能直接用，还需要我改，但它帮我跨过了「开始」这个最大的障碍",
+      "chain_nodes": [
+        "素材",
+        "结构",
+        "检索",
+        "输出"
+      ],
+      "broken_slots": [
+        1,
+        2
+      ],
+      "layout_variant": "vertical_flow",
+      "left_panel": {
+        "label": "断点",
+        "title": "知识链条断开",
+        "items": [
+          "收集很多",
+          "回查很慢",
+          "输出时还得重找"
+        ]
+      },
+      "right_panel": {
+        "label": "目标",
+        "title": "形成可检索系统",
+        "items": [
+          "统一入口",
+          "链接上下文",
+          "需要时直接调用"
+        ]
+      },
+      "footer_note": "不是多一个工具，而是把链路接通。",
+      "id": "S11",
+      "start_time": 50.454,
+      "end_time": 57.078
+    },
+    {
+      "scene_id": "S12",
+      "role": "evidence",
+      "start": 57.318,
+      "duration": 7.476,
+      "end": 64.66,
+      "narration": "从「有想法」到「有草稿」，可能只需要 10 分钟 这个 10 分钟的跨越，是执行力最大的提升",
+      "sentence_ids": [
+        "S12",
+        "S13"
+      ],
+      "scene_framework": "scene.evidence.metric_dashboard",
+      "visual_template": "metric_dashboard",
+      "accent": "#2ED573",
+      "density": "high",
+      "headline": "从「有想法」到「有草稿」，可能只需要 10 分钟 这个 10 分钟的跨越，是执行力最",
+      "hud_label_en": "DATA / DASHBOARD",
+      "hud_label_zh": "数据 · 关键指标",
+      "metrics": [
+        {
+          "label": "日均输出",
+          "value": "3.2 篇",
+          "delta": "+40%"
+        },
+        {
+          "label": "素材利用率",
+          "value": "78%",
+          "delta": "+52%"
+        },
+        {
+          "label": "检索响应",
+          "value": "12s",
+          "delta": "-65%"
+        },
+        {
+          "label": "完播率",
+          "value": "61%",
+          "delta": "+18%"
+        }
+      ],
+      "trend_caption": "持续跑通最小闭环后，看实际数字",
+      "id": "S12",
+      "start_time": 57.318,
+      "end_time": 64.794
+    },
+    {
+      "scene_id": "S13",
+      "role": "method",
+      "start": 65.034,
+      "duration": 5.592,
+      "end": 70.48,
+      "narration": "第一步，让 Claude Code 分析这周的读书笔记，推荐选题",
+      "sentence_ids": [
+        "S14"
+      ],
+      "scene_framework": "scene.retrieval.pipeline_nodes",
+      "visual_template": "tool_chain_three_cols",
+      "accent": "#A855F7",
+      "density": "medium",
+      "headline": "第一步，让 Claude Code 分析这周的读书笔记，推荐选题",
+      "hud_label_en": "STEP 1/3 · 流程",
+      "hud_label_zh": "输入、链接、检索 · 闭环",
+      "three_cols": [
+        {
+          "name": "统一输入",
+          "func": "汇聚素材",
+          "icon": "IN",
+          "detail": "读书·网页·语音·视频"
+        },
+        {
+          "name": "双向链接",
+          "func": "形成网络",
+          "icon": "LINK",
+          "detail": "相关观点自动连接"
+        },
+        {
+          "name": "AI 检索",
+          "func": "随问随取",
+          "icon": "AI",
+          "detail": "整理观点和例子"
+        }
+      ],
+      "layout_variant": "three_col_row",
+      "id": "S13",
+      "start_time": 65.034,
+      "end_time": 70.626
+    },
+    {
+      "scene_id": "S14",
+      "role": "method",
+      "start": 70.866,
+      "duration": 6.644,
+      "end": 77.35,
+      "narration": "第二步，选一个选题，让它生成草稿 第三步，修改草稿，让它评分，根据评分调整",
+      "sentence_ids": [
+        "S15",
+        "S16"
+      ],
+      "scene_framework": "scene.method.step_ladder",
+      "visual_template": "step_ladder",
+      "accent": "#2ED573",
+      "density": "high",
+      "headline": "第二步，选一个选题，让它生成草稿 第三步，修改草稿，让它评分，根据评分调整",
+      "hud_label_en": "STEP 1/4 · 步骤",
+      "hud_label_zh": "起步、串联、调用、输出",
+      "steps": [
+        {
+          "label": "1. 起步",
+          "text": "建立入口"
+        },
+        {
+          "label": "2. 串联",
+          "text": "链接结构"
+        },
+        {
+          "label": "3. 调用",
+          "text": "随时提问"
+        },
+        {
+          "label": "4. 产出",
+          "text": "持续输出"
+        }
+      ],
+      "top_label": "MILESTONE",
+      "id": "S14",
+      "start_time": 70.866,
+      "end_time": 77.51
+    },
+    {
+      "scene_id": "S15",
+      "role": "evidence",
+      "start": 77.751,
+      "duration": 6.202,
+      "end": 83.78,
+      "narration": "这个流程大概 40 分钟，大部分时间是 AI 在跑，我只需要做决策和修改",
+      "sentence_ids": [
+        "S17"
+      ],
+      "scene_framework": "scene.evidence.progress_tracker",
+      "visual_template": "progress_tracker",
+      "accent": "#4D9FFF",
+      "density": "high",
+      "headline": "这个流程大概 40 分钟，大部分时间是 AI 在跑，我只需要做决策和修改",
+      "tracks": [
+        {
+          "label": "能力 A",
+          "weeks": [
+            15,
+            30,
+            45,
+            58,
+            68,
+            76,
+            84,
+            90
+          ]
+        },
+        {
+          "label": "能力 B",
+          "weeks": [
+            10,
+            22,
+            38,
+            50,
+            62,
+            72,
+            82,
+            88
+          ]
+        },
+        {
+          "label": "能力 C",
+          "weeks": [
+            5,
+            15,
+            30,
+            45,
+            58,
+            70,
+            80,
+            86
+          ]
+        }
+      ],
+      "caption": "持续跑通后，三条曲线同步进入加速段",
+      "id": "S15",
+      "start_time": 77.751,
+      "end_time": 83.953
+    },
+    {
+      "scene_id": "S16",
+      "role": "explain",
+      "start": 84.194,
+      "duration": 2.275,
+      "end": 86.29,
+      "narration": "不是我变强了，是工具变了",
+      "sentence_ids": [
+        "S18"
+      ],
+      "scene_framework": "scene.method.tool_stack",
+      "visual_template": "tool_stack",
+      "accent": "#A855F7",
+      "density": "medium",
+      "headline": "不是我变强了，是工具变了",
+      "stack_layers": [
+        {
+          "name": "Layer 1",
+          "role": "采集",
+          "color": "#7C3AED"
+        },
+        {
+          "name": "Layer 2",
+          "role": "加工",
+          "color": "#4D9FFF"
+        },
+        {
+          "name": "Layer 3",
+          "role": "输出",
+          "color": "#2ED573"
+        }
+      ],
+      "id": "S16",
+      "start_time": 84.194,
+      "end_time": 86.469
+    },
+    {
+      "scene_id": "S17",
+      "role": "explain",
+      "start": 86.709,
+      "duration": 5.792,
+      "end": 92.31,
+      "narration": "个人体验和情感是我改稿的时候加进去的，不是 AI 写的，是我写的",
+      "sentence_ids": [
+        "S19"
+      ],
+      "scene_framework": "scene.method.concept_layers",
+      "visual_template": "concept_layers",
+      "accent": "#A855F7",
+      "density": "medium",
+      "headline": "个人体验和情感是我改稿的时候加进去的，不是 AI 写的，是我写的",
+      "hud_label_en": "LAYERS / CONCEPT",
+      "hud_label_zh": "概念 · 底层到顶层",
+      "layers": [
+        {
+          "level": "L1",
+          "text": "收集：素材进库"
+        },
+        {
+          "level": "L2",
+          "text": "结构：双向链接"
+        },
+        {
+          "level": "L3",
+          "text": "调用：AI 提问"
+        }
+      ],
+      "id": "S17",
+      "start_time": 86.709,
+      "end_time": 92.501
+    },
+    {
+      "scene_id": "S18",
+      "role": "explain",
+      "start": 92.742,
+      "duration": 4.549,
+      "end": 97.09,
+      "narration": "它会学习你的写作风格，而不是输出一个通用的模板",
+      "sentence_ids": [
+        "S20"
+      ],
+      "scene_framework": "scene.proof.knowledge_graph",
+      "visual_template": "knowledge_graph",
+      "accent": "#A855F7",
+      "density": "high",
+      "headline": "它会学习你的写作风格，而不是输出一个通用的模板",
+      "hud_label_en": "GRAPH / NETWORK",
+      "hud_label_zh": "知识图谱 · 节点与连接",
+      "nodes": [
+        {
+          "id": "N1",
+          "label": "核心概念",
+          "x": 540,
+          "y": 800
+        },
+        {
+          "id": "N2",
+          "label": "方法 A",
+          "x": 250,
+          "y": 500
+        },
+        {
+          "id": "N3",
+          "label": "方法 B",
+          "x": 830,
+          "y": 500
+        },
+        {
+          "id": "N4",
+          "label": "案例 1",
+          "x": 540,
+          "y": 400
+        },
+        {
+          "id": "N5",
+          "label": "案例 2",
+          "x": 250,
+          "y": 1100
+        },
+        {
+          "id": "N6",
+          "label": "输出",
+          "x": 830,
+          "y": 1100
+        }
+      ],
+      "edges": [
+        [
+          "N1",
+          "N2"
+        ],
+        [
+          "N1",
+          "N3"
+        ],
+        [
+          "N2",
+          "N4"
+        ],
+        [
+          "N3",
+          "N4"
+        ],
+        [
+          "N2",
+          "N5"
+        ],
+        [
+          "N3",
+          "N6"
+        ],
+        [
+          "N4",
+          "N6"
+        ]
+      ],
+      "central_node": "N1",
+      "id": "S18",
+      "start_time": 92.742,
+      "end_time": 97.291
+    },
+    {
+      "scene_id": "S19",
+      "role": "evidence",
+      "start": 97.531,
+      "duration": 6.404,
+      "end": 103.72,
+      "narration": "以前写文章最难的是「想好写什么」和「开始写」，现在这两件事都可以交给 AI",
+      "sentence_ids": [
+        "S21"
+      ],
+      "scene_framework": "scene.compare.option_split_vertical",
+      "visual_template": "before_after_compare",
+      "accent": "#34D399",
+      "density": "medium",
+      "headline": "以前写文章最难的是「想好写什么」和「开始写」，现在这两件事都可以交给 AI",
+      "layout_variant": "parallel_lanes",
+      "left_items": [
+        "到处找资料",
+        "从空白文档开始",
+        "写一半卡住"
+      ],
+      "right_items": [
+        "统一入口",
+        "先有结构",
+        "拿到可改草稿"
+      ],
+      "dashboard_metrics": [
+        {
+          "label": "入口数量",
+          "value": "1"
+        },
+        {
+          "label": "结构状态",
+          "value": "READY"
+        },
+        {
+          "label": "输出速度",
+          "value": "FAST"
+        }
+      ],
+      "parallel_lanes": [
+        {
+          "label": "旧路径",
+          "color": "#FF4757",
+          "steps": [
+            "翻找素材",
+            "手动拼接",
+            "从零开写"
+          ]
+        },
+        {
+          "label": "新路径",
+          "color": "#4D9FFF",
+          "steps": [
+            "直接提问",
+            "检索笔记",
+            "拿到素材包"
+          ]
+        }
+      ],
+      "left_panel": {
+        "label": "旧方式",
+        "title": "信息在脑里堵住",
+        "items": [
+          "想用时找不到",
+          "每次都从零开始"
+        ]
+      },
+      "right_panel": {
+        "label": "新方式",
+        "title": "知识在系统里流动",
+        "items": [
+          "需要时直接调用",
+          "输出前先拿到结构"
+        ]
+      },
+      "summary_badge": "让知识可检索，输出才会持续发生。",
+      "id": "S19",
+      "start_time": 97.531,
+      "end_time": 103.935
+    },
+    {
+      "scene_id": "S20",
+      "role": "explain",
+      "start": 104.175,
+      "duration": 6.233,
+      "end": 110.18,
+      "narration": "选题，选 AI 给的建议里最顺眼的 改稿，把 AI 写的改成我自己的语言",
+      "sentence_ids": [
+        "S22",
+        "S23"
+      ],
+      "scene_framework": "scene.method.framework_quadrant",
+      "visual_template": "framework_quadrant",
+      "accent": "#4D9FFF",
+      "density": "high",
+      "headline": "选题，选 AI 给的建议里最顺眼的 改稿，把 AI 写的改成我自己的语言",
+      "hud_label_en": "FRAMEWORK / 2X2",
+      "hud_label_zh": "四象限 · 概念分层",
+      "quadrants": [
+        {
+          "label": "Q1 输入",
+          "text": "统一入口",
+          "color": "#4D9FFF"
+        },
+        {
+          "label": "Q2 结构",
+          "text": "组织整理",
+          "color": "#2ED573"
+        },
+        {
+          "label": "Q3 检索",
+          "text": "按需调用",
+          "color": "#FF6B35"
+        },
+        {
+          "label": "Q4 输出",
+          "text": "持续产出",
+          "color": "#A855F7"
+        }
+      ],
+      "center_label": "AI",
+      "id": "S20",
+      "start_time": 104.175,
+      "end_time": 110.408
+    },
+    {
+      "scene_id": "S21",
+      "role": "cta",
+      "start": 110.649,
+      "duration": 5.561,
+      "end": 115.97,
+      "narration": "这种工作流让我保持了稳定的输出，从每周一篇变成了每天一篇",
+      "sentence_ids": [
+        "S24"
+      ],
+      "scene_framework": "scene.cta.checklist_board",
+      "visual_template": "checklist_cta",
+      "accent": "#34D399",
+      "density": "medium",
+      "headline": "这种工作流让我保持了稳定的输出，从每周一篇变成了每天一篇",
+      "hud_label_en": "FINAL SCORE · COMPLETE",
+      "hud_label_zh": "本集掌握度 · 下期预告",
+      "layout_variant": "end_score_goodbye",
+      "checklist": [
+        "统一输入到 Obsidian",
+        "用双向链接组织笔记",
+        "需要素材时直接问 AI"
+      ],
+      "final_message": "把记住外包出去，把精力留给创造",
+      "score": "100",
+      "score_label": "本章掌握度",
+      "next_teaser": "下期讲：把检索真正接进 AI 流程",
+      "id": "S21",
+      "start_time": 110.649,
+      "end_time": 116.21
+    }
+  ]
+}

@@ -1,0 +1,139 @@
+{
+  "transitions": [
+    {
+      "transition_id": "T01",
+      "from_scene": "S01",
+      "to_scene": "S02",
+      "type": "hook_to_problem",
+      "start": 5.82,
+      "duration": 0.32,
+      "visual_action": "scan_reveal",
+      "semantic_label": "从 Hook 到问题揭示",
+      "binding_status": "bound",
+      "gsap_code": ""
+    },
+    {
+      "transition_id": "T02",
+      "from_scene": "S02",
+      "to_scene": "S03",
+      "type": "problem_to_method",
+      "start": 12.78,
+      "duration": 0.4,
+      "visual_action": "cards_to_flow",
+      "semantic_label": "从问题到解决方案",
+      "binding_status": "bound",
+      "gsap_code": ""
+    },
+    {
+      "transition_id": "T03",
+      "from_scene": "S03",
+      "to_scene": "S04",
+      "type": "scene_bridge",
+      "start": 19.6,
+      "duration": 0.4,
+      "visual_action": "soft_wipe",
+      "semantic_label": "自然过渡",
+      "binding_status": "bound",
+      "gsap_code": ""
+    },
+    {
+      "transition_id": "T04",
+      "from_scene": "S04",
+      "to_scene": "S05",
+      "type": "method_shift",
+      "start": 24.9,
+      "duration": 0.4,
+      "visual_action": "cards_to_flow",
+      "semantic_label": "方法切换",
+      "binding_status": "bound",
+      "gsap_code": ""
+    },
+    {
+      "transition_id": "T05",
+      "from_scene": "S05",
+      "to_scene": "S06",
+      "type": "proof_shift",
+      "start": 34.8,
+      "duration": 0.4,
+      "visual_action": "metric_to_compare",
+      "semantic_label": "结果切换",
+      "binding_status": "bound",
+      "gsap_code": ""
+    },
+    {
+      "transition_id": "T06",
+      "from_scene": "S06",
+      "to_scene": "S07",
+      "type": "method_shift",
+      "start": 42.5,
+      "duration": 0.4,
+      "visual_action": "cards_to_flow",
+      "semantic_label": "方法切换",
+      "binding_status": "bound",
+      "gsap_code": ""
+    },
+    {
+      "transition_id": "T07",
+      "from_scene": "S07",
+      "to_scene": "S08",
+      "type": "method_to_evidence",
+      "start": 51.96,
+      "duration": 0.4,
+      "visual_action": "flow_to_table",
+      "semantic_label": "从方法到证据",
+      "binding_status": "bound",
+      "gsap_code": ""
+    },
+    {
+      "transition_id": "T08",
+      "from_scene": "S08",
+      "to_scene": "S09",
+      "type": "scene_bridge",
+      "start": 59.66,
+      "duration": 0.4,
+      "visual_action": "soft_wipe",
+      "semantic_label": "自然过渡",
+      "binding_status": "bound",
+      "gsap_code": ""
+    },
+    {
+      "transition_id": "T09",
+      "from_scene": "S09",
+      "to_scene": "S10",
+      "type": "cta_shift",
+      "start": 64.73,
+      "duration": 0.4,
+      "visual_action": "final_hold_fade",
+      "semantic_label": "CTA 切换",
+      "binding_status": "bound",
+      "gsap_code": ""
+    },
+    {
+      "transition_id": "T10",
+      "from_scene": "S10",
+      "to_scene": "S11",
+      "type": "proof_shift",
+      "start": 68.71,
+      "duration": 0.4,
+      "visual_action": "metric_to_compare",
+      "semantic_label": "结果切换",
+      "binding_status": "bound",
+      "gsap_code": ""
+    },
+    {
+      "transition_id": "T11",
+      "from_scene": "S11",
+      "to_scene": "S12",
+      "type": "proof_to_cta",
+      "start": 74.44,
+      "duration": 0.4,
+      "visual_action": "final_hold_fade",
+      "semantic_label": "从结果到行动号召",
+      "binding_status": "bound",
+      "gsap_code": ""
+    }
+  ],
+  "transition_count": 11,
+  "bound_transition_count": 11,
+  "status": "PASS"
+}

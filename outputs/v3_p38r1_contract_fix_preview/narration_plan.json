@@ -1,0 +1,295 @@
+{
+  "project_id": "v3_p38r1_contract_fix_preview",
+  "title": "---",
+  "platform": "douyin",
+  "target_duration": 90,
+  "sentence_count": 24,
+  "total_chinese_chars": 466,
+  "estimated_total_duration": 92.31,
+  "distillation": {
+    "strategy": "extractive:high_value_beats",
+    "source_sentence_count": 81,
+    "distilled_sentence_count": 24,
+    "distilled_char_count": 620,
+    "sentences": [
+      "用 Claude Code 写公众号三个月后，我发现它提升的不只是效率",
+      "用 Claude Code 写公众号三个月了",
+      "一开始我只是想找个工具帮我写代码，结果用它做自媒体创作比写代码还顺手",
+      "以前写一篇公众号文章是这样的",
+      "改稿，1 小时",
+      "不是 Claude Code 帮我写了文章，是它帮我把「想」和「等灵感」的时间压缩到了几乎为零",
+      "你有没有这种感觉，读了很多书，记住了 10%，用到了 1%",
+      "以前这个过程需要我自己花 1 小时「想」，现在 5 分钟搞定",
+      "写文章最难的不是写，是开始写",
+      "以前我要「想好写什么」才能开始，现在只需要说「帮我写」，它就帮我写了",
+      "当然，AI 写的不能直接用，还需要我改，但它帮我跨过了「开始」这个最大的障碍",
+      "从「有想法」到「有草稿」，可能只需要 10 分钟",
+      "这个 10 分钟的跨越，是执行力最大的提升",
+      "第一步，让 Claude Code 分析这周的读书笔记，推荐选题",
+      "第二步，选一个选题，让它生成草稿",
+      "第三步，修改草稿，让它评分，根据评分调整",
+      "这个流程大概 40 分钟，大部分时间是 AI 在跑，我只需要做决策和修改",
+      "不是我变强了，是工具变了",
+      "个人体验和情感是我改稿的时候加进去的，不是 AI 写的，是我写的",
+      "它会学习你的写作风格，而不是输出一个通用的模板",
+      "以前写文章最难的是「想好写什么」和「开始写」，现在这两件事都可以交给 AI",
+      "选题，选 AI 给的建议里最顺眼的",
+      "改稿，把 AI 写的改成我自己的语言",
+      "这种工作流让我保持了稳定的输出，从每周一篇变成了每天一篇"
+    ]
+  },
+  "sentence_list": [
+    {
+      "sentence_id": "S01",
+      "text": "用 Claude Code 写公众号三个月后，我发现它提升的不只是效率",
+      "role": "hook",
+      "estimated_duration": 5.34,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S02",
+      "text": "用 Claude Code 写公众号三个月了",
+      "role": "explain",
+      "estimated_duration": 3.28,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S03",
+      "text": "一开始我只是想找个工具帮我写代码，结果用它做自媒体创作比写代码还顺手",
+      "role": "explain",
+      "estimated_duration": 5.69,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S04",
+      "text": "以前写一篇公众号文章是这样的",
+      "role": "evidence",
+      "estimated_duration": 2.41,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S05",
+      "text": "改稿，1 小时",
+      "role": "explain",
+      "estimated_duration": 1.8,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S06",
+      "text": "不是 Claude Code 帮我写了文章，是它帮我把「想」和「等灵感」的时间压缩到了几乎为零",
+      "role": "explain",
+      "estimated_duration": 6.72,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S07",
+      "text": "你有没有这种感觉，读了很多书，记住了 10%，用到了 1%",
+      "role": "hook",
+      "estimated_duration": 3.79,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S08",
+      "text": "以前这个过程需要我自己花 1 小时「想」，现在 5 分钟搞定",
+      "role": "evidence",
+      "estimated_duration": 3.97,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S09",
+      "text": "写文章最难的不是写，是开始写",
+      "role": "explain",
+      "estimated_duration": 2.24,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S10",
+      "text": "以前我要「想好写什么」才能开始，现在只需要说「帮我写」，它就帮我写了",
+      "role": "evidence",
+      "estimated_duration": 4.83,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S11",
+      "text": "当然，AI 写的不能直接用，还需要我改，但它帮我跨过了「开始」这个最大的障碍",
+      "role": "explain",
+      "estimated_duration": 5.52,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S12",
+      "text": "从「有想法」到「有草稿」，可能只需要 10 分钟",
+      "role": "evidence",
+      "estimated_duration": 2.93,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S13",
+      "text": "这个 10 分钟的跨越，是执行力最大的提升",
+      "role": "evidence",
+      "estimated_duration": 3.1,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S14",
+      "text": "第一步，让 Claude Code 分析这周的读书笔记，推荐选题",
+      "role": "method",
+      "estimated_duration": 4.66,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S15",
+      "text": "第二步，选一个选题，让它生成草稿",
+      "role": "method",
+      "estimated_duration": 2.41,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S16",
+      "text": "第三步，修改草稿，让它评分，根据评分调整",
+      "role": "method",
+      "estimated_duration": 2.93,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S17",
+      "text": "这个流程大概 40 分钟，大部分时间是 AI 在跑，我只需要做决策和修改",
+      "role": "evidence",
+      "estimated_duration": 5.17,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S18",
+      "text": "不是我变强了，是工具变了",
+      "role": "explain",
+      "estimated_duration": 1.9,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S19",
+      "text": "个人体验和情感是我改稿的时候加进去的，不是 AI 写的，是我写的",
+      "role": "explain",
+      "estimated_duration": 4.83,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S20",
+      "text": "它会学习你的写作风格，而不是输出一个通用的模板",
+      "role": "explain",
+      "estimated_duration": 3.79,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S21",
+      "text": "以前写文章最难的是「想好写什么」和「开始写」，现在这两件事都可以交给 AI",
+      "role": "evidence",
+      "estimated_duration": 5.34,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S22",
+      "text": "选题，选 AI 给的建议里最顺眼的",
+      "role": "explain",
+      "estimated_duration": 2.41,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S23",
+      "text": "改稿，把 AI 写的改成我自己的语言",
+      "role": "explain",
+      "estimated_duration": 2.59,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    },
+    {
+      "sentence_id": "S24",
+      "text": "这种工作流让我保持了稳定的输出，从每周一篇变成了每天一篇",
+      "role": "cta",
+      "estimated_duration": 4.66,
+      "pause_after": 0.2,
+      "emphasis_words": []
+    }
+  ],
+  "director_output": {
+    "scenes": [
+      {
+        "scene_id": "S01",
+        "role": "hook",
+        "start": 0.0,
+        "duration": 11.25,
+        "narration": "用 Claude Code 写公众号三个月后，我发现它提升的不只是效率"
+      },
+      {
+        "scene_id": "S02",
+        "role": "pain",
+        "start": 11.25,
+        "duration": 11.25,
+        "narration": "用 Claude Code 写公众号三个月了"
+      },
+      {
+        "scene_id": "S03",
+        "role": "method",
+        "start": 22.5,
+        "duration": 11.25,
+        "narration": "一开始我只是想找个工具帮我写代码，结果用它做自媒体创作比写代码还顺手"
+      },
+      {
+        "scene_id": "S04",
+        "role": "method",
+        "start": 33.75,
+        "duration": 11.25,
+        "narration": "以前写一篇公众号文章是这样的"
+      },
+      {
+        "scene_id": "S05",
+        "role": "method",
+        "start": 45.0,
+        "duration": 11.25,
+        "narration": "改稿，1 小时"
+      },
+      {
+        "scene_id": "S06",
+        "role": "evidence",
+        "start": 56.25,
+        "duration": 11.25,
+        "narration": "不是 Claude Code 帮我写了文章，是它帮我把「想」和「等灵感」的时间压缩到了几乎为零"
+      },
+      {
+        "scene_id": "S07",
+        "role": "proof",
+        "start": 67.5,
+        "duration": 11.25,
+        "narration": "你有没有这种感觉，读了很多书，记住了 10%，用到了 1%"
+      },
+      {
+        "scene_id": "S08",
+        "role": "cta",
+        "start": 78.75,
+        "duration": 11.25,
+        "narration": "以前这个过程需要我自己花 1 小时「想」，现在 5 分钟搞定"
+      }
+    ]
+  }
+}

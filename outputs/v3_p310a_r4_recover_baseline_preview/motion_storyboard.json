@@ -1,0 +1,330 @@
+{
+  "project": {
+    "project_id": "v3_p310a_r4_recover_baseline_preview",
+    "aspect_ratio": "9:16",
+    "platform": "douyin",
+    "duration": 116.21,
+    "target_duration": 116.21,
+    "audio_duration": 116.21
+  },
+  "scenes": [
+    {
+      "scene_id": "S01",
+      "role": "hook",
+      "start": 0.0,
+      "duration": 6.403,
+      "end": 6.39,
+      "narration": "用 Claude Code 写公众号三个月后，我发现它提升的不只是效率",
+      "sentence_ids": [
+        "S01"
+      ],
+      "scene_framework": "scene.hook.hero_center",
+      "visual_template": "hook_big_claim",
+      "accent": "#FF4757",
+      "density": "high"
+    },
+    {
+      "scene_id": "S02",
+      "role": "explain",
+      "start": 6.644,
+      "duration": 3.938,
+      "end": 10.56,
+      "narration": "用 Claude Code 写公众号三个月了",
+      "sentence_ids": [
+        "S02"
+      ],
+      "scene_framework": "scene.method.concept_layers",
+      "visual_template": "concept_layers",
+      "accent": "#A855F7",
+      "density": "medium"
+    },
+    {
+      "scene_id": "S03",
+      "role": "explain",
+      "start": 10.822,
+      "duration": 6.824,
+      "end": 17.61,
+      "narration": "一开始我只是想找个工具帮我写代码，结果用它做自媒体创作比写代码还顺手",
+      "sentence_ids": [
+        "S03"
+      ],
+      "scene_framework": "scene.method.tool_stack",
+      "visual_template": "tool_stack",
+      "accent": "#A855F7",
+      "density": "medium"
+    },
+    {
+      "scene_id": "S04",
+      "role": "evidence",
+      "start": 17.887,
+      "duration": 2.886,
+      "end": 20.73,
+      "narration": "以前写一篇公众号文章是这样的",
+      "sentence_ids": [
+        "S04"
+      ],
+      "scene_framework": "scene.evidence.case_study_card",
+      "visual_template": "case_study_card",
+      "accent": "#4D9FFF",
+      "density": "medium"
+    },
+    {
+      "scene_id": "S05",
+      "role": "explain",
+      "start": 21.013,
+      "duration": 2.155,
+      "end": 23.12,
+      "narration": "改稿，1 小时",
+      "sentence_ids": [
+        "S05"
+      ],
+      "scene_framework": "scene.method.framework_quadrant",
+      "visual_template": "framework_quadrant",
+      "accent": "#4D9FFF",
+      "density": "high"
+    },
+    {
+      "scene_id": "S06",
+      "role": "explain",
+      "start": 23.408,
+      "duration": 8.057,
+      "end": 31.4,
+      "narration": "不是 Claude Code 帮我写了文章，是它帮我把「想」和「等灵感」的时间压缩到了几乎为零",
+      "sentence_ids": [
+        "S06"
+      ],
+      "scene_framework": "scene.memory.proof_overlay",
+      "visual_template": "broken_chain",
+      "accent": "#A855F7",
+      "density": "medium"
+    },
+    {
+      "scene_id": "S07",
+      "role": "hook",
+      "start": 31.705,
+      "duration": 4.55,
+      "end": 36.18,
+      "narration": "你有没有这种感觉，读了很多书，记住了 10%，用到了 1%",
+      "sentence_ids": [
+        "S07"
+      ],
+      "scene_framework": "scene.hook.keyword_punchline",
+      "visual_template": "keyword_punchline",
+      "accent": "#FF6B35",
+      "density": "medium"
+    },
+    {
+      "scene_id": "S08",
+      "role": "evidence",
+      "start": 36.495,
+      "duration": 4.76,
+      "end": 41.17,
+      "narration": "以前这个过程需要我自己花 1 小时「想」，现在 5 分钟搞定",
+      "sentence_ids": [
+        "S08"
+      ],
+      "scene_framework": "scene.evidence.metric_dashboard",
+      "visual_template": "metric_dashboard",
+      "accent": "#2ED573",
+      "density": "high"
+    },
+    {
+      "scene_id": "S09",
+      "role": "explain",
+      "start": 41.496,
+      "duration": 2.685,
+      "end": 44.09,
+      "narration": "写文章最难的不是写，是开始写",
+      "sentence_ids": [
+        "S09"
+      ],
+      "scene_framework": "scene.hook.myth_bust",
+      "visual_template": "myth_bust",
+      "accent": "#FF4757",
+      "density": "high"
+    },
+    {
+      "scene_id": "S10",
+      "role": "evidence",
+      "start": 44.422,
+      "duration": 5.792,
+      "end": 50.11,
+      "narration": "以前我要「想好写什么」才能开始，现在只需要说「帮我写」，它就帮我写了",
+      "sentence_ids": [
+        "S10"
+      ],
+      "scene_framework": "scene.evidence.case_study_card",
+      "visual_template": "case_study_card",
+      "accent": "#4D9FFF",
+      "density": "medium"
+    },
+    {
+      "scene_id": "S11",
+      "role": "explain",
+      "start": 50.454,
+      "duration": 6.624,
+      "end": 56.96,
+      "narration": "当然，AI 写的不能直接用，还需要我改，但它帮我跨过了「开始」这个最大的障碍",
+      "sentence_ids": [
+        "S11"
+      ],
+      "scene_framework": "scene.memory.proof_overlay",
+      "visual_template": "broken_chain",
+      "accent": "#A855F7",
+      "density": "medium"
+    },
+    {
+      "scene_id": "S12",
+      "role": "evidence",
+      "start": 57.318,
+      "duration": 7.476,
+      "end": 64.66,
+      "narration": "从「有想法」到「有草稿」，可能只需要 10 分钟 这个 10 分钟的跨越，是执行力最大的提升",
+      "sentence_ids": [
+        "S12",
+        "S13"
+      ],
+      "scene_framework": "scene.evidence.metric_dashboard",
+      "visual_template": "metric_dashboard",
+      "accent": "#2ED573",
+      "density": "high"
+    },
+    {
+      "scene_id": "S13",
+      "role": "method",
+      "start": 65.034,
+      "duration": 5.592,
+      "end": 70.48,
+      "narration": "第一步，让 Claude Code 分析这周的读书笔记，推荐选题",
+      "sentence_ids": [
+        "S14"
+      ],
+      "scene_framework": "scene.retrieval.pipeline_nodes",
+      "visual_template": "tool_chain_three_cols",
+      "accent": "#A855F7",
+      "density": "medium"
+    },
+    {
+      "scene_id": "S14",
+      "role": "method",
+      "start": 70.866,
+      "duration": 6.644,
+      "end": 77.35,
+      "narration": "第二步，选一个选题，让它生成草稿 第三步，修改草稿，让它评分，根据评分调整",
+      "sentence_ids": [
+        "S15",
+        "S16"
+      ],
+      "scene_framework": "scene.method.step_ladder",
+      "visual_template": "step_ladder",
+      "accent": "#2ED573",
+      "density": "high"
+    },
+    {
+      "scene_id": "S15",
+      "role": "evidence",
+      "start": 77.751,
+      "duration": 6.202,
+      "end": 83.78,
+      "narration": "这个流程大概 40 分钟，大部分时间是 AI 在跑，我只需要做决策和修改",
+      "sentence_ids": [
+        "S17"
+      ],
+      "scene_framework": "scene.evidence.progress_tracker",
+      "visual_template": "progress_tracker",
+      "accent": "#4D9FFF",
+      "density": "high"
+    },
+    {
+      "scene_id": "S16",
+      "role": "explain",
+      "start": 84.194,
+      "duration": 2.275,
+      "end": 86.29,
+      "narration": "不是我变强了，是工具变了",
+      "sentence_ids": [
+        "S18"
+      ],
+      "scene_framework": "scene.method.tool_stack",
+      "visual_template": "tool_stack",
+      "accent": "#A855F7",
+      "density": "medium"
+    },
+    {
+      "scene_id": "S17",
+      "role": "explain",
+      "start": 86.709,
+      "duration": 5.792,
+      "end": 92.31,
+      "narration": "个人体验和情感是我改稿的时候加进去的，不是 AI 写的，是我写的",
+      "sentence_ids": [
+        "S19"
+      ],
+      "scene_framework": "scene.method.concept_layers",
+      "visual_template": "concept_layers",
+      "accent": "#A855F7",
+      "density": "medium"
+    },
+    {
+      "scene_id": "S18",
+      "role": "explain",
+      "start": 92.742,
+      "duration": 4.549,
+      "end": 97.09,
+      "narration": "它会学习你的写作风格，而不是输出一个通用的模板",
+      "sentence_ids": [
+        "S20"
+      ],
+      "scene_framework": "scene.proof.knowledge_graph",
+      "visual_template": "knowledge_graph",
+      "accent": "#A855F7",
+      "density": "high"
+    },
+    {
+      "scene_id": "S19",
+      "role": "evidence",
+      "start": 97.531,
+      "duration": 6.404,
+      "end": 103.72,
+      "narration": "以前写文章最难的是「想好写什么」和「开始写」，现在这两件事都可以交给 AI",
+      "sentence_ids": [
+        "S21"
+      ],
+      "scene_framework": "scene.compare.option_split_vertical",
+      "visual_template": "before_after_compare",
+      "accent": "#34D399",
+      "density": "medium"
+    },
+    {
+      "scene_id": "S20",
+      "role": "explain",
+      "start": 104.175,
+      "duration": 6.233,
+      "end": 110.18,
+      "narration": "选题，选 AI 给的建议里最顺眼的 改稿，把 AI 写的改成我自己的语言",
+      "sentence_ids": [
+        "S22",
+        "S23"
+      ],
+      "scene_framework": "scene.method.framework_quadrant",
+      "visual_template": "framework_quadrant",
+      "accent": "#4D9FFF",
+      "density": "high"
+    },
+    {
+      "scene_id": "S21",
+      "role": "cta",
+      "start": 110.649,
+      "duration": 5.561,
+      "end": 115.97,
+      "narration": "这种工作流让我保持了稳定的输出，从每周一篇变成了每天一篇",
+      "sentence_ids": [
+        "S24"
+      ],
+      "scene_framework": "scene.cta.checklist_board",
+      "visual_template": "checklist_cta",
+      "accent": "#34D399",
+      "density": "medium"
+    }
+  ]
+}

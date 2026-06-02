@@ -1,0 +1,904 @@
+<!doctype html>
+<html lang="zh"><head><meta charset="utf-8"><title>知识工作者效率倍增指南</title>
+<style>
+/* V3-P3.9R1 — stronger contrast, brighter text, clearer hierarchy */
+:root {
+  --hf-cyan: #38E1FF;
+  --hf-amber: #FFC83D;
+  --hf-red: #FF5577;
+  --hf-green: #2EE874;
+  --hf-purple: #C77DFF;
+  --hf-text: #F8FAFC;
+  --hf-text-dim: rgba(248,250,252,0.78);
+  --hf-muted: rgba(248,250,252,0.62);
+  --hf-bg: #04060C;
+  --hf-bg-deep: #02030A;
+}
+*{box-sizing:border-box}
+html,body{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--hf-bg);color:var(--hf-text);font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif}
+#root,.scene{position:absolute;inset:0;overflow:hidden}
+
+/* Per-scene cinematic background (replaces the old flat #050812 + grid).
+   Each role gets a different temperature via the .hf-bg-cta modifier. */
+.hf-bg-cinematic{
+  background:
+    radial-gradient(ellipse 1200px 900px at 78% 18%, rgba(37,216,255,0.10), transparent 65%),
+    radial-gradient(ellipse 1100px 800px at 18% 78%, rgba(168,85,247,0.08), transparent 60%),
+    linear-gradient(180deg, #050812 0%, #0a0d1a 50%, #050812 100%);
+}
+.hf-bg-hook{background:
+  radial-gradient(ellipse 1400px 1100px at 80% 12%, rgba(56,225,255,0.28), transparent 55%),
+  radial-gradient(ellipse 1100px 800px at 15% 75%, rgba(255,200,61,0.18), transparent 60%),
+  linear-gradient(180deg, #04060C 0%, #061a2a 50%, #04060C 100%)}
+.hf-bg-pain{background:
+  radial-gradient(ellipse 1300px 1000px at 75% 18%, rgba(255,85,119,0.24), transparent 55%),
+  radial-gradient(ellipse 1100px 800px at 15% 75%, rgba(255,200,61,0.16), transparent 60%),
+  linear-gradient(180deg, #100408 0%, #1a0610 50%, #04060C 100%)}
+.hf-bg-method{background:
+  radial-gradient(ellipse 1300px 1000px at 75% 18%, rgba(46,232,116,0.26), transparent 55%),
+  radial-gradient(ellipse 1100px 800px at 18% 75%, rgba(56,225,255,0.16), transparent 60%),
+  linear-gradient(180deg, #04060C 0%, #061a10 50%, #04060C 100%)}
+.hf-bg-evidence{background:
+  radial-gradient(ellipse 1300px 1000px at 78% 18%, rgba(255,200,61,0.26), transparent 55%),
+  radial-gradient(ellipse 1100px 800px at 18% 75%, rgba(56,225,255,0.18), transparent 60%),
+  linear-gradient(180deg, #04060C 0%, #1a0e08 50%, #04060C 100%)}
+.hf-bg-explain{background:
+  radial-gradient(ellipse 1300px 1000px at 78% 18%, rgba(199,125,255,0.28), transparent 55%),
+  radial-gradient(ellipse 1100px 800px at 18% 75%, rgba(56,225,255,0.18), transparent 60%),
+  linear-gradient(180deg, #04060C 0%, #100618 50%, #04060C 100%)}
+.hf-bg-cta{background:
+  radial-gradient(ellipse 1400px 1100px at 50% 28%, rgba(46,232,116,0.32), transparent 55%),
+  radial-gradient(ellipse 1100px 800px at 50% 78%, rgba(56,225,255,0.18), transparent 60%),
+  linear-gradient(180deg, #04060C 0%, #061a10 50%, #04060C 100%)}
+.hf-bg-proof, .hf-bg-input, .hf-bg-memory, .hf-bg-retrieval, .hf-bg-summary, .hf-bg-ready {
+  background: radial-gradient(ellipse 1200px 900px at 75% 18%, rgba(37,216,255,0.10), transparent 60%),
+    linear-gradient(180deg, #050812 0%, #0a0d1a 50%, #050812 100%);
+}
+
+/* Subtle film grain (CSS noise) — single low-cost SVG via data URI */
+.hf-bg-cinematic::before{
+  content:"";position:absolute;inset:0;pointer-events:none;opacity:.05;mix-blend-mode:overlay;
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.4 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+}
+
+/* Vignette overlay — softer so small text stays readable */
+.hf-vignette{
+  position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(ellipse 120% 100% at 50% 50%, transparent 55%, rgba(0,0,0,0.32) 100%);
+  z-index:1;
+}
+
+/* Ambient scan beam — slow top-to-bottom */
+.hf-scan-beam{
+  position:absolute;left:0;right:0;height:3px;top:-4%;
+  background:linear-gradient(90deg,transparent,rgba(37,216,255,0.65),transparent);
+  box-shadow:0 0 22px rgba(37,216,255,0.6);
+  animation:hf-beam 5.5s linear infinite;
+  pointer-events:none;z-index:2;
+}
+
+/* HUD header — top-left English uppercase + accent vertical bar + Chinese sub-line */
+.hf-hud-header{
+  position:absolute;top:46px;left:60px;right:60px;display:flex;align-items:center;gap:16px;
+  z-index:5;pointer-events:none;
+}
+.hf-hud-bar{
+  display:inline-block;width:5px;height:36px;background:var(--hf-cyan);
+  box-shadow:0 0 16px var(--hf-cyan);border-radius:2px;
+}
+.hf-hud-en{
+  font:800 24px/1 "SF Mono","JetBrains Mono",ui-monospace,monospace;
+  letter-spacing:.22em;color:#FFFFFF;text-transform:uppercase;
+  text-shadow:0 0 14px rgba(56,225,255,0.7);
+}
+.hf-hud-sid{
+  margin-left:auto;font:800 24px/1 "SF Mono","JetBrains Mono",ui-monospace,monospace;
+  letter-spacing:.16em;color:rgba(248,250,252,0.72);
+}
+.hf-hud-zh{
+  position:absolute;top:104px;left:80px;font:600 18px/1 "PingFang SC",sans-serif;
+  letter-spacing:.18em;color:rgba(248,250,252,0.78);
+}
+
+/* Glass panel — base for cards (deeper, brighter, stronger border) */
+.hf-glass-panel{
+  background:rgba(2,4,12,0.62);
+  backdrop-filter:blur(14px);
+  -webkit-backdrop-filter:blur(14px);
+  border:1.5px solid rgba(56,225,255,0.5);
+  box-shadow:0 0 48px rgba(56,225,255,0.18), inset 0 1px 0 rgba(255,255,255,0.10);
+  border-radius:22px;
+  position:relative;
+}
+.hf-glass-panel::before, .hf-glass-panel::after{
+  content:"";position:absolute;width:22px;height:22px;border:3px solid var(--hf-cyan);
+  opacity:0.85;
+}
+.hf-glass-panel::before{top:-1px;left:-1px;border-right:none;border-bottom:none;}
+.hf-glass-panel::after{bottom:-1px;right:-1px;border-left:none;border-top:none;}
+
+/* Glass panel color variants — brighter borders, deeper bg, stronger glow */
+.hf-glass-cyan{border-color:rgba(56,225,255,0.7);box-shadow:0 0 48px rgba(56,225,255,0.24), inset 0 1px 0 rgba(255,255,255,0.10);}
+.hf-glass-cyan::before, .hf-glass-cyan::after{border-color:var(--hf-cyan);}
+.hf-glass-amber{border-color:rgba(255,200,61,0.75);box-shadow:0 0 48px rgba(255,200,61,0.24), inset 0 1px 0 rgba(255,255,255,0.10);}
+.hf-glass-amber::before, .hf-glass-amber::after{border-color:var(--hf-amber);}
+.hf-glass-red{border-color:rgba(255,85,119,0.75);box-shadow:0 0 48px rgba(255,85,119,0.24), inset 0 1px 0 rgba(255,255,255,0.10);}
+.hf-glass-red::before, .hf-glass-red::after{border-color:var(--hf-red);}
+.hf-glass-green{border-color:rgba(46,232,116,0.78);box-shadow:0 0 48px rgba(46,232,116,0.28), inset 0 1px 0 rgba(255,255,255,0.10);}
+.hf-glass-green::before, .hf-glass-green::after{border-color:var(--hf-green);}
+.hf-glass-purple{border-color:rgba(199,125,255,0.72);box-shadow:0 0 48px rgba(199,125,255,0.24), inset 0 1px 0 rgba(255,255,255,0.10);}
+.hf-glass-purple::before, .hf-glass-purple::after{border-color:var(--hf-purple);}
+
+/* Hero typography — V3-P3.9R1: 24px hud, 56-72px sub, 120-180px super, 220-360px numbers */
+.hf-big-title{
+  font-weight:900;line-height:1.05;letter-spacing:-.025em;
+  font-size:clamp(72px,9vw,108px);
+  color:#FFFFFF;
+  text-shadow:0 6px 36px rgba(0,0,0,0.7);
+  word-break:keep-all;
+  overflow:visible;
+  white-space:pre-line;
+}
+.hf-big-title .accent{color:var(--hf-amber);text-shadow:0 0 28px rgba(255,200,61,0.6);}
+.hf-big-title .accent-cyan{color:var(--hf-cyan);text-shadow:0 0 28px rgba(56,225,255,0.6);}
+.hf-big-title .accent-green{color:var(--hf-green);text-shadow:0 0 28px rgba(46,232,116,0.6);}
+
+.hf-sub-title{
+  font:700 28px/1.3 "PingFang SC",sans-serif;
+  letter-spacing:.06em;color:var(--hf-text-dim);
+  margin-top:20px;
+}
+
+.hf-big-number{
+  font:900 320px/0.92 "SF Pro Display","Helvetica Neue",Arial,sans-serif;
+  letter-spacing:-.04em;color:var(--hf-cyan);
+  text-shadow:0 0 40px rgba(56,225,255,0.6);
+  display:inline-block;line-height:1;
+}
+.hf-big-number.amber{color:var(--hf-amber);text-shadow:0 0 40px rgba(255,200,61,0.6);}
+.hf-big-number.green{color:var(--hf-green);text-shadow:0 0 40px rgba(46,232,116,0.6);}
+.hf-big-number.purple{color:var(--hf-purple);text-shadow:0 0 40px rgba(199,125,255,0.6);}
+.hf-big-number.white{color:#FFFFFF;text-shadow:0 0 40px rgba(255,255,255,0.5);}
+
+.hf-step-number{
+  font:900 160px/1 "SF Pro Display","Helvetica Neue",Arial,sans-serif;
+  color:var(--hf-cyan);text-shadow:0 0 28px rgba(56,225,255,0.55);
+  display:inline-block;line-height:1;
+}
+.hf-step-number.amber{color:var(--hf-amber);text-shadow:0 0 28px rgba(255,200,61,0.55);}
+.hf-step-number.green{color:var(--hf-green);text-shadow:0 0 28px rgba(46,232,116,0.55);}
+
+/* Status stamp badge */
+.hf-status-stamp{
+  display:inline-block;padding:6px 14px;border:1.5px solid currentColor;border-radius:4px;
+  font:800 14px/1 "SF Mono",ui-monospace,monospace;letter-spacing:.22em;
+  text-transform:uppercase;background:rgba(6,8,16,0.7);
+}
+.hf-status-live{color:var(--hf-cyan);}
+.hf-status-viral{color:var(--hf-amber);}
+.hf-status-pass{color:var(--hf-green);}
+.hf-status-ready{color:var(--hf-cyan);}
+.hf-status-risk{color:var(--hf-red);}
+
+/* Metric card */
+.hf-metric-card{
+  background:rgba(6,8,16,0.5);
+  backdrop-filter:blur(10px);
+  -webkit-backdrop-filter:blur(10px);
+  border:1px solid rgba(37,216,255,0.32);
+  border-radius:18px;padding:32px 28px;
+  box-shadow:0 0 28px rgba(37,216,255,0.10);
+  display:flex;flex-direction:column;gap:10px;
+}
+.hf-metric-label{font:600 14px/1 "SF Mono",ui-monospace,monospace;letter-spacing:.18em;
+  text-transform:uppercase;color:rgba(244,247,255,0.55);}
+.hf-metric-value{font:900 56px/1 "SF Pro Display",Arial,sans-serif;color:var(--hf-text);}
+.hf-metric-delta{font:700 16px/1 "SF Mono",ui-monospace,monospace;}
+
+/* Progress bar (0→100%) */
+.hf-progress{position:relative;height:8px;background:rgba(244,247,255,0.08);border-radius:4px;overflow:hidden;}
+.hf-progress > .hf-progress-fill{
+  position:absolute;left:0;top:0;bottom:0;width:0%;
+  background:linear-gradient(90deg,var(--hf-cyan),var(--hf-amber));
+  box-shadow:0 0 12px var(--hf-cyan);
+  animation:hf-progress-fill 1.2s cubic-bezier(.2,.7,.2,1) forwards;
+}
+
+/* Animations */
+@keyframes hf-beam{0%{top:-4%}100%{top:104%}}
+@keyframes hf-scale-in{0%{transform:scale(.85);opacity:0}100%{transform:scale(1);opacity:1}}
+@keyframes hf-count-up{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes hf-stagger-in{0%{transform:translateY(20px);opacity:0}100%{transform:translateY(0);opacity:1}}
+@keyframes hf-progress-fill{0%{width:0%}100%{width:var(--hf-target,100%)}}
+@keyframes hf-stamp-pop{0%{transform:scale(0);opacity:0}60%{transform:scale(1.18);opacity:1}100%{transform:scale(1);opacity:1}}
+@keyframes hf-pulse{0%,100%{box-shadow:0 0 28px rgba(46,213,115,.18)}50%{box-shadow:0 0 48px rgba(46,213,115,.42)}}
+.hf-scale-in{animation:hf-scale-in .6s cubic-bezier(.2,.7,.2,1) both;}
+.hf-count-up{animation:hf-count-up .9s cubic-bezier(.2,.7,.2,1) both;}
+.hf-stagger-in{animation:hf-stagger-in .5s cubic-bezier(.2,.7,.2,1) both;}
+.hf-stamp-pop{animation:hf-stamp-pop .4s cubic-bezier(.2,.7,.2,1) both;}
+.hf-pulse{animation:hf-pulse 2.4s ease-in-out infinite;}
+
+/* Old classes (kept so the 15 untouched templates still render) */
+.bg-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(37,216,255,.08) 1px,transparent 1px),linear-gradient(90deg,rgba(37,216,255,.08) 1px,transparent 1px);background-size:64px 64px}
+.bg-glow{position:absolute;width:720px;height:720px;border-radius:50%;filter:blur(36px);animation:glow 3.4s ease-in-out infinite}
+.bg-glow-1{left:-220px;top:120px}.bg-glow-2{right:-240px;bottom:160px}
+.hud-frame{position:absolute;inset:28px;border:1px solid rgba(37,216,255,.32);clip-path:polygon(0 0,100% 0,100% 94%,94% 100%,0 100%);pointer-events:none}
+.hud-top,.hud-bottom{position:absolute;left:52px;right:52px;display:flex;justify-content:space-between;color:#25d8ff;font:800 18px/1 monospace;letter-spacing:.16em}
+.hud-top{top:52px}.hud-bottom{bottom:318px}.hud-bottom i{font-style:normal;color:rgba(255,255,255,.55)}
+.scan-sweep{position:absolute;left:0;right:0;height:3px;top:-4%;background:linear-gradient(90deg,transparent,rgba(37,216,255,.7),transparent);box-shadow:0 0 22px rgba(37,216,255,.7);animation:scan 4.5s linear infinite;pointer-events:none}
+
+/* Caption — bottom safe zone with blur + glow, never occluded */
+.caption{
+  position:absolute;left:54px;right:54px;bottom:48px;
+  padding:22px 32px;
+  border:1.5px solid rgba(56,225,255,0.55);
+  border-radius:22px;
+  background:rgba(2,4,12,0.82);
+  backdrop-filter:blur(16px);
+  -webkit-backdrop-filter:blur(16px);
+  box-shadow:0 0 42px rgba(56,225,255,0.22), inset 0 1px 0 rgba(255,255,255,0.10);
+  font-size:48px;line-height:1.28;font-weight:850;text-align:center;
+  color:#FFFFFF;
+  z-index:6;
+}
+
+/* Scene bottom safe-zone — reserves 240px so cards never occlude captions */
+.hf-safe-zone{padding-bottom:240px;}
+
+@keyframes glow{0%,100%{opacity:.58;transform:scale(1)}50%{opacity:.92;transform:scale(1.12)}}
+@keyframes scan{0%{top:-4%}100%{top:104%}}
+
+/* V3-P3.10A — Smooth scene transition compatible with native opacity toggle */
+.scene {
+  transition: opacity 0.5s cubic-bezier(.2,.7,.2,1),
+              transform 0.5s cubic-bezier(.2,.7,.2,1) !important;
+}
+
+/* V3-P3.10A — Old-template overlay降级.
+   让 data-motion-target="scene-bg" 变成半透明 dimming 层，
+   Section 自身的 hf-bg-cinematic / hf-bg-cta 渐变现在可见。
+   不用 z-index — 模板 div 在 section 内，opacity 已能透出。 */
+[data-motion-target="scene-bg"] {
+  background: rgba(2, 4, 12, 0.22) !important;
+}
+[data-motion-target="scene-bg"] .bg-grid { opacity: 0.18 !important; }
+
+/* V3-P3.10A — Three light composition classes for vertical center-of-gravity. */
+.hf-comp-upper  { padding-top: 200px; }
+.hf-comp-center { padding-top: 320px; }
+.hf-comp-lower  { padding-top: 460px; }
+
+/* V3-P3.10A — Per-scene entrance keyframes.
+   These fire only when the section has class .hf-entering, which is
+   added/removed by the inline window.__hf.seek IIFE in the body. */
+@keyframes hf-scale-in {
+  0%  { transform: scale(.85); opacity: 0; }
+  100%{ transform: scale(1);  opacity: 1; }
+}
+@keyframes hf-count-up {
+  0%  { transform: scale(.6);  opacity: 0; }
+  60% { transform: scale(1.08); opacity: 1; }
+  100%{ transform: scale(1);   opacity: 1; }
+}
+@keyframes hf-stagger-in {
+  0%  { transform: translateY(20px); opacity: 0; }
+  100%{ transform: translateY(0);    opacity: 1; }
+}
+@keyframes hf-progress-fill {
+  0%  { width: 0%; }
+  100%{ width: var(--hf-target, 100%); }
+}
+@keyframes hf-stamp-pop {
+  0%  { transform: scale(0);    opacity: 0; }
+  60% { transform: scale(1.18); opacity: 1; }
+  100%{ transform: scale(1);    opacity: 1; }
+}
+@keyframes hf-pulse {
+  0%, 100% { box-shadow: 0 0 28px rgba(46,232,116,.18); }
+  50%      { box-shadow: 0 0 48px rgba(46,232,116,.42); }
+}
+
+.hf-entering .hf-animate-title  { animation: hf-scale-in      0.6s cubic-bezier(.2,.7,.2,1) both; }
+.hf-entering .hf-animate-card   { animation: hf-stagger-in    0.5s cubic-bezier(.2,.7,.2,1) both; }
+.hf-entering .hf-animate-number { animation: hf-count-up      0.9s cubic-bezier(.2,.7,.2,1) both; }
+.hf-entering .hf-animate-line   { animation: hf-progress-fill 1.2s cubic-bezier(.2,.7,.2,1) both; }
+.hf-entering .hf-animate-stamp  { animation: hf-stamp-pop     0.4s cubic-bezier(.2,.7,.2,1) both; }
+</style></head><body>
+<div id="root" data-composition-id="demo_v3_preview" data-start="0" data-width="1080" data-height="1920" data-duration="81.1">
+<audio id="voiceover-audio" data-start="0" data-duration="81.1" data-track-index="0" data-volume="1" src="assets/voiceover.mp3"></audio>
+
+<section id="scene-s01" class="scene clip role-hook tpl-hook_big_claim hf-bg-cinematic hf-bg-hook hf-comp-center" data-start="0.0" data-duration="6.158" data-track-index="1" data-visual-template="hook_big_claim" data-role="hook">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(135deg,#071124 0%,#0A1628 52%,#101B32 100%);">
+      <div class="bg-grid"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,#FF475722 0%,transparent 68%);"></div>
+      <div style="position:absolute;top:0;right:0;width:360px;height:100%;background:linear-gradient(180deg,rgba(37,216,255,0.12),transparent 32%,rgba(255,71,87,0.08));clip-path:polygon(24% 0,100% 0,100% 100%,0 100%);"></div>
+      <div style="position:absolute;top:56px;right:56px;font-size:18px;letter-spacing:0.2em;color:#FF4757;opacity:0.88;">QUOTE / PUNCH</div>
+    </div>
+    <div style="position:absolute;top:160px;left:72px;right:72px;">
+      <div style="display:inline-flex;padding:10px 18px;border-radius:999px;background:rgba(255,255,255,0.06);border:1px solid #FF475744;color:#FF4757;font-size:18px;letter-spacing:0.18em;margin-bottom:26px;">HIGHLIGHT</div>
+      <div style="max-width:700px;font-size:70px;font-weight:900;line-height:1.08;letter-spacing:-1.8px;color:#fff;">
+        “你有没有这种感觉<br>读了很多书，真正需要的<br>时候，却一句都想不起来？”
+      </div>
+      <div style='font-size:28px;color:rgba(255,255,255,0.58);margin-top:18px;max-width:520px;line-height:1.5;'>真正缺的不是努力，而是一个可检索的第二大脑</div>
+    </div>
+    <div style="position:absolute;left:72px;bottom:220px;width:330px;height:4px;background:linear-gradient(90deg,#FF4757,transparent);box-shadow:0 0 22px #FF4757;border-radius:999px;"></div>
+    <div style="position:absolute;right:72px;bottom:180px;width:260px;height:260px;border-radius:34px;background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);backdrop-filter:blur(12px);padding:26px 22px;">
+      <div style="font-size:20px;letter-spacing:0.16em;color:rgba(255,255,255,0.6);margin-bottom:12px;">KEYWORD</div>
+      <div style="font-size:46px;font-weight:900;color:#FF4757;line-height:1.05;">记不住</div>
+      <div style="margin-top:18px;font-size:20px;color:rgba(255,255,255,0.65);line-height:1.5;">把“记住”变成系统行为，而不是脑力消耗。</div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#FF4757;opacity:0.7;">S01 · hook</div>
+    
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">LIVE TIMELINE · AI HOT</span><b class="hf-hud-sid">S01</b><i class="hf-hud-zh">开场 · 第一印象</i></div>
+</section>
+<section id="scene-s02" class="scene clip role-pain tpl-pain_card_stack hf-bg-cinematic hf-bg-pain hf-comp-lower" data-start="6.41" data-duration="6.81" data-track-index="1" data-visual-template="pain_card_stack" data-role="pain">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:#1A0A0A;">
+      <div class="bg-grid"></div>
+    </div>
+    
+        <div class="pain-card" id="s02-card-0" style="
+            position:absolute;top:280px;left:72px;right:72px;
+            background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);
+            border-radius:16px;padding:24px 28px;display:flex;align-items:center;gap:20px;
+            opacity:1.0;
+        ">
+            <span style="font-size:40px;">📚</span>
+            <div>
+                <div style="font-size:36px;font-weight:600;color:#fff;">读了很多书</div>
+                <div style="font-size:24px;color:rgba(255,255,255,0.5);margin-top:4px;">信息进脑很快</div>
+            </div>
+            <div style="margin-left:auto;font-size:28px;color:#FF6B35;opacity:0.6;">→</div>
+        </div>
+        
+
+        <div class="pain-card" id="s02-card-1" style="
+            position:absolute;top:440px;left:72px;right:72px;
+            background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);
+            border-radius:16px;padding:24px 28px;display:flex;align-items:center;gap:20px;
+            opacity:0.88;
+        ">
+            <span style="font-size:40px;">🧠</span>
+            <div>
+                <div style="font-size:36px;font-weight:600;color:#fff;">真正要用时</div>
+                <div style="font-size:24px;color:rgba(255,255,255,0.5);margin-top:4px;">一句都想不起来</div>
+            </div>
+            <div style="margin-left:auto;font-size:28px;color:#FF6B35;opacity:0.6;">→</div>
+        </div>
+        
+
+        <div class="pain-card" id="s02-card-2" style="
+            position:absolute;top:600px;left:72px;right:72px;
+            background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);
+            border-radius:16px;padding:24px 28px;display:flex;align-items:center;gap:20px;
+            opacity:0.76;
+        ">
+            <span style="font-size:40px;">📉</span>
+            <div>
+                <div style="font-size:36px;font-weight:600;color:#fff;">记住的很少</div>
+                <div style="font-size:24px;color:rgba(255,255,255,0.5);margin-top:4px;">能调用的更少</div>
+            </div>
+            <div style="margin-left:auto;font-size:28px;color:#FF6B35;opacity:0.6;">→</div>
+        </div>
+        
+
+        <div class="pain-card" id="s02-card-3" style="
+            position:absolute;top:760px;left:72px;right:72px;
+            background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);
+            border-radius:16px;padding:24px 28px;display:flex;align-items:center;gap:20px;
+            opacity:0.64;
+        ">
+            <span style="font-size:40px;">📊</span>
+            <div>
+                <div style="font-size:36px;font-weight:600;color:#fff;">读了 100 本书</div>
+                <div style="font-size:24px;color:rgba(255,255,255,0.5);margin-top:4px;">能记住不到 10 本</div>
+            </div>
+            <div style="margin-left:auto;font-size:28px;color:#FF6B35;opacity:0.6;">→</div>
+        </div>
+        
+    
+    <div class="pain-conclusion" style="
+        position:absolute;bottom:200px;left:72px;right:72px;text-align:center;
+        font-size:36px;font-weight:600;color:#FF6B35;
+    ">信息收集很多，不等于需要时能拿出来用</div>
+    
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#FF6B35;opacity:0.7;">S02 · pain</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">PAIN / HUD SYSTEM</span><b class="hf-hud-sid">S02</b><i class="hf-hud-zh">OBSIDIAN SECOND BRAIN</i></div>
+</section>
+<section id="scene-s03" class="scene clip role-method tpl-framework_quadrant hf-bg-cinematic hf-bg-method hf-comp-upper" data-start="13.472" data-duration="6.589" data-track-index="1" data-visual-template="framework_quadrant" data-role="method">
+  
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(135deg,#0A1628 0%,#0A1A28 60%,#0A1428 100%);">
+      <div class="bg-grid" style="opacity:.3"></div>
+    </div>
+    <div class="hf-safe-zone" style="position:absolute;top:200px;left:96px;right:96px;">
+      <h2 class="hf-animate-title" style="margin:0;font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">后来我把 Obsidian 打造成了第二大脑，再让 AI 帮我找回知识。</h2>
+    </div>
+    
+        <div class="framework-quad hf-glass-panel hf-glass-cyan hf-stagger-in" style="position:absolute;top:480px;left:120px;width:380px;height:400px;padding:34px 30px;">
+            <div class="hf-step-number" style="font-size:88px;color:#4D9FFF;text-shadow:0 0 18px #4D9FFF66;line-height:1;margin-bottom:18px;">q1</div>
+            <div style="font-size:18px;letter-spacing:0.18em;color:#4D9FFF;margin-bottom:8px;">Q1 输入</div>
+            <div style="font-size:30px;font-weight:800;color:#fff;line-height:1.2;">统一入口</div>
+        </div>
+        
+        <div class="framework-quad hf-glass-panel hf-glass-green hf-stagger-in" style="position:absolute;top:480px;right:120px;width:380px;height:400px;padding:34px 30px;">
+            <div class="hf-step-number" style="font-size:88px;color:#2ED573;text-shadow:0 0 18px #2ED57366;line-height:1;margin-bottom:18px;">q2</div>
+            <div style="font-size:18px;letter-spacing:0.18em;color:#2ED573;margin-bottom:8px;">Q2 结构</div>
+            <div style="font-size:30px;font-weight:800;color:#fff;line-height:1.2;">组织整理</div>
+        </div>
+        
+        <div class="framework-quad hf-glass-panel hf-glass-amber hf-stagger-in" style="position:absolute;top:980px;left:120px;width:380px;height:400px;padding:34px 30px;">
+            <div class="hf-step-number" style="font-size:88px;color:#FF6B35;text-shadow:0 0 18px #FF6B3566;line-height:1;margin-bottom:18px;">q3</div>
+            <div style="font-size:18px;letter-spacing:0.18em;color:#FF6B35;margin-bottom:8px;">Q3 检索</div>
+            <div style="font-size:30px;font-weight:800;color:#fff;line-height:1.2;">按需调用</div>
+        </div>
+        
+        <div class="framework-quad hf-glass-panel hf-glass-purple hf-stagger-in" style="position:absolute;top:980px;right:120px;width:380px;height:400px;padding:34px 30px;">
+            <div class="hf-step-number" style="font-size:88px;color:#A855F7;text-shadow:0 0 18px #A855F766;line-height:1;margin-bottom:18px;">q4</div>
+            <div style="font-size:18px;letter-spacing:0.18em;color:#A855F7;margin-bottom:8px;">Q4 输出</div>
+            <div style="font-size:30px;font-weight:800;color:#fff;line-height:1.2;">持续产出</div>
+        </div>
+        
+    <div class="hf-glass-panel hf-glass-purple hf-stagger-in" style="position:absolute;top:730px;left:430px;width:220px;height:220px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(168,85,247,0.22),rgba(37,216,255,0.10));">
+        <div style="text-align:center;">
+            <div style="font-size:13px;letter-spacing:0.22em;color:rgba(255,255,255,0.55);">CENTER</div>
+            <div style="font-size:32px;font-weight:900;color:#fff;margin-top:4px;">Obsidian</div>
+        </div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#2ED573;opacity:0.7;">S03 · method</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">FRAMEWORK / 2X2</span><b class="hf-hud-sid">S03</b><i class="hf-hud-zh">四象限 · 概念分层</i></div>
+</section>
+<section id="scene-s04" class="scene clip role-explain tpl-myth_bust hf-bg-cinematic hf-bg-explain hf-comp-center" data-start="20.313" data-duration="5.064" data-track-index="1" data-visual-template="myth_bust" data-role="explain">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(180deg,#1A0A0A 0%,#0A1628 60%,#0A1628 100%);">
+      <div class="bg-grid"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,#25D8FF22 0%,transparent 70%);"></div>
+    </div>
+    <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(255,71,87,0.12);border:1px solid #25D8FF66;color:#25D8FF;font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">MYTH / BUST</div>
+      <div style="font-size:60px;font-weight:900;color:#fff;line-height:1.1;letter-spacing:-1.4px;">简单讲，大脑负责思考和创造，第二大脑负责存储和检索。</div>
+    </div>
+    <div style="position:absolute;top:560px;left:120px;width:840px;background:rgba(255,71,87,0.10);border:2px solid #FF4757;border-radius:24px;padding:34px 32px;text-align:center;box-shadow:0 0 32px rgba(255,71,87,0.18);">
+        <div style="font-size:18px;letter-spacing:0.22em;color:#FF4757;margin-bottom:12px;">MYTH / 迷思</div>
+        <div style="font-size:42px;font-weight:800;color:rgba(255,255,255,0.5);text-decoration:line-through;line-height:1.18;">多就是好</div>
+    </div>
+    <div style="position:absolute;top:920px;left:0;right:0;text-align:center;">
+        <div style="display:inline-flex;padding:14px 36px;border-radius:18px;background:linear-gradient(135deg,#25D8FF,#2ED573);font-size:32px;font-weight:900;color:#0A1628;letter-spacing:-0.4px;box-shadow:0 0 40px #25D8FF66;">▼ 真相是 ▼</div>
+    </div>
+    <div style="position:absolute;top:1080px;left:120px;width:840px;background:linear-gradient(180deg,rgba(46,213,115,0.18),rgba(255,255,255,0.04));border:2px solid #2ED573;border-radius:24px;padding:34px 32px;text-align:center;box-shadow:0 0 32px rgba(46,213,115,0.18);">
+        <div style="font-size:18px;letter-spacing:0.22em;color:#2ED573;margin-bottom:12px;">TRUTH / 真相</div>
+        <div style="font-size:42px;font-weight:900;color:#fff;line-height:1.18;">对才是好</div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#25D8FF;opacity:0.7;">S04 · explain</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">EXPLAIN / HUD SYSTEM</span><b class="hf-hud-sid">S04</b><i class="hf-hud-zh">OBSIDIAN SECOND BRAIN</i></div>
+</section>
+<section id="scene-s05" class="scene clip role-method tpl-tool_chain_three_cols hf-bg-cinematic hf-bg-method hf-comp-lower" data-start="25.629" data-duration="9.679" data-track-index="1" data-visual-template="tool_chain_three_cols" data-role="method">
+  
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:#0A1A28;">
+      <div class="bg-grid" style="opacity:.3"></div>
+    </div>
+    
+    <div class="hf-safe-zone" style="position:absolute;top:200px;left:96px;right:96px;">
+      <div class="hf-status-stamp hf-status-pass hf-stamp-pop" style="display:inline-flex;margin-bottom:14px;">STEP 1/3 · 流程</div>
+      <h2 class="hf-animate-title" style="margin:0;font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">第一步，把输入汇聚到一个地方。微信读书笔记、网页剪藏、语音转写和视频笔记，全部进入 </h2>
+    </div>
+    
+    
+    <div class="tool-col hf-glass-panel hf-stagger-in" style="
+        position:absolute;top:500px;left:125px;width:250px;
+        padding:24px 18px;text-align:center;
+    ">
+        <div class="hf-step-number" style="font-size:64px;color:#2ED573;text-shadow:0 0 18px #2ED57366;line-height:1;margin-bottom:8px;">RD</div>
+        <div style="font-size:32px;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:.04em;">微信读书</div>
+        <div style="font-size:22px;font-weight:700;color:#2ED573;margin-bottom:6px;letter-spacing:.12em;">摘录同步</div>
+        <div style="font-size:20px;color:rgba(255,255,255,0.6);line-height:1.35;">高亮和笔记汇进同一库</div>
+    </div>
+    
+<div class="tool-connector" style="position:absolute;top:770px;left:234px;font-size:40px;color:#2ED573;">↓</div>
+
+    <div class="tool-col hf-glass-panel hf-stagger-in" style="
+        position:absolute;top:500px;left:415px;width:250px;
+        padding:24px 18px;text-align:center;
+    ">
+        <div class="hf-step-number" style="font-size:64px;color:#2ED573;text-shadow:0 0 18px #2ED57366;line-height:1;margin-bottom:8px;">WEB</div>
+        <div style="font-size:32px;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:.04em;">网页剪藏</div>
+        <div style="font-size:22px;font-weight:700;color:#2ED573;margin-bottom:6px;letter-spacing:.12em;">素材归档</div>
+        <div style="font-size:20px;color:rgba(255,255,255,0.6);line-height:1.35;">文章和片段不再散落</div>
+    </div>
+    
+<div class="tool-connector" style="position:absolute;top:770px;left:524px;font-size:40px;color:#2ED573;">↓</div>
+
+    <div class="tool-col hf-glass-panel hf-stagger-in" style="
+        position:absolute;top:500px;left:705px;width:250px;
+        padding:24px 18px;text-align:center;
+    ">
+        <div class="hf-step-number" style="font-size:64px;color:#2ED573;text-shadow:0 0 18px #2ED57366;line-height:1;margin-bottom:8px;">AV</div>
+        <div style="font-size:32px;font-weight:800;color:#fff;margin-bottom:6px;letter-spacing:.04em;">语音视频</div>
+        <div style="font-size:22px;font-weight:700;color:#2ED573;margin-bottom:6px;letter-spacing:.12em;">转写入库</div>
+        <div style="font-size:20px;color:rgba(255,255,255,0.6);line-height:1.35;">口述与视频笔记统一检索</div>
+    </div>
+    
+<div class="tool-connector" style="position:absolute;top:770px;left:814px;font-size:40px;color:#2ED573;">↓</div>
+
+    <div class="tool-connector" style="
+        position:absolute;top:958px;left:240px;right:240px;height:2px;
+        background:linear-gradient(90deg,transparent,#2ED573,transparent);
+        box-shadow:0 0 18px #2ED573;
+    "></div>
+    <div class="tool-col" style="
+        position:absolute;top:980px;left:270px;right:270px;
+        background:rgba(37,216,255,0.09);border:2px solid #2ED573;
+        border-radius:22px;padding:28px 24px;text-align:center;
+    ">
+        <div style="font-size:28px;letter-spacing:0.2em;color:#2ED573;margin-bottom:10px;">INGEST HUB</div>
+        <div style="font-size:42px;font-weight:800;color:#fff;margin-bottom:8px;">统一进入 Obsidian</div>
+        <div style="font-size:24px;color:rgba(255,255,255,0.62);">把读书、网页、语音、视频素材汇到同一个入口</div>
+    </div>
+    
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#2ED573;opacity:0.7;">S05 · method</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">STEP 1/3 · 流程</span><b class="hf-hud-sid">S05</b><i class="hf-hud-zh">输入、链接、检索 · 闭环</i></div>
+</section>
+<section id="scene-s06" class="scene clip role-proof tpl-knowledge_graph hf-bg-cinematic hf-bg-proof hf-comp-upper" data-start="35.56" data-duration="7.472" data-track-index="1" data-visual-template="knowledge_graph" data-role="proof">
+  
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(160deg,#0A1628 0%,#0F0820 60%,#0A1628 100%);">
+      <div class="bg-grid" style="opacity:.25"></div>
+    </div>
+    <div class="hf-safe-zone" style="position:absolute;top:170px;left:80px;right:80px;">
+      <div class="hf-status-stamp hf-status-viral hf-stamp-pop" style="display:inline-flex;margin-bottom:12px;font-size:18px;padding:10px 22px;border-width:2px;">KNOWLEDGE GRAPH · 知识系统</div>
+      <h2 class="hf-animate-title" style="margin:0;font-size:64px;font-weight:900;color:#FFFFFF;line-height:1.1;letter-spacing:-.02em;">第二步，用双向链接组织笔记。文件夹只负责收纳，相关观点会自己连接成知识网络。</h2>
+    </div>
+    
+            <div class="kg-edge" style="position:absolute;left:630px;top:860px;width:290px;height:4px;background:linear-gradient(90deg,#C77DFFcc,rgba(56,225,255,0.4));transform-origin:0 0;transform:rotate(63.22760800951999deg);box-shadow:0 0 18px #C77DFFaa;"></div>
+            
+            <div class="kg-edge" style="position:absolute;left:630px;top:860px;width:290px;height:4px;background:linear-gradient(90deg,#C77DFFcc,rgba(56,225,255,0.4));transform-origin:0 0;transform:rotate(-63.227564404288145deg);box-shadow:0 0 18px #C77DFFaa;"></div>
+            
+            <div class="kg-edge" style="position:absolute;left:630px;top:860px;width:1px;height:4px;background:linear-gradient(90deg,#C77DFFcc,rgba(56,225,255,0.4));transform-origin:0 0;transform:rotate(90deg);box-shadow:0 0 18px #C77DFFaa;"></div>
+            
+            <div class="kg-edge" style="position:absolute;left:340px;top:560px;width:1px;height:4px;background:linear-gradient(90deg,#C77DFFcc,rgba(56,225,255,0.4));transform-origin:0 0;transform:rotate(90deg);box-shadow:0 0 18px #C77DFFaa;"></div>
+            
+            <div class="kg-edge" style="position:absolute;left:920px;top:560px;width:1px;height:4px;background:linear-gradient(90deg,#C77DFFcc,rgba(56,225,255,0.4));transform-origin:0 0;transform:rotate(90deg);box-shadow:0 0 18px #C77DFFaa;"></div>
+            
+            <div class="kg-edge" style="position:absolute;left:630px;top:460px;width:290px;height:4px;background:linear-gradient(90deg,#C77DFFcc,rgba(56,225,255,0.4));transform-origin:0 0;transform:rotate(-134.35866702023deg);box-shadow:0 0 18px #C77DFFaa;"></div>
+            
+            <div class="kg-edge" style="position:absolute;left:630px;top:460px;width:290px;height:4px;background:linear-gradient(90deg,#C77DFFcc,rgba(56,225,255,0.4));transform-origin:0 0;transform:rotate(134.3585743591123deg);box-shadow:0 0 18px #C77DFFaa;"></div>
+            
+    
+            <div class="kg-node hf-glass-panel hf-glass-purple hf-stagger-in hf-pulse" style="position:absolute;left:510px;top:785px;width:240px;height:140px;border-radius:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:12px 16px;box-shadow:0 0 48px #C77DFFaa;background:linear-gradient(180deg,rgba(199,125,255,0.30),rgba(2,4,12,0.7));">
+              <div class="hf-status-stamp hf-status-viral hf-stamp-pop" style="margin-bottom:8px;font-size:16px;padding:8px 16px;border-width:2px;">CORE HUB</div>
+              <div style="font:900 32px/1.1 &quot;PingFang SC&quot;,sans-serif;color:#FFFFFF;line-height:1.1;text-align:center;letter-spacing:-.01em;text-shadow:0 0 16px #C77DFF66;">时间管理</div>
+            </div>
+            
+            <div class="kg-node hf-glass-panel hf-stagger-in" style="position:absolute;left:250px;top:500px;width:180px;height:80px;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px 12px;background:rgba(2,4,12,0.7);border-color:rgba(199,125,255,0.4);">
+              <div style="font:800 22px/1.15 &quot;PingFang SC&quot;,sans-serif;color:#FFFFFF;line-height:1.15;letter-spacing:-.005em;">GTD</div>
+            </div>
+            
+            <div class="kg-node hf-glass-panel hf-stagger-in" style="position:absolute;left:830px;top:500px;width:180px;height:80px;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px 12px;background:rgba(2,4,12,0.7);border-color:rgba(199,125,255,0.4);">
+              <div style="font:800 22px/1.15 &quot;PingFang SC&quot;,sans-serif;color:#FFFFFF;line-height:1.15;letter-spacing:-.005em;">番茄钟</div>
+            </div>
+            
+            <div class="kg-node hf-glass-panel hf-stagger-in" style="position:absolute;left:540px;top:400px;width:180px;height:80px;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px 12px;background:rgba(2,4,12,0.7);border-color:rgba(199,125,255,0.4);">
+              <div style="font:800 22px/1.15 &quot;PingFang SC&quot;,sans-serif;color:#FFFFFF;line-height:1.15;letter-spacing:-.005em;">Obsidian</div>
+            </div>
+            
+            <div class="kg-node hf-glass-panel hf-stagger-in" style="position:absolute;left:250px;top:1100px;width:180px;height:80px;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px 12px;background:rgba(2,4,12,0.7);border-color:rgba(199,125,255,0.4);">
+              <div style="font:800 22px/1.15 &quot;PingFang SC&quot;,sans-serif;color:#FFFFFF;line-height:1.15;letter-spacing:-.005em;">AI 提问</div>
+            </div>
+            
+            <div class="kg-node hf-glass-panel hf-stagger-in" style="position:absolute;left:830px;top:1100px;width:180px;height:80px;display:flex;align-items:center;justify-content:center;text-align:center;padding:8px 12px;background:rgba(2,4,12,0.7);border-color:rgba(199,125,255,0.4);">
+              <div style="font:800 22px/1.15 &quot;PingFang SC&quot;,sans-serif;color:#FFFFFF;line-height:1.15;letter-spacing:-.005em;">写作复盘</div>
+            </div>
+            
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#4D9FFF;opacity:0.7;">S06 · proof</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">GRAPH / NETWORK</span><b class="hf-hud-sid">S06</b><i class="hf-hud-zh">知识图谱 · 节点与连接</i></div>
+</section>
+<section id="scene-s07" class="scene clip role-method tpl-framework_quadrant hf-bg-cinematic hf-bg-method hf-comp-center" data-start="43.283" data-duration="9.238" data-track-index="1" data-visual-template="framework_quadrant" data-role="method">
+  
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(135deg,#0A1628 0%,#0A1A28 60%,#0A1428 100%);">
+      <div class="bg-grid" style="opacity:.3"></div>
+    </div>
+    <div class="hf-safe-zone" style="position:absolute;top:200px;left:96px;right:96px;">
+      <h2 class="hf-animate-title" style="margin:0;font-size:54px;font-weight:900;color:#fff;line-height:1.12;letter-spacing:-1.2px;">第三步，需要素材时直接问 AI。它不只是搜索关键词，而是从你的笔记里找到观点和例子，</h2>
+    </div>
+    
+        <div class="framework-quad hf-glass-panel hf-glass-cyan hf-stagger-in" style="position:absolute;top:480px;left:120px;width:380px;height:400px;padding:34px 30px;">
+            <div class="hf-step-number" style="font-size:88px;color:#4D9FFF;text-shadow:0 0 18px #4D9FFF66;line-height:1;margin-bottom:18px;">q1</div>
+            <div style="font-size:18px;letter-spacing:0.18em;color:#4D9FFF;margin-bottom:8px;">Q1 输入</div>
+            <div style="font-size:30px;font-weight:800;color:#fff;line-height:1.2;">统一入口</div>
+        </div>
+        
+        <div class="framework-quad hf-glass-panel hf-glass-green hf-stagger-in" style="position:absolute;top:480px;right:120px;width:380px;height:400px;padding:34px 30px;">
+            <div class="hf-step-number" style="font-size:88px;color:#2ED573;text-shadow:0 0 18px #2ED57366;line-height:1;margin-bottom:18px;">q2</div>
+            <div style="font-size:18px;letter-spacing:0.18em;color:#2ED573;margin-bottom:8px;">Q2 结构</div>
+            <div style="font-size:30px;font-weight:800;color:#fff;line-height:1.2;">组织整理</div>
+        </div>
+        
+        <div class="framework-quad hf-glass-panel hf-glass-amber hf-stagger-in" style="position:absolute;top:980px;left:120px;width:380px;height:400px;padding:34px 30px;">
+            <div class="hf-step-number" style="font-size:88px;color:#FF6B35;text-shadow:0 0 18px #FF6B3566;line-height:1;margin-bottom:18px;">q3</div>
+            <div style="font-size:18px;letter-spacing:0.18em;color:#FF6B35;margin-bottom:8px;">Q3 检索</div>
+            <div style="font-size:30px;font-weight:800;color:#fff;line-height:1.2;">按需调用</div>
+        </div>
+        
+        <div class="framework-quad hf-glass-panel hf-glass-purple hf-stagger-in" style="position:absolute;top:980px;right:120px;width:380px;height:400px;padding:34px 30px;">
+            <div class="hf-step-number" style="font-size:88px;color:#A855F7;text-shadow:0 0 18px #A855F766;line-height:1;margin-bottom:18px;">q4</div>
+            <div style="font-size:18px;letter-spacing:0.18em;color:#A855F7;margin-bottom:8px;">Q4 输出</div>
+            <div style="font-size:30px;font-weight:800;color:#fff;line-height:1.2;">持续产出</div>
+        </div>
+        
+    <div class="hf-glass-panel hf-glass-purple hf-stagger-in" style="position:absolute;top:730px;left:430px;width:220px;height:220px;border-radius:50%;display:flex;align-items:center;justify-content:center;background:radial-gradient(circle,rgba(168,85,247,0.22),rgba(37,216,255,0.10));">
+        <div style="text-align:center;">
+            <div style="font-size:13px;letter-spacing:0.22em;color:rgba(255,255,255,0.55);">CENTER</div>
+            <div style="font-size:32px;font-weight:900;color:#fff;margin-top:4px;">AI</div>
+        </div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#2ED573;opacity:0.7;">S07 · method</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">FRAMEWORK / 2X2</span><b class="hf-hud-sid">S07</b><i class="hf-hud-zh">四象限 · 概念分层</i></div>
+</section>
+<section id="scene-s08" class="scene clip role-evidence tpl-metric_dashboard hf-bg-cinematic hf-bg-evidence hf-comp-lower" data-start="52.773" data-duration="7.472" data-track-index="1" data-visual-template="metric_dashboard" data-role="evidence">
+  
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(135deg,#0A1428 0%,#0A1A28 60%,#082016 100%);">
+      <div class="bg-grid" style="opacity:.25"></div>
+    </div>
+    <div class="hf-safe-zone" style="position:absolute;top:170px;left:80px;right:80px;text-align:left;">
+      <div class="hf-status-stamp hf-status-live hf-stamp-pop" style="display:inline-flex;margin-bottom:14px;font-size:18px;padding:10px 22px;border-width:2px;">LIVE METRICS · 实时数据</div>
+      <h2 class="hf-animate-title" style="margin:0;font-size:64px;font-weight:900;color:#FFFFFF;line-height:1.1;letter-spacing:-.02em;">以前写文章，要翻遍好几个 App。现在从找素材到拿到素材包，可能只需要 30 秒。</h2>
+    </div>
+    
+    <div class="hf-glass-panel hf-stagger-in" style="position:absolute;top:380px;left:80px;width:600px;height:560px;padding:52px 48px;background:linear-gradient(180deg,rgba(2,4,12,0.78),rgba(2,4,12,0.62) 80%);">
+      <div class="hf-status-stamp hf-status-viral hf-stamp-pop" style="position:absolute;top:24px;right:24px;font-size:18px;padding:8px 18px;border-width:2px;">VIRAL</div>
+      <div style="font:800 20px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.22em;color:rgba(248,250,252,0.72);text-transform:uppercase;">启动</div>
+      <div style="display:flex;align-items:baseline;gap:14px;margin-top:32px;">
+        <span class="hf-big-number  hf-count-up" style="font-size:280px;">READY</span>
+        <span style="font:800 56px/1 &quot;SF Mono&quot;,monospace;letter-spacing:.04em;color:#FFFFFF;text-shadow:0 0 14px rgba(255,255,255,0.4);"></span>
+      </div>
+      <div class="hf-progress" style="margin-top:30px;--hf-target:78%;height:14px;border-radius:7px;">
+        <div class="hf-progress-fill" style="background:linear-gradient(90deg,#38E1FF,#FFC83D);box-shadow:0 0 16px #38E1FFcc;"></div>
+      </div>
+      <div style="font:800 40px/1 &quot;SF Mono&quot;,monospace;color:#2EE874;margin-top:20px;letter-spacing:.04em;">+OK vs 起点</div>
+    </div>
+    
+        <div class="hf-glass-panel hf-stagger-in" style="position:absolute;top:380px;right:80px;width:340px;padding:24px 26px;background:rgba(2,4,12,0.62);">
+          <div style="font:700 16px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.22em;color:rgba(248,250,252,0.72);text-transform:uppercase;">闭环</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-top:12px;">
+            <span style="font:900 64px/1 &quot;SF Pro Display&quot;,Arial,sans-serif;color:#FFFFFF;letter-spacing:-.02em;text-shadow:0 0 12px rgba(255,255,255,0.3);">RUN</span>
+            <span style="font:800 24px/1 &quot;SF Mono&quot;,monospace;color:#4D9FFF;"></span>
+          </div>
+          <div style="font:700 18px/1 &quot;SF Mono&quot;,monospace;color:#2EE874;margin-top:8px;">+OK</div>
+        </div>
+        
+        <div class="hf-glass-panel hf-stagger-in" style="position:absolute;top:580px;right:80px;width:340px;padding:24px 26px;background:rgba(2,4,12,0.62);">
+          <div style="font:700 16px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.22em;color:rgba(248,250,252,0.72);text-transform:uppercase;">输出</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-top:12px;">
+            <span style="font:900 64px/1 &quot;SF Pro Display&quot;,Arial,sans-serif;color:#FFFFFF;letter-spacing:-.02em;text-shadow:0 0 12px rgba(255,255,255,0.3);">ON</span>
+            <span style="font:800 24px/1 &quot;SF Mono&quot;,monospace;color:#4D9FFF;"></span>
+          </div>
+          <div style="font:700 18px/1 &quot;SF Mono&quot;,monospace;color:#2EE874;margin-top:8px;">+GO</div>
+        </div>
+        
+        <div class="hf-glass-panel hf-stagger-in" style="position:absolute;top:780px;right:80px;width:340px;padding:24px 26px;background:rgba(2,4,12,0.62);">
+          <div style="font:700 16px/1 &quot;SF Mono&quot;,monospace;letter-spacing:0.22em;color:rgba(248,250,252,0.72);text-transform:uppercase;">复盘</div>
+          <div style="display:flex;align-items:baseline;gap:8px;margin-top:12px;">
+            <span style="font:900 64px/1 &quot;SF Pro Display&quot;,Arial,sans-serif;color:#FFFFFF;letter-spacing:-.02em;text-shadow:0 0 12px rgba(255,255,255,0.3);">DAILY</span>
+            <span style="font:800 24px/1 &quot;SF Mono&quot;,monospace;color:#4D9FFF;"></span>
+          </div>
+          <div style="font:700 18px/1 &quot;SF Mono&quot;,monospace;color:#2EE874;margin-top:8px;">+GO</div>
+        </div>
+        
+    <div style="position:absolute;top:1340px;left:140px;right:140px;padding:20px 28px;border-top:2px solid rgba(255,200,61,0.4);text-align:center;font:800 26px/1 &quot;SF Mono&quot;,monospace;letter-spacing:.18em;color:#FFC83D;text-transform:uppercase;">持续跑通最小闭环后，看实际数字</div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#4D9FFF;opacity:0.7;">S08 · evidence</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">DATA / DASHBOARD</span><b class="hf-hud-sid">S08</b><i class="hf-hud-zh">数据 · 关键指标</i></div>
+</section>
+<section id="scene-s09" class="scene clip role-explain tpl-myth_bust hf-bg-cinematic hf-bg-explain hf-comp-upper" data-start="60.496" data-duration="4.834" data-track-index="1" data-visual-template="myth_bust" data-role="explain">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:linear-gradient(180deg,#1A0A0A 0%,#0A1628 60%,#0A1628 100%);">
+      <div class="bg-grid"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,#25D8FF22 0%,transparent 70%);"></div>
+    </div>
+    <div style="position:absolute;top:240px;left:72px;right:72px;text-align:center;">
+      <div style="display:inline-flex;padding:8px 20px;border-radius:999px;background:rgba(255,71,87,0.12);border:1px solid #25D8FF66;color:#25D8FF;font-size:18px;letter-spacing:0.22em;margin-bottom:18px;">MYTH / BUST</div>
+      <div style="font-size:60px;font-weight:900;color:#fff;line-height:1.1;letter-spacing:-1.4px;">但别一上来装 30 个插件，也别花几天设计完美分类。</div>
+    </div>
+    <div style="position:absolute;top:560px;left:120px;width:840px;background:rgba(255,71,87,0.10);border:2px solid #FF4757;border-radius:24px;padding:34px 32px;text-align:center;box-shadow:0 0 32px rgba(255,71,87,0.18);">
+        <div style="font-size:18px;letter-spacing:0.22em;color:#FF4757;margin-bottom:12px;">MYTH / 迷思</div>
+        <div style="font-size:42px;font-weight:800;color:rgba(255,255,255,0.5);text-decoration:line-through;line-height:1.18;">多装插件就能提高效率</div>
+    </div>
+    <div style="position:absolute;top:920px;left:0;right:0;text-align:center;">
+        <div style="display:inline-flex;padding:14px 36px;border-radius:18px;background:linear-gradient(135deg,#25D8FF,#2ED573);font-size:32px;font-weight:900;color:#0A1628;letter-spacing:-0.4px;box-shadow:0 0 40px #25D8FF66;">▼ 真相是 ▼</div>
+    </div>
+    <div style="position:absolute;top:1080px;left:120px;width:840px;background:linear-gradient(180deg,rgba(46,213,115,0.18),rgba(255,255,255,0.04));border:2px solid #2ED573;border-radius:24px;padding:34px 32px;text-align:center;box-shadow:0 0 32px rgba(46,213,115,0.18);">
+        <div style="font-size:18px;letter-spacing:0.22em;color:#2ED573;margin-bottom:12px;">TRUTH / 真相</div>
+        <div style="font-size:42px;font-weight:900;color:#fff;line-height:1.18;">先跑通最小闭环再说</div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#25D8FF;opacity:0.7;">S09 · explain</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">EXPLAIN / HUD SYSTEM</span><b class="hf-hud-sid">S09</b><i class="hf-hud-zh">OBSIDIAN SECOND BRAIN</i></div>
+</section>
+<section id="scene-s10" class="scene clip role-cta tpl-checklist_cta hf-bg-cinematic hf-bg-cta hf-comp-center" data-start="65.582" data-duration="3.741" data-track-index="1" data-visual-template="checklist_cta" data-role="cta">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:#0A2818;">
+      <div class="bg-grid"></div>
+    </div>
+    
+    <div style="position:absolute;top:200px;left:72px;right:72px;text-align:center;">
+        <div style="font-size:52px;font-weight:700;color:#fff;margin-bottom:8px;">先跑通一个最小闭环：输入、存储、检索、输出。</div>
+    </div>
+    
+    <div style="position:absolute;top:340px;left:120px;right:120px;">
+        <div class="check-item" style="
+            margin-bottom:28px;padding:24px 32px;
+            background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);
+            border-radius:16px;display:flex;align-items:center;gap:20px;
+        ">
+            <div style="
+                width:56px;height:56px;background:#2ED573;border-radius:50%;
+                display:flex;align-items:center;justify-content:center;
+                font-size:32px;font-weight:800;color:#fff;flex-shrink:0;
+            ">1</div>
+            <span style="font-size:36px;font-weight:600;color:#fff;">输入统一到一个库</span>
+        </div>
+        
+
+        <div class="check-item" style="
+            margin-bottom:28px;padding:24px 32px;
+            background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);
+            border-radius:16px;display:flex;align-items:center;gap:20px;
+        ">
+            <div style="
+                width:56px;height:56px;background:#2ED573;border-radius:50%;
+                display:flex;align-items:center;justify-content:center;
+                font-size:32px;font-weight:800;color:#fff;flex-shrink:0;
+            ">2</div>
+            <span style="font-size:36px;font-weight:600;color:#fff;">把相关笔记连起来</span>
+        </div>
+        
+
+        <div class="check-item" style="
+            margin-bottom:28px;padding:24px 32px;
+            background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.12);
+            border-radius:16px;display:flex;align-items:center;gap:20px;
+        ">
+            <div style="
+                width:56px;height:56px;background:#2ED573;border-radius:50%;
+                display:flex;align-items:center;justify-content:center;
+                font-size:32px;font-weight:800;color:#fff;flex-shrink:0;
+            ">3</div>
+            <span style="font-size:36px;font-weight:600;color:#fff;">需要时直接问 AI</span>
+        </div>
+        </div>
+    
+    <div style="
+        position:absolute;bottom:180px;left:72px;right:72px;text-align:center;
+        padding:24px;background:rgba(46,213,115,0.1);border:1px solid #2ED573;
+        border-radius:16px;
+    ">
+        <span style="font-size:34px;font-weight:600;color:#2ED573;">先把闭环跑通，再决定要不要加插件</span>
+    </div>
+    
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#2ED573;opacity:0.7;">S10 · cta</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">FINAL SCORE · COMPLETE</span><b class="hf-hud-sid">S10</b><i class="hf-hud-zh">本集掌握度 · 下期预告</i></div>
+</section>
+<section id="scene-s11" class="scene clip role-proof tpl-before_after_compare hf-bg-cinematic hf-bg-proof hf-comp-lower" data-start="69.574" data-duration="5.496" data-track-index="1" data-visual-template="before_after_compare" data-role="proof">
+  
+    <div data-motion-target="scene-bg" style="position:absolute;inset:0;background:#0A1A28;">
+      <div class="bg-grid"></div>
+    </div>
+    
+    <div style="position:absolute;top:180px;left:72px;right:72px;text-align:center;">
+        <div style="font-size:46px;font-weight:700;color:#fff;line-height:1.2;">把记住这件事交给第二大脑，你才能把精力留给真正的创造。</div>
+    </div>
+    
+    
+    
+        <div class="compare-item" style="position:absolute;top:470px;left:88px;width:444px;background:rgba(255,255,255,0.06);border:2px solid #4D9FFF;border-radius:24px;padding:26px 22px;">
+            <div style="font-size:22px;letter-spacing:0.16em;color:#4D9FFF;margin-bottom:10px;">交给第二大脑</div>
+            <div style="font-size:40px;font-weight:800;color:#fff;margin-bottom:18px;">记忆负担下降</div>
+            <div class='compare-item' style='margin-bottom:16px;padding:16px 18px;background:rgba(255,255,255,0.05);border-radius:14px;font-size:27px;color:#fff;'>不用强记细节</div><div class='compare-item' style='margin-bottom:16px;padding:16px 18px;background:rgba(255,255,255,0.05);border-radius:14px;font-size:27px;color:#fff;'>素材随时能回查</div><div class='compare-item' style='margin-bottom:16px;padding:16px 18px;background:rgba(255,255,255,0.05);border-radius:14px;font-size:27px;color:#fff;'>例子和观点更好找</div>
+        </div>
+        
+        <div class="compare-item" style="position:absolute;top:470px;left:548px;width:444px;background:rgba(255,255,255,0.06);border:2px solid #2ED573;border-radius:24px;padding:26px 22px;">
+            <div style="font-size:22px;letter-spacing:0.16em;color:#2ED573;margin-bottom:10px;">留给自己</div>
+            <div style="font-size:40px;font-weight:800;color:#fff;margin-bottom:18px;">创造空间上升</div>
+            <div class='compare-item' style='margin-bottom:16px;padding:16px 18px;background:rgba(255,255,255,0.05);border-radius:14px;font-size:27px;color:#fff;'>注意力回到判断</div><div class='compare-item' style='margin-bottom:16px;padding:16px 18px;background:rgba(255,255,255,0.05);border-radius:14px;font-size:27px;color:#fff;'>把精力放在表达</div><div class='compare-item' style='margin-bottom:16px;padding:16px 18px;background:rgba(255,255,255,0.05);border-radius:14px;font-size:27px;color:#fff;'>真正去做创造</div>
+        </div>
+        
+    <div style="position:absolute;top:1080px;left:140px;right:140px;padding:22px 24px;border-radius:18px;background:rgba(37,216,255,0.08);border:1px solid rgba(37,216,255,0.28);text-align:center;font-size:30px;color:#fff;line-height:1.45;">记忆外包，不等于放弃思考；而是把大脑还给创造。</div>
+    
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#4D9FFF;opacity:0.7;">S11 · proof</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">PROOF / HUD SYSTEM</span><b class="hf-hud-sid">S11</b><i class="hf-hud-zh">OBSIDIAN SECOND BRAIN</i></div>
+</section>
+<section id="scene-s12" class="scene clip role-cta tpl-checklist_cta hf-bg-cinematic hf-bg-cta hf-comp-upper" data-start="75.322" data-duration="5.777" data-track-index="1" data-visual-template="checklist_cta" data-role="cta">
+  
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:linear-gradient(160deg,#04060C 0%,#0a1a14 55%,#0a1a14 100%);">
+      <div class="bg-grid" style="opacity:.2"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,rgba(46,232,116,0.45) 0%,transparent 65%);"></div>
+      <div class="bg-glow bg-glow-2" style="background:radial-gradient(circle,rgba(255,200,61,0.18) 0%,transparent 72%);"></div>
+    </div>
+    <div class="hf-safe-zone" style="position:absolute;top:150px;left:0;right:0;text-align:center;">
+      <div style="display:flex;justify-content:center;gap:14px;margin-bottom:18px;">
+        <div class="hf-status-stamp hf-status-pass hf-stamp-pop" style="font-size:18px;padding:10px 22px;border-width:2px;">DONE</div>
+        <div class="hf-status-stamp hf-status-viral hf-stamp-pop" style="font-size:18px;padding:10px 22px;border-width:2px;color:#FFC83D;">COMPLETE</div>
+      </div>
+      <div class="hf-count-up" style="font-size:380px;font-weight:900;line-height:0.92;color:#2EE874;text-shadow:0 0 72px #2EE874cc;letter-spacing:-12px;">100</div>
+      <div style="font:800 40px/1 &quot;SF Mono&quot;,monospace;color:#FFFFFF;margin-top:10px;letter-spacing:.18em;text-shadow:0 0 14px rgba(255,255,255,0.4);">/ 100 · CHAPTER CLOSE</div>
+      <div style="font:700 18px/1 &quot;SF Mono&quot;,monospace;letter-spacing:.22em;color:#2EE874;margin-top:14px;text-transform:uppercase;">本章掌握度</div>
+    </div>
+    <div class="hf-glass-panel hf-glass-green hf-pulse" style="position:absolute;top:820px;left:80px;right:80px;padding:36px 40px;background:linear-gradient(180deg,rgba(46,232,116,0.22),rgba(2,4,12,0.7) 80%);">
+      <div style="font-size:48px;font-weight:800;color:#FFFFFF;line-height:1.18;text-align:center;letter-spacing:-.01em;">这套 Obsidian 第二大脑流程，建议先收藏，照着搭一遍。</div>
+    </div>
+    <div style="position:absolute;top:1000px;left:0;right:0;text-align:center;">
+      <div style="font:800 18px/1 &quot;SF Mono&quot;,monospace;letter-spacing:.32em;color:#2EE874;margin-bottom:14px;">NEXT / PREVIEW</div>
+      <div class="hf-stamp-pop" style="display:inline-flex;padding:20px 40px;border-radius:18px;background:rgba(46,232,116,0.22);border:2.5px solid #2EE874;font:800 32px/1 &quot;PingFang SC&quot;,sans-serif;color:#FFFFFF;box-shadow:0 0 32px #2EE87477;letter-spacing:.04em;">下期讲：把检索真正接进 AI 流程</div>
+    </div>
+    <div style="position:absolute;top:1130px;left:140px;right:140px;padding:20px 24px;border-radius:18px;background:rgba(255,255,255,0.06);text-align:center;font-size:26px;color:rgba(248,250,252,0.82);line-height:1.4;letter-spacing:.02em;">先用起来，比继续囤工具更重要</div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:#2ED573;opacity:0.7;">S12 · cta</div>
+
+  <div class="hf-vignette"></div>
+  <div class="hf-scan-beam"></div>
+  <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">FINAL SCORE · COMPLETE</span><b class="hf-hud-sid">S12</b><i class="hf-hud-zh">本集掌握度 · 下期预告</i></div>
+</section>
+<div id="caption-s01_c01" class="caption clip" data-start="0.0" data-duration="2.03" data-track-index="2">你有没有这种感觉 读了很多书</div><div id="caption-s01_c02" class="caption clip" data-start="2.05" data-duration="2.03" data-track-index="2">真正需要的时候</div><div id="caption-s01_c03" class="caption clip" data-start="4.09" data-duration="2.03" data-track-index="2">却一句都想不起来？</div><div id="caption-s02_c01" class="caption clip" data-start="6.39" data-duration="2.24" data-track-index="2">我之前也是 读了 100 本书</div><div id="caption-s02_c02" class="caption clip" data-start="8.65" data-duration="2.24" data-track-index="2">能记住的不到 10 本</div><div id="caption-s02_c03" class="caption clip" data-start="10.92" data-duration="2.24" data-track-index="2">真正能用上的不到 1 本</div><div id="caption-s03_c01" class="caption clip" data-start="13.43" data-duration="3.27" data-track-index="2">后来我把 Obsidian 打造成了第二大脑</div><div id="caption-s03_c02" class="caption clip" data-start="16.71" data-duration="3.27" data-track-index="2">再让 AI 帮我找回知识</div><div id="caption-s04_c01" class="caption clip" data-start="20.25" data-duration="5.03" data-track-index="2">简单讲 大脑负责思考和创造 第二大脑负责存储和检索</div><div id="caption-s05_c01" class="caption clip" data-start="25.55" data-duration="3.2" data-track-index="2">第一步 把输入汇聚到一个地方</div><div id="caption-s05_c02" class="caption clip" data-start="28.77" data-duration="3.2" data-track-index="2">微信读书笔记 网页剪藏</div><div id="caption-s05_c03" class="caption clip" data-start="31.98" data-duration="3.2" data-track-index="2">语音转写和视频笔记 全部进入 Obsidian</div><div id="caption-s06_c01" class="caption clip" data-start="35.45" data-duration="2.46" data-track-index="2">第二步 用双向链接组织笔记</div><div id="caption-s06_c02" class="caption clip" data-start="37.93" data-duration="2.46" data-track-index="2">文件夹只负责收纳</div><div id="caption-s06_c03" class="caption clip" data-start="40.42" data-duration="2.46" data-track-index="2">相关观点会自己连接成知识网络</div><div id="caption-s07_c01" class="caption clip" data-start="43.15" data-duration="4.59" data-track-index="2">第三步 需要素材时直接问 AI 它不只是搜索关键词</div><div id="caption-s07_c02" class="caption clip" data-start="47.75" data-duration="4.59" data-track-index="2">而是从你的笔记里找到观点和例子 整理成答案</div><div id="caption-s08_c01" class="caption clip" data-start="52.61" data-duration="2.46" data-track-index="2">以前写文章 要翻遍好几个 App</div><div id="caption-s08_c02" class="caption clip" data-start="55.09" data-duration="2.46" data-track-index="2">现在从找素材到拿到素材包</div><div id="caption-s08_c03" class="caption clip" data-start="57.58" data-duration="2.46" data-track-index="2">可能只需要 30 秒</div><div id="caption-s09_c01" class="caption clip" data-start="60.31" data-duration="4.8" data-track-index="2">但别一上来装 30 个插件 也别花几天设计完美分类</div><div id="caption-s10_c01" class="caption clip" data-start="65.38" data-duration="3.71" data-track-index="2">先跑通一个最小闭环 输入 存储 检索 输出</div><div id="caption-s11_c01" class="caption clip" data-start="69.36" data-duration="2.72" data-track-index="2">把记住这件事交给第二大脑</div><div id="caption-s11_c02" class="caption clip" data-start="72.1" data-duration="2.72" data-track-index="2">你才能把精力留给真正的创造</div><div id="caption-s12_c01" class="caption clip" data-start="75.09" data-duration="2.86" data-track-index="2">这套 Obsidian 第二大脑流程</div><div id="caption-s12_c02" class="caption clip" data-start="77.97" data-duration="2.86" data-track-index="2">建议先收藏 照着搭一遍</div>
+</div>
+<script>(function() {
+  var sections = Array.prototype.slice.call(document.querySelectorAll('section.scene'));
+  var active = {};
+  function apply(t) {
+    sections.forEach(function(s) {
+      var start = parseFloat(s.dataset.start || 0);
+      var dur = parseFloat(s.dataset.duration || 0);
+      var isActive = t >= start && t < start + dur;
+      if (isActive) {
+        s.style.opacity = '1';
+        if (!active[s.id]) {
+          s.classList.add('hf-entering');
+          active[s.id] = true;
+        }
+      } else {
+        s.style.opacity = '0';
+        if (active[s.id]) {
+          s.classList.remove('hf-entering');
+          delete active[s.id];
+        }
+      }
+    });
+  }
+  var prior = window.__hf;
+  window.__hf = {
+    seek: function(t) { if (prior && prior.seek) { prior.seek(t); } apply(t); },
+    get duration() {
+      var r = document.getElementById('root');
+      return r ? parseFloat(r.dataset.duration || 0) : 0;
+    }
+  };
+})();
+window.__timelines = window.__timelines || {};</script>
+</body></html>

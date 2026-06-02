@@ -792,3 +792,88 @@ def get_template(template_id: str) -> dict[str, Any]:
 def pick_template_for_role(role: str) -> dict[str, Any]:
     template_id = ROLE_DEFAULT_TEMPLATE.get(role, PROOF_OVERLAY["id"])
     return get_template(template_id)
+
+
+# ─── V3-P3.8 — Per-role render_template rotation pools ──────────
+# When `_assign_visual_templates` cannot find a keyword override for a
+# scene's role + narration, it falls back to the per-role pool below
+# instead of the single ROLE_DEFAULT_TEMPLATE entry. The pool is rotated
+# by scene index so consecutive scenes with the same role get distinct
+# visual templates (the dominant "same-skeleton × N" issue in the
+# 2026-05-26 acceptance run).
+
+RENDER_TEMPLATE_POOLS: dict[str, list[str]] = {
+    "explain": [
+        "broken_chain",
+        "concept_layers",
+        "knowledge_graph",
+        "myth_bust",
+        "framework_quadrant",
+    ],
+    "evidence": [
+        "before_after_compare",
+        "metric_dashboard",
+        "progress_tracker",
+        "case_study_card",
+        "section_board",
+        "data_dense_table",
+    ],
+    "method": [
+        "tool_chain_three_cols",
+        "step_ladder",
+        "framework_quadrant",
+        "concept_layers",
+    ],
+}
+
+# Reverse lookup from render_template → seed_id, so callers can convert
+# a rotated render_template string back into the full template dict
+# (needed for accent / density / preview_fixture).
+RENDER_TEMPLATE_TO_SEED_ID: dict[str, str] = {
+    "broken_chain": PROOF_OVERLAY["id"],
+    "concept_layers": METHOD_CONCEPT_LAYERS["id"],
+    "knowledge_graph": PROOF_KNOWLEDGE_GRAPH["id"],
+    "myth_bust": HOOK_MYTH_BUST["id"],
+    "framework_quadrant": METHOD_FRAMEWORK_QUADRANT["id"],
+    "before_after_compare": OPTION_SPLIT_VERTICAL["id"],
+    "metric_dashboard": EVIDENCE_METRIC_DASHBOARD["id"],
+    "progress_tracker": EVIDENCE_PROGRESS_TRACKER["id"],
+    "case_study_card": EVIDENCE_CASE_STUDY_CARD["id"],
+    "section_board": PROOF_SECTION_BOARD["id"],
+    "data_dense_table": PAIN_DATA_DENSE_TABLE["id"],
+    "tool_chain_three_cols": PIPELINE_NODES["id"],
+    "step_ladder": METHOD_STEP_LADDER["id"],
+}
+
+
+def pick_render_template_for_role(role: str, index: int = 0) -> str | None:
+    """Return a render_template string for `role` rotated by `index` mod pool size.
+
+    Returns None when `role` has no rotation pool — caller should fall back
+    to `pick_template_for_role(role)`. Layer 1 of the V3-P3.8 anti-repetition
+    scheme (see plan §4.1).
+    """
+    pool = RENDER_TEMPLATE_POOLS.get(role)
+    if not pool:
+        return None
+    return pool[index % len(pool)]
+
+
+# V3-P3.8R1 — single source of truth for the V3-P3.8 feature gate.
+# `design_variance < 5` → legacy deterministic (no Layer 1 rotation,
+# no Layer 2 fallback, no last-scene CTA default).
+# `design_variance >= 5` → all V3-P3.8 visual-quality features on.
+# This function is the ONLY place in the codebase that decides whether
+# V3-P3.8 features fire. Layer 1, Layer 2, and the last-scene CTA
+# default all consult this same function.
+V3_P38_FEATURE_THRESHOLD = 5
+
+
+def should_enable_v3_p38_features(design_variance: int) -> bool:
+    """Single source of truth for the V3-P3.8 feature gate.
+
+    `design_variance < 5` → legacy deterministic behavior.
+    `design_variance >= 5` → all V3-P3.8 features (Layer 1 rotation,
+    Layer 2 fallback, last-scene CTA = end_score_goodbye) are enabled.
+    """
+    return design_variance >= V3_P38_FEATURE_THRESHOLD
