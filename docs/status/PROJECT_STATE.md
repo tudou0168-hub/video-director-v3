@@ -1,5 +1,11 @@
 # video-director-v3 当前项目状态
 
+## 当前总控指针
+
+- 项目总控文档：`docs/status/PROJECT_CONTROL_ROADMAP.md`
+- 当前阶段计划：`docs/status/P3_11_VISUAL_SEMANTIC_REVIEW_PLAN.md`
+- 当前最高总纲：AI 负责语义导演，契约文件负责约束，模板负责确定性执行，HyperFrames 负责稳定预览/渲染，QA Gate 负责阻止垃圾产出。
+
 ## 2026-06-01 P3 产品方向更新
 
 用户已明确新的最高优先级。以下内容覆盖旧版固定 40 秒、固定场景数和固定 HUD 预览假设：
