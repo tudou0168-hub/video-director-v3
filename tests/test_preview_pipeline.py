@@ -8,8 +8,10 @@ sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 from video_director_v3.motion.caption_beat_generator import generate_caption_beats
 from video_director_v3.motion.semantic_transition_planner import build_semantic_transitions
 from video_director_v3.motion.visual_beat_planner import plan_visual_beats
+from video_director_v3.director.template_contracts import TEMPLATE_CONTRACTS
 from video_director_v3.pipeline.pipeline_runner import _build_approval_payload
 from video_director_v3.pipeline.project_paths import ensure_dirs, get_project_dir
+from video_director_v3.renderers.hyperframes.publish_templates import get_scene_body
 from video_director_v3.renderers.hyperframes.studio_native_project_builder import (
     _hud_scene_config,
     build_studio_native_project,
@@ -318,6 +320,9 @@ def test_approval_payload_fails_closed_when_required_stage_fails(tmp_path: Path)
         {"name": "narration_plan", "status": "PASS"},
         {"name": "tts", "status": "PASS"},
         {"name": "motion_storyboard", "status": "FAIL"},
+        {"name": "scene_pack", "status": "PASS"},
+        {"name": "template_contracts", "status": "PASS"},
+        {"name": "semantic_quality", "status": "PASS"},
         {"name": "semantic_transitions", "status": "PASS"},
         {"name": "caption_beats", "status": "PASS"},
         {"name": "studio_native_preview", "status": "PASS"},
@@ -338,6 +343,455 @@ def test_approval_payload_fails_closed_when_required_stage_fails(tmp_path: Path)
     assert approval["can_approve_preview"] is False
     assert approval["preview_status"] == "FAILED"
     assert "motion_storyboard" in approval["checks"]["failed_required_stages"]
+
+
+def test_approval_payload_requires_scene_pack_stage(tmp_path: Path):
+    project_dir = tmp_path / "preview_scene_pack_required"
+    (project_dir / "hyperframes_timeline").mkdir(parents=True)
+    (project_dir / "audio").mkdir(parents=True)
+    (project_dir / "hyperframes_timeline" / "index.html").write_text("<html></html>", encoding="utf-8")
+    (project_dir / "audio" / "voiceover.mp3").write_bytes(b"fake")
+    (project_dir / "preview_report.md").write_text("# preview", encoding="utf-8")
+    (project_dir / "semantic_transitions.json").write_text(
+        json.dumps({"transition_count": 2}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+
+    stages = [
+        {"name": "narration_plan", "status": "PASS"},
+        {"name": "tts", "status": "PASS"},
+        {"name": "motion_storyboard", "status": "PASS"},
+        {"name": "scene_pack", "status": "FAIL"},
+        {"name": "template_contracts", "status": "PASS"},
+        {"name": "semantic_quality", "status": "PASS"},
+        {"name": "semantic_transitions", "status": "PASS"},
+        {"name": "caption_beats", "status": "PASS"},
+        {"name": "studio_native_preview", "status": "PASS"},
+        {"name": "review_frames", "status": "PASS"},
+        {"name": "input_relevance", "status": "PASS"},
+        {"name": "preview_report", "status": "PASS"},
+    ]
+
+    approval = _build_approval_payload(
+        project_id="preview_scene_pack_required",
+        project_dir=project_dir,
+        stages=stages,
+        tts_result={"status": "ok"},
+        caption_beats_data={"caption_count": 10},
+        review_frames_data={"status": "PASS", "ok_count": 7},
+    )
+
+    assert approval["can_approve_preview"] is False
+    assert "scene_pack" in approval["checks"]["failed_required_stages"]
+
+
+def test_approval_payload_requires_template_contracts_stage(tmp_path: Path):
+    project_dir = tmp_path / "preview_template_contracts_required"
+    (project_dir / "hyperframes_timeline").mkdir(parents=True)
+    (project_dir / "audio").mkdir(parents=True)
+    (project_dir / "hyperframes_timeline" / "index.html").write_text("<html></html>", encoding="utf-8")
+    (project_dir / "audio" / "voiceover.mp3").write_bytes(b"fake")
+    (project_dir / "preview_report.md").write_text("# preview", encoding="utf-8")
+    (project_dir / "semantic_transitions.json").write_text(
+        json.dumps({"transition_count": 2}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+
+    stages = [
+        {"name": "narration_plan", "status": "PASS"},
+        {"name": "tts", "status": "PASS"},
+        {"name": "motion_storyboard", "status": "PASS"},
+        {"name": "scene_pack", "status": "PASS"},
+        {"name": "template_contracts", "status": "FAIL"},
+        {"name": "semantic_quality", "status": "PASS"},
+        {"name": "semantic_transitions", "status": "PASS"},
+        {"name": "caption_beats", "status": "PASS"},
+        {"name": "studio_native_preview", "status": "PASS"},
+        {"name": "review_frames", "status": "PASS"},
+        {"name": "input_relevance", "status": "PASS"},
+        {"name": "preview_report", "status": "PASS"},
+    ]
+
+    approval = _build_approval_payload(
+        project_id="preview_template_contracts_required",
+        project_dir=project_dir,
+        stages=stages,
+        tts_result={"status": "ok"},
+        caption_beats_data={"caption_count": 10},
+        review_frames_data={"status": "PASS", "ok_count": 7},
+    )
+
+    assert approval["can_approve_preview"] is False
+    assert "template_contracts" in approval["checks"]["failed_required_stages"]
+
+
+def test_approval_payload_requires_semantic_quality_stage(tmp_path: Path):
+    project_dir = tmp_path / "preview_semantic_quality_required"
+    (project_dir / "hyperframes_timeline").mkdir(parents=True)
+    (project_dir / "audio").mkdir(parents=True)
+    (project_dir / "hyperframes_timeline" / "index.html").write_text("<html></html>", encoding="utf-8")
+    (project_dir / "audio" / "voiceover.mp3").write_bytes(b"fake")
+    (project_dir / "preview_report.md").write_text("# preview", encoding="utf-8")
+    (project_dir / "semantic_transitions.json").write_text(
+        json.dumps({"transition_count": 2}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    stages = [
+        {"name": "narration_plan", "status": "PASS"},
+        {"name": "tts", "status": "PASS"},
+        {"name": "motion_storyboard", "status": "PASS"},
+        {"name": "scene_pack", "status": "PASS"},
+        {"name": "template_contracts", "status": "PASS"},
+        {"name": "semantic_quality", "status": "FAIL"},
+        {"name": "semantic_transitions", "status": "PASS"},
+        {"name": "caption_beats", "status": "PASS"},
+        {"name": "studio_native_preview", "status": "PASS"},
+        {"name": "review_frames", "status": "PASS"},
+        {"name": "input_relevance", "status": "PASS"},
+        {"name": "preview_report", "status": "PASS"},
+    ]
+    approval = _build_approval_payload(
+        project_id="preview_semantic_quality_required",
+        project_dir=project_dir,
+        stages=stages,
+        tts_result={"status": "ok"},
+        caption_beats_data={"caption_count": 10},
+        review_frames_data={"status": "PASS", "ok_count": 7},
+    )
+    assert approval["can_approve_preview"] is False
+    assert "semantic_quality" in approval["checks"]["failed_required_stages"]
+
+
+def test_contract_renderer_ignores_raw_narration_and_uses_slots_only():
+    scene = {
+        "contract_template_id": "hook",
+        "scene_pack_role": "hook",
+        "display_headline": "旧标题不该被优先读取",
+        "narration": "这段原始文案不应该进入 body content",
+        "raw_text": "raw text should be ignored",
+        "script": "script should be ignored",
+        "slots": {
+            "main_claim": "真正输出靠系统，不靠多收藏",
+            "pain_point": "收藏越多，执行越慢。",
+            "status_badge": "QUESTION",
+            "visual_emphasis": "执行",
+        },
+    }
+
+    html = get_scene_body("S01", "hook", scene)
+
+    assert "真正输出靠系统，不靠多收藏" in html
+    assert "收藏越多，执行越慢。" in html
+    assert "这段原始文案不应该进入 body content" not in html
+    assert "raw text should be ignored" not in html
+    assert "script should be ignored" not in html
+
+
+def test_contract_renderer_falls_back_when_required_slots_missing():
+    scene = {
+        "contract_template_id": "problem_conflict",
+        "scene_pack_role": "problem",
+        "display_subtitle": "缺 slot 时应该走安全回退。",
+        "slots": {
+            "problem_title": "问题不是努力不够",
+            "consequence": "结果是一直卡住。",
+            "warning_label": "BLOCKER",
+        },
+    }
+
+    html = get_scene_body("S02", "problem", scene)
+
+    assert "SCENE SUMMARY" in html
+    assert "问题不是努力不够" in html
+
+
+def test_contract_native_project_uses_scene_pack_slots_in_director_timeline(tmp_path: Path):
+    audio_path = tmp_path / "voiceover.mp3"
+    audio_path.write_bytes(b"fake-audio")
+
+    build_studio_native_project(
+        project_dir=tmp_path,
+        storyboard={
+            "scenes": [
+                {
+                    "scene_id": "S01",
+                    "role": "hook",
+                    "visual_template": "hook_big_claim",
+                    "narration": "这一段原始 narration 不应该决定 body content。",
+                    "start": 0.0,
+                    "duration": 4.0,
+                },
+                {
+                    "scene_id": "S02",
+                    "role": "cta",
+                    "visual_template": "checklist_cta",
+                    "narration": "这段原始 CTA 也不该被模板直接消费。",
+                    "start": 4.0,
+                    "duration": 4.0,
+                },
+            ]
+        },
+        narration_plan={"title": "contract test"},
+        tts_result={"audio_path": str(audio_path), "real_duration": 8.0},
+        caption_beats={"caption_beats": []},
+        visual_beats={},
+        transitions={"transition_count": 0, "transitions": []},
+        scene_pack={
+            "scenes": [
+                {
+                    "id": "S01",
+                    "role": "hook",
+                    "template_type": "hook",
+                    "display_headline": "靠系统，不靠多收藏",
+                    "display_subtitle": "这才是稳定输出的起点。",
+                    "slots": {
+                        "main_claim": "靠系统，不靠多收藏",
+                        "pain_point": "收藏越多，执行越慢。",
+                        "status_badge": "QUESTION",
+                        "visual_emphasis": "系统",
+                    },
+                },
+                {
+                    "id": "S02",
+                    "role": "cta",
+                    "template_type": "final_cta",
+                    "display_headline": "先跑一遍",
+                    "display_subtitle": "把闭环做出来。",
+                    "slots": {
+                        "final_claim": "先跑一遍",
+                        "next_step": "把闭环做出来。",
+                        "cta_text": "今天就开始",
+                        "avoid_phrases": ["以后再说"],
+                    },
+                },
+            ]
+        },
+    )
+
+    director_timeline = json.loads(
+        (tmp_path / "hyperframes_timeline" / "data" / "director_timeline.json").read_text(encoding="utf-8")
+    )
+    html = (tmp_path / "hyperframes_timeline" / "index.html").read_text(encoding="utf-8")
+
+    first_scene = director_timeline["scenes"][0]
+    last_scene = director_timeline["scenes"][1]
+    assert first_scene["contract_template_id"] == "hook"
+    assert first_scene["template_contract_status"] == "PASS"
+    assert first_scene["slots"]["main_claim"] == "靠系统，不靠多收藏"
+    assert last_scene["contract_template_id"] == "final_cta"
+    assert last_scene["layout_variant"] == "end_score_goodbye"
+    assert "这段原始 CTA 也不该被模板直接消费。" not in html
+
+
+def test_all_fifteen_contract_renderers_emit_html_without_dev_artifacts():
+    fixtures = {
+        "hook": ("hook", {"main_claim": "系统先跑通", "pain_point": "收藏越多越难输出", "status_badge": "QUESTION", "visual_emphasis": "闭环"}),
+        "problem_conflict": ("problem", {"problem_title": "问题不是努力不够", "conflict_items": ["入口太多", "资料分散"], "consequence": "结果是总要重来", "warning_label": "RISK"}),
+        "before_after": ("method", {"before_label": "以前", "after_label": "现在", "before_items": ["入口分散", "检索很慢"], "after_items": ["统一入口", "直接调用"], "verdict": "先接通，再扩展"}),
+        "proof": ("proof", {"proof_title": "结果更稳", "proof_items": ["资料可复用", "过程可验证"], "metric_or_evidence": "真实案例", "credibility_note": "已经跑通"}),
+        "final_cta": ("cta", {"final_claim": "现在开始", "next_step": "先完成最小闭环", "cta_text": "先跑一遍", "avoid_phrases": ["空谈"]}),
+        "method_steps": ("method", {"method_title": "三步法", "steps": ["统一入口", "建立结构", "开始调用"], "step_labels": ["STEP 1", "STEP 2", "STEP 3"], "final_result": "拿到可复用路径"}),
+        "framework_quadrant": ("method", {"framework_title": "四象限判断", "quadrants": [{"label": "Q1", "text": "输入"}, {"label": "Q2", "text": "整理"}, {"label": "Q3", "text": "检索"}, {"label": "Q4", "text": "输出"}], "center_claim": "闭环", "usage_note": "用来定位卡点"}),
+        "progress_tracker": ("proof", {"progress_title": "进度变化", "stages": [{"label": "阶段 1", "text": "统一入口"}, {"label": "阶段 2", "text": "建立结构"}, {"label": "阶段 3", "text": "开始输出"}], "current_stage": "阶段 2", "completion_signal": "流程已闭环"}),
+        "tool_stack": ("method", {"stack_title": "三件套", "tools": ["Obsidian", "Claude", "Hermes"], "tool_roles": ["存储与链接", "检索与整理", "复盘与跟进"], "workflow_result": "每个工具各司其职"}),
+        "keyword_punchline": ("hook", {"keyword": "闭环", "punchline": "系统先跑通，再谈效率", "contrast": "不是多收藏，而是先接通", "memory_anchor": "先跑一遍"}),
+        "myth_bust": ("hook", {"myth": "工具越多越高效", "truth": "先跑通最小闭环", "reason": "问题在动作没接通", "correction": "先让系统可用"}),
+        "case_study_card": ("proof", {"case_title": "真实案例", "situation": "资料散在多处", "action": "统一到一个入口", "result": "拿到可复用素材", "lesson": "先跑通再升级"}),
+        "concept_layers": ("method", {"concept_title": "三层结构", "layers": ["收集", "组织", "调用"], "layer_descriptions": ["素材进库", "链接起来", "直接调用"], "conclusion": "每层各做一件事"}),
+        "knowledge_graph": ("proof", {"graph_title": "知识图谱", "nodes": [{"id": "N1", "label": "输入"}, {"id": "N2", "label": "链接"}, {"id": "N3", "label": "输出"}], "edges": [{"from": "N1", "to": "N2"}, {"from": "N2", "to": "N3"}], "insight": "节点连起来以后调用更快"}),
+        "result_summary": ("verdict", {"result_title": "这一轮的结果", "key_results": ["流程已闭环", "阻塞点已明确", "下一步可执行"], "final_verdict": "先可用，再完美", "next_step": "继续跑第二轮"}),
+    }
+
+    assert set(fixtures) == set(TEMPLATE_CONTRACTS)
+    banned = ("TODO", "placeholder", "待补充", "SAFE FALLBACK", "SAFE VERDICT")
+    for template_id, (role, slots) in fixtures.items():
+        html = get_scene_body(
+            "S01",
+            role,
+            {
+                "contract_template_id": template_id,
+                "scene_pack_role": role,
+                "display_headline": "测试标题",
+                "display_subtitle": "测试副标题",
+                "display_conclusion": "测试结论",
+                "slots": slots,
+            },
+        )
+        assert "<div" in html
+        for marker in banned:
+            assert marker not in html
+
+
+def test_semantic_quality_report_can_generate_and_pass(tmp_path: Path):
+    from video_director_v3.qa.semantic_quality_gate import build_semantic_quality_report
+
+    review_dir = tmp_path / "review_frames"
+    review_dir.mkdir(parents=True)
+    (review_dir / "contact-sheet.jpg").write_bytes(b"fake")
+    timeline_data_dir = tmp_path / "hyperframes_timeline" / "data"
+    timeline_data_dir.mkdir(parents=True)
+    (timeline_data_dir / "director_timeline.json").write_text(
+        json.dumps(
+            {
+                "scenes": [
+                    {
+                        "id": "S01",
+                        "contract_template_id": "hook",
+                        "contract_source": "slots_only",
+                        "template_contract_status": "PASS",
+                        "template_contract_fallback_used": False,
+                    },
+                    {
+                        "id": "S02",
+                        "contract_template_id": "proof",
+                        "contract_source": "slots_only",
+                        "template_contract_status": "PASS",
+                        "template_contract_fallback_used": False,
+                    },
+                    {
+                        "id": "S03",
+                        "contract_template_id": "final_cta",
+                        "contract_source": "slots_only",
+                        "template_contract_status": "PASS",
+                        "template_contract_fallback_used": False,
+                    },
+                ]
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    scene_pack = {
+        "scenes": [
+            {
+                "id": "S01",
+                "role": "hook",
+                "template_type": "hook",
+                "slots": {"main_claim": "先跑通", "pain_point": "别再囤工具", "status_badge": "QUESTION", "visual_emphasis": "闭环"},
+                "semantic_score": {"role_match": 1.0, "slot_completeness": 1.0, "visual_readability_risk": 0.2},
+            },
+            {
+                "id": "S02",
+                "role": "proof",
+                "template_type": "proof",
+                "slots": {"proof_title": "结果更稳", "proof_items": ["资料可复用", "过程可验证"], "metric_or_evidence": "真实案例", "credibility_note": "已经跑通"},
+                "semantic_score": {"role_match": 1.0, "slot_completeness": 1.0, "visual_readability_risk": 0.2},
+            },
+            {
+                "id": "S03",
+                "role": "cta",
+                "template_type": "final_cta",
+                "slots": {"final_claim": "现在开始", "next_step": "先完成最小闭环", "cta_text": "先跑一遍", "avoid_phrases": ["空谈"]},
+                "semantic_score": {"role_match": 1.0, "slot_completeness": 1.0, "visual_readability_risk": 0.2},
+            },
+        ],
+        "lint": {"scene_pack_status": "PASS", "template_contracts_status": "PASS", "contract_errors": []},
+    }
+
+    report = build_semantic_quality_report(
+        project_dir=tmp_path,
+        scene_pack=scene_pack,
+        review_frames_data={"status": "PASS", "ok_count": 7},
+        stage_status={"studio_native_preview": "PASS"},
+    )
+
+    assert report["status"] == "PASS"
+    assert report["proof_scene_count"] >= 1
+    assert report["cta_scene_count"] >= 1
+    assert report["raw_text_dependency_count"] == 0
+
+
+def test_semantic_quality_report_fails_on_excessive_fallback(tmp_path: Path):
+    from video_director_v3.qa.semantic_quality_gate import build_semantic_quality_report
+
+    review_dir = tmp_path / "review_frames"
+    review_dir.mkdir(parents=True)
+    (review_dir / "contact-sheet.jpg").write_bytes(b"fake")
+    timeline_data_dir = tmp_path / "hyperframes_timeline" / "data"
+    timeline_data_dir.mkdir(parents=True)
+    (timeline_data_dir / "director_timeline.json").write_text(
+        json.dumps(
+            {
+                "scenes": [
+                    {"id": "S01", "contract_template_id": "hook", "contract_source": "slots_only", "template_contract_status": "FAIL", "template_contract_fallback_used": True},
+                    {"id": "S02", "contract_template_id": "proof", "contract_source": "slots_only", "template_contract_status": "FAIL", "template_contract_fallback_used": True},
+                    {"id": "S03", "contract_template_id": "final_cta", "contract_source": "slots_only", "template_contract_status": "PASS", "template_contract_fallback_used": False},
+                ]
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    scene_pack = {
+        "scenes": [
+            {"id": "S01", "role": "hook", "template_type": "hook", "slots": {"main_claim": "先跑通", "pain_point": "别囤工具", "status_badge": "QUESTION", "visual_emphasis": "闭环"}, "semantic_score": {"role_match": 1.0, "slot_completeness": 1.0, "visual_readability_risk": 0.2}},
+            {"id": "S02", "role": "proof", "template_type": "proof", "slots": {"proof_title": "结果", "proof_items": ["a", "b"], "metric_or_evidence": "真实案例", "credibility_note": "已经跑通"}, "semantic_score": {"role_match": 1.0, "slot_completeness": 1.0, "visual_readability_risk": 0.2}},
+            {"id": "S03", "role": "cta", "template_type": "final_cta", "slots": {"final_claim": "现在开始", "next_step": "先完成最小闭环", "cta_text": "先跑一遍", "avoid_phrases": ["空谈"]}, "semantic_score": {"role_match": 1.0, "slot_completeness": 1.0, "visual_readability_risk": 0.2}},
+        ],
+        "lint": {"scene_pack_status": "PASS", "template_contracts_status": "PASS", "contract_errors": []},
+    }
+
+    report = build_semantic_quality_report(
+        project_dir=tmp_path,
+        scene_pack=scene_pack,
+        review_frames_data={"status": "PASS", "ok_count": 7},
+        stage_status={"studio_native_preview": "PASS"},
+    )
+
+    assert report["status"] == "FAIL"
+    assert any("fallback_count > 30%" == reason for reason in report["hard_fail_reasons"])
+
+
+def test_semantic_quality_report_fails_without_proof_scene(tmp_path: Path):
+    from video_director_v3.qa.semantic_quality_gate import build_semantic_quality_report
+
+    (tmp_path / "review_frames").mkdir(parents=True)
+    (tmp_path / "review_frames" / "contact-sheet.jpg").write_bytes(b"fake")
+    (tmp_path / "hyperframes_timeline" / "data").mkdir(parents=True)
+    (tmp_path / "hyperframes_timeline" / "data" / "director_timeline.json").write_text(
+        json.dumps({"scenes": []}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    report = build_semantic_quality_report(
+        project_dir=tmp_path,
+        scene_pack={
+            "scenes": [
+                {"id": "S01", "role": "hook", "template_type": "hook", "slots": {"main_claim": "先跑通", "pain_point": "别囤工具", "status_badge": "QUESTION", "visual_emphasis": "闭环"}, "semantic_score": {"role_match": 1.0, "slot_completeness": 1.0, "visual_readability_risk": 0.2}},
+                {"id": "S02", "role": "cta", "template_type": "final_cta", "slots": {"final_claim": "开始", "next_step": "先跑一遍", "cta_text": "先跑", "avoid_phrases": ["空谈"]}, "semantic_score": {"role_match": 1.0, "slot_completeness": 1.0, "visual_readability_risk": 0.2}},
+            ],
+            "lint": {"scene_pack_status": "PASS", "template_contracts_status": "PASS", "contract_errors": []},
+        },
+        review_frames_data={"status": "PASS", "ok_count": 7},
+        stage_status={"studio_native_preview": "PASS"},
+    )
+    assert report["status"] == "FAIL"
+    assert any("proof_scene_count = 0" == reason for reason in report["hard_fail_reasons"])
+
+
+def test_semantic_quality_report_fails_without_cta_scene(tmp_path: Path):
+    from video_director_v3.qa.semantic_quality_gate import build_semantic_quality_report
+
+    (tmp_path / "review_frames").mkdir(parents=True)
+    (tmp_path / "review_frames" / "contact-sheet.jpg").write_bytes(b"fake")
+    (tmp_path / "hyperframes_timeline" / "data").mkdir(parents=True)
+    (tmp_path / "hyperframes_timeline" / "data" / "director_timeline.json").write_text(
+        json.dumps({"scenes": []}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    report = build_semantic_quality_report(
+        project_dir=tmp_path,
+        scene_pack={
+            "scenes": [
+                {"id": "S01", "role": "hook", "template_type": "hook", "slots": {"main_claim": "先跑通", "pain_point": "别囤工具", "status_badge": "QUESTION", "visual_emphasis": "闭环"}, "semantic_score": {"role_match": 1.0, "slot_completeness": 1.0, "visual_readability_risk": 0.2}},
+                {"id": "S02", "role": "proof", "template_type": "proof", "slots": {"proof_title": "结果", "proof_items": ["a", "b"], "metric_or_evidence": "真实案例", "credibility_note": "已经跑通"}, "semantic_score": {"role_match": 1.0, "slot_completeness": 1.0, "visual_readability_risk": 0.2}},
+            ],
+            "lint": {"scene_pack_status": "PASS", "template_contracts_status": "PASS", "contract_errors": []},
+        },
+        review_frames_data={"status": "PASS", "ok_count": 7},
+        stage_status={"studio_native_preview": "PASS"},
+    )
+    assert report["status"] == "FAIL"
+    assert any("cta_scene_count = 0" == reason for reason in report["hard_fail_reasons"])
 
 
 def test_dynamic_transitions_follow_scene_count():

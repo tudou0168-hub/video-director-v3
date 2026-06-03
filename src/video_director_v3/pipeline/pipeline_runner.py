@@ -147,6 +147,36 @@ def run_preview(args: argparse.Namespace, project_dir: Path) -> int:
         )
 
     # ── 5. Design dials & profile ───────────────────────────────────────────
+    scene_pack = None
+    try:
+        from video_director_v3.director.semantic_planner import build_scene_pack, write_scene_pack
+        scene_pack = build_scene_pack(
+            project_id=args.project_id,
+            narration_plan=narration_plan,
+            storyboard=storyboard or {},
+            audio_timeline=audio_timeline,
+        )
+        write_scene_pack(scene_pack, project_dir)
+        scene_pack_status = scene_pack.get("lint", {}).get("scene_pack_status", "UNKNOWN")
+        template_contracts_status = scene_pack.get("lint", {}).get("template_contracts_status", "UNKNOWN")
+        _record_stage(
+            stages,
+            "scene_pack",
+            "PASS" if scene_pack_status == "PASS" else "FAIL",
+            f"scene_pack schema={scene_pack_status}",
+        )
+        _record_stage(
+            stages,
+            "template_contracts",
+            "PASS" if template_contracts_status == "PASS" else "FAIL",
+            f"template_contracts lint={template_contracts_status}",
+        )
+    except Exception as e:
+        _record_error(errors, "scene_pack", e)
+        _record_stage(stages, "scene_pack", "FAIL", str(e))
+        _record_stage(stages, "template_contracts", "FAIL", str(e))
+
+    # ── 5. Design dials & profile ───────────────────────────────────────────
     st_data = {}
     try:
         design_dials = {
@@ -231,7 +261,11 @@ def run_preview(args: argparse.Namespace, project_dir: Path) -> int:
             caption_beats=caption_beats_data,
             visual_beats=visual_beats,
             transitions=st_data,
+            scene_pack=scene_pack,
         )
+        if scene_pack:
+            from video_director_v3.director.semantic_planner import write_scene_pack
+            write_scene_pack(scene_pack, project_dir)
         timeline_dir = project_dir / "hyperframes_timeline"
         _record_stage(stages, "studio_native_preview", "PASS", "hyperframes_timeline/index.html generated", timeline_dir)
     except Exception as e:
@@ -277,7 +311,31 @@ def run_preview(args: argparse.Namespace, project_dir: Path) -> int:
         _record_error(errors, "input_relevance", e)
         _record_stage(stages, "input_relevance", "FAIL", str(e))
 
-    # ── 11. Quality report ────────────────────────────────────────────────
+    # ── 11.5 Semantic quality gate ───────────────────────────────────────
+    try:
+        from video_director_v3.qa.semantic_quality_gate import build_semantic_quality_report
+
+        semantic_quality = build_semantic_quality_report(
+            project_dir=project_dir,
+            scene_pack=scene_pack,
+            review_frames_data=review_frames_data,
+            stage_status=_stage_status_map(stages),
+        )
+        (project_dir / "semantic_quality_report.json").write_text(
+            json.dumps(semantic_quality, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        _record_stage(
+            stages,
+            "semantic_quality",
+            "PASS" if semantic_quality.get("status") == "PASS" else "FAIL",
+            f"semantic_quality score={semantic_quality.get('semantic_quality_score', 0)} status={semantic_quality.get('status')}",
+        )
+    except Exception as e:
+        _record_error(errors, "semantic_quality", e)
+        _record_stage(stages, "semantic_quality", "FAIL", str(e))
+
+    # ── 12. Quality report ────────────────────────────────────────────────
     try:
         quality = _build_quality_report(project_dir, stages, args.platform, tts_result, review_frames_data)
         (project_dir / "quality_report.json").write_text(
@@ -289,10 +347,10 @@ def run_preview(args: argparse.Namespace, project_dir: Path) -> int:
         _record_error(errors, "quality_report", e)
         _record_stage(stages, "quality_report", "FAIL", str(e))
 
-    # ── 12. Error report ──────────────────────────────────────────────────
+    # ── 13. Error report ──────────────────────────────────────────────────
     _write_error_report(project_dir, stages, errors)
 
-    # ── 13. Preview report ────────────────────────────────────────────────
+    # ── 14. Preview report ────────────────────────────────────────────────
     try:
         preview_md = _build_preview_report(project_dir, stages, args)
         (project_dir / "preview_report.md").write_text(preview_md, encoding="utf-8")
@@ -301,7 +359,7 @@ def run_preview(args: argparse.Namespace, project_dir: Path) -> int:
         _record_error(errors, "preview_report", e)
         _record_stage(stages, "preview_report", "FAIL", str(e))
 
-    # ── 13.5. Viral QA report (P3.6) ─────────────────────────────────────
+    # ── 14.5. Viral QA report (P3.6) ─────────────────────────────────────
     try:
         from video_director_v3.qa.viral_qa_evaluator import build_viral_quality_report
         vq_report = build_viral_quality_report(
@@ -323,7 +381,7 @@ def run_preview(args: argparse.Namespace, project_dir: Path) -> int:
         _record_error(errors, "viral_qa", e)
         _record_stage(stages, "viral_qa", "FAIL", str(e))
 
-    # ── 14. Approval required ─────────────────────────────────────────────
+    # ── 15. Approval required ─────────────────────────────────────────────
     try:
         approval = _build_approval_payload(
             project_id=args.project_id,
@@ -499,6 +557,9 @@ def _build_approval_payload(
         "narration_plan",
         "tts",
         "motion_storyboard",
+        "scene_pack",
+        "template_contracts",
+        "semantic_quality",
         "semantic_transitions",
         "caption_beats",
         "studio_native_preview",

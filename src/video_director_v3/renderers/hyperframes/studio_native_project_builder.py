@@ -8,6 +8,7 @@ from html import escape
 from pathlib import Path
 from typing import Any
 
+from video_director_v3.director.template_contracts import require_contract_scene
 from video_director_v3.renderers.hyperframes.publish_templates import get_scene_body
 
 
@@ -111,6 +112,7 @@ def build_studio_native_project(
     caption_beats: dict[str, Any],
     visual_beats: dict[str, Any],
     transitions: dict[str, Any],
+    scene_pack: dict[str, Any] | None = None,
     design_variance: int = 7,
 ) -> dict[str, Any]:
     """Build the final HyperFrames Studio native preview project.
@@ -136,6 +138,11 @@ def build_studio_native_project(
     duration = float(tts_result["real_duration"])
 
     scenes = storyboard.get("scenes", [])
+    scene_pack_by_id = {
+        item.get("id"): item
+        for item in (scene_pack or {}).get("scenes", [])
+        if item.get("id")
+    }
     captions = caption_beats.get("caption_beats", [])
     scene_html = []
     director_scenes = []
@@ -162,7 +169,15 @@ def build_studio_native_project(
             new_prev_t, _ = _anti_repeat_rotate_scene(
                 scene, len(director_scenes), prev_template, prev_variant
             )
-        hud_scene = _hud_scene_config(scene, len(director_scenes), narration)
+        contract_scene = scene_pack_by_id.get(sid)
+        if contract_scene and contract_scene.get("template_type") in _SUPPORTED_CONTRACT_TEMPLATES:
+            hud_scene = _contract_hud_scene_config(
+                scene=scene,
+                contract_scene=contract_scene,
+                is_last_scene=len(director_scenes) == len(scenes) - 1,
+            )
+        else:
+            hud_scene = _hud_scene_config(scene, len(director_scenes), narration)
         # V3-P3.8 P2-1: the last scene's CTA defaults to a finish-board
         # layout (end_score_goodbye) for a strong closing feel, unless the
         # narration keyword routing already picked a different CTA variant
@@ -583,6 +598,80 @@ html,body{{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--
         "timeline_dir": str(timeline_dir), "index": str(timeline_dir / "index.html"),
         "duration": duration, "scene_count": len(scenes), "caption_count": len(captions),
     }
+
+
+_SUPPORTED_CONTRACT_TEMPLATES = {
+    "hook",
+    "problem_conflict",
+    "before_after",
+    "proof",
+    "final_cta",
+    "method_steps",
+    "framework_quadrant",
+    "progress_tracker",
+    "tool_stack",
+    "keyword_punchline",
+    "myth_bust",
+    "case_study_card",
+    "concept_layers",
+    "knowledge_graph",
+    "result_summary",
+}
+
+
+def _contract_template_visual(template_type: str) -> tuple[str, str]:
+    mapping = {
+        "hook": ("hook_big_claim", "center_claim"),
+        "problem_conflict": ("broken_chain", "chain_flow"),
+        "before_after": ("before_after_compare", "compare_columns"),
+        "proof": ("before_after_compare", "symptom_panel"),
+        "final_cta": ("checklist_cta", "checklist_steps"),
+        "method_steps": ("step_ladder", "ladder"),
+        "framework_quadrant": ("framework_quadrant", "quadrants"),
+        "progress_tracker": ("progress_tracker", "tracks"),
+        "tool_stack": ("tool_stack", "stack"),
+        "keyword_punchline": ("keyword_punchline", "punch"),
+        "myth_bust": ("myth_bust", "myth_truth"),
+        "case_study_card": ("case_study_card", "case"),
+        "concept_layers": ("concept_layers", "layers"),
+        "knowledge_graph": ("knowledge_graph", "graph"),
+        "result_summary": ("section_board", "summary"),
+    }
+    return mapping.get(template_type, ("hook_big_claim", "center_claim"))
+
+
+def _contract_hud_scene_config(
+    *,
+    scene: dict[str, Any],
+    contract_scene: dict[str, Any],
+    is_last_scene: bool,
+) -> dict[str, Any]:
+    template_type = str(contract_scene.get("template_type") or "")
+    visual_template, layout_variant = _contract_template_visual(template_type)
+    label_en, label_zh = HF_HUD_LABELS.get(visual_template, ("", ""))
+    config = {
+        **scene,
+        "id": contract_scene.get("id") or scene.get("scene_id"),
+        "scene_pack_role": contract_scene.get("role", scene.get("role", "method")),
+        "contract_template_id": template_type,
+        "contract_source": "slots_only",
+        "visual_template": visual_template,
+        "layout_variant": "end_score_goodbye" if template_type == "final_cta" and is_last_scene else layout_variant,
+        "headline": contract_scene.get("display_headline", ""),
+        "subheadline": contract_scene.get("display_subtitle", ""),
+        "display_conclusion": contract_scene.get("display_conclusion", ""),
+        "slots": json.loads(json.dumps(contract_scene.get("slots", {}))),
+        "hud_label_en": label_en or "",
+        "hud_label_zh": label_zh or "",
+    }
+    contract, errors = require_contract_scene(config)
+    config["template_contract_status"] = "FAIL" if errors else "PASS"
+    config["template_contract_fallback_used"] = bool(errors)
+    if contract is not None:
+        config["template_contract_fallback"] = contract.fallback_template
+    if errors:
+        config["template_contract_errors"] = errors
+    return config
 
 
 # V3-P3.10A — Three light composition classes auto-picked by scene index % 3.

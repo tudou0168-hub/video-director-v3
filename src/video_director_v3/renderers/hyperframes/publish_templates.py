@@ -2,11 +2,15 @@
 """Publishable Visual Templates for V3-P1.2 — 6 fixed templates."""
 from typing import Any
 
+from video_director_v3.director.template_contracts import require_contract_scene
+
 
 # ─── Template Registry ────────────────────────────────────────────
 
 def get_scene_body(sid: str, role: str, scene: dict[str, Any]) -> str:
     """Dispatch to the correct template based on visual_template field."""
+    if scene.get("contract_template_id"):
+        return _get_contract_scene_body(sid, role, scene)
     template = scene.get("visual_template", _default_template(role))
     fn = _TEMPLATES.get(template, _template_hook_big_claim)
     return fn(sid, role, scene)
@@ -26,6 +30,485 @@ def get_scene_gsap(sid: str, role: str, scene: dict[str, Any], start: float, dur
 
 def _default_template(role: str) -> str:
     return f"{role}_centered"
+
+
+def _get_contract_scene_body(sid: str, role: str, scene: dict[str, Any]) -> str:
+    contract, errors = require_contract_scene(scene)
+    contract_id = scene.get("contract_template_id", "")
+    if errors:
+        fallback = "simple_card"
+        if contract is not None:
+            fallback = contract.fallback_template
+        return _render_contract_fallback(sid, role, scene, fallback, errors)
+    fn = _CONTRACT_TEMPLATES.get(contract_id, _render_contract_simple_card)
+    return fn(sid, role, scene)
+
+
+def _render_contract_fallback(
+    sid: str,
+    role: str,
+    scene: dict[str, Any],
+    fallback_template: str,
+    errors: list[str],
+) -> str:
+    fallback_scene = {
+        **scene,
+        "contract_errors": errors,
+        "contract_template_id": fallback_template,
+    }
+    fn = _CONTRACT_TEMPLATES.get(fallback_template, _render_contract_simple_card)
+    return fn(sid, role, fallback_scene)
+
+
+def _scene_slots(scene: dict[str, Any]) -> dict[str, Any]:
+    slots = scene.get("slots", {})
+    return slots if isinstance(slots, dict) else {}
+
+
+def _contract_headline(scene: dict[str, Any], slots: dict[str, Any], *keys: str) -> str:
+    for key in keys:
+        value = slots.get(key)
+        if isinstance(value, str) and value.strip():
+            return value.strip()
+    headline = str(scene.get("display_headline", "")).strip()
+    if headline:
+        return headline
+    return "这一帧需要补充语义内容"
+
+
+def _contract_badge(label: str, value: str, color: str) -> str:
+    return (
+        "<div style=\"display:inline-flex;align-items:center;gap:12px;padding:10px 18px;"
+        f"border-radius:999px;background:{color}1a;border:1px solid {color}66;color:{color};"
+        "font-size:18px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;\">"
+        f"<span style=\"opacity:.72;\">{label}</span><span>{value}</span></div>"
+    )
+
+
+def _render_contract_hook(sid: str, role: str, scene: dict[str, Any]) -> str:
+    slots = _scene_slots(scene)
+    acc = _accent(role)
+    main_claim = _contract_headline(scene, slots, "main_claim")
+    pain_point = _contract_headline(scene, slots, "pain_point")
+    status_badge = _contract_headline(scene, slots, "status_badge")
+    visual_emphasis = _contract_headline(scene, slots, "visual_emphasis")
+    return f"""
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+      <div class="bg-grid" style="opacity:.25"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,{acc}28 0%,transparent 70%);"></div>
+    </div>
+    <div class="hf-safe-zone" style="position:absolute;top:260px;left:72px;right:72px;">
+      {_contract_badge("HOOK", status_badge, acc)}
+      <div style="margin-top:28px;font-size:72px;font-weight:900;line-height:1.08;color:#fff;max-width:900px;">{main_claim}</div>
+      <div style="margin-top:26px;max-width:720px;font-size:32px;line-height:1.45;color:rgba(248,250,252,0.82);">{pain_point}</div>
+      <div style="margin-top:38px;display:inline-flex;padding:16px 24px;border-radius:20px;background:rgba(255,255,255,0.05);border:1px solid {acc}55;">
+        <span style="font-size:20px;letter-spacing:0.16em;color:rgba(248,250,252,0.6);margin-right:16px;">FOCUS</span>
+        <span style="font-size:34px;font-weight:800;color:{acc};">{visual_emphasis}</span>
+      </div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _render_contract_problem_conflict(sid: str, role: str, scene: dict[str, Any]) -> str:
+    slots = _scene_slots(scene)
+    acc = _accent(role)
+    headline = _contract_headline(scene, slots, "problem_title")
+    warning = _contract_headline(scene, slots, "warning_label")
+    consequence = _contract_headline(scene, slots, "consequence")
+    items = [str(item).strip() for item in slots.get("conflict_items", []) if str(item).strip()]
+    items_html = "".join(
+        f"<div class='chain-node hf-glass-panel hf-glass-red' style='padding:22px 26px;border-radius:18px;margin-bottom:18px;font-size:30px;font-weight:700;color:#fff;'>"
+        f"<span style='color:#FF5577;margin-right:12px;'>0{i + 1}</span>{item}</div>"
+        for i, item in enumerate(items)
+    )
+    return f"""
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+      <div class="bg-grid" style="opacity:.25"></div>
+    </div>
+    <div class="hf-safe-zone" style="position:absolute;top:220px;left:72px;right:72px;">
+      {_contract_badge("ALERT", warning, "#FF5577")}
+      <div style="margin-top:26px;font-size:54px;font-weight:800;line-height:1.15;color:#fff;max-width:900px;">{headline}</div>
+      <div style="position:absolute;top:220px;left:0;width:580px;">{items_html}</div>
+      <div class="hf-glass-panel hf-glass-cyan" style="position:absolute;top:240px;right:0;width:320px;padding:28px 24px;border-radius:24px;">
+        <div style="font-size:20px;letter-spacing:0.14em;color:rgba(248,250,252,0.6);margin-bottom:14px;">CONSEQUENCE</div>
+        <div style="font-size:34px;font-weight:800;line-height:1.3;color:{acc};">{consequence}</div>
+      </div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _render_contract_before_after(sid: str, role: str, scene: dict[str, Any]) -> str:
+    slots = _scene_slots(scene)
+    acc = _accent(role)
+    before_label = _contract_headline(scene, slots, "before_label")
+    after_label = _contract_headline(scene, slots, "after_label")
+    verdict = _contract_headline(scene, slots, "verdict")
+    before_items = [str(item).strip() for item in slots.get("before_items", []) if str(item).strip()]
+    after_items = [str(item).strip() for item in slots.get("after_items", []) if str(item).strip()]
+
+    def _col(label: str, color: str, items: list[str], left: int) -> str:
+        items_html = "".join(
+            f"<div class='compare-item' style='margin-bottom:18px;padding:18px 20px;background:rgba(255,255,255,0.05);border-radius:14px;font-size:28px;color:#fff;'>"
+            f"<span style='color:{color};margin-right:10px;'>{'✓' if color != '#FF5577' else '✗'}</span>{item}</div>"
+            for item in items
+        )
+        return f"""
+        <div style="position:absolute;top:420px;left:{left}px;width:400px;">
+          <div style="margin-bottom:24px;"><span style="font-size:38px;font-weight:800;color:{color};padding:8px 24px;border:2px solid {color};border-radius:14px;">{label}</span></div>
+          {items_html}
+        </div>
+        """
+
+    return f"""
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+      <div class="bg-grid" style="opacity:.25"></div>
+    </div>
+    <div class="hf-safe-zone" style="position:absolute;top:180px;left:72px;right:72px;text-align:center;">
+      <div style="font-size:48px;font-weight:800;line-height:1.18;color:#fff;">{verdict}</div>
+    </div>
+    {_col(before_label, '#FF5577', before_items, 72)}
+    {_col(after_label, acc, after_items, 608)}
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _render_contract_proof(sid: str, role: str, scene: dict[str, Any]) -> str:
+    slots = _scene_slots(scene)
+    acc = _accent(role)
+    title = _contract_headline(scene, slots, "proof_title")
+    metric = _contract_headline(scene, slots, "metric_or_evidence")
+    note = _contract_headline(scene, slots, "credibility_note")
+    items = [str(item).strip() for item in slots.get("proof_items", []) if str(item).strip()]
+    items_html = "".join(
+        f"<div class='compare-item hf-glass-panel hf-glass-cyan' style='margin-bottom:18px;padding:20px 22px;border-radius:16px;font-size:28px;color:#fff;'>"
+        f"<span style='color:{acc};margin-right:10px;'>•</span>{item}</div>"
+        for item in items
+    )
+    return f"""
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+      <div class="bg-grid" style="opacity:.25"></div>
+    </div>
+    <div class="hf-safe-zone" style="position:absolute;top:210px;left:72px;right:72px;">
+      {_contract_badge("PROOF", metric, acc)}
+      <div style="margin-top:24px;font-size:52px;font-weight:800;line-height:1.18;color:#fff;max-width:860px;">{title}</div>
+      <div style="position:absolute;top:220px;left:0;width:620px;">{items_html}</div>
+      <div class="hf-glass-panel hf-glass-amber" style="position:absolute;top:250px;right:0;width:280px;padding:24px;border-radius:22px;">
+        <div style="font-size:18px;letter-spacing:.14em;color:rgba(248,250,252,0.62);margin-bottom:12px;">CREDIBILITY</div>
+        <div style="font-size:30px;font-weight:700;line-height:1.35;color:#fff;">{note}</div>
+      </div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _render_contract_final_cta(sid: str, role: str, scene: dict[str, Any]) -> str:
+    slots = _scene_slots(scene)
+    acc = _accent(role)
+    claim = _contract_headline(scene, slots, "final_claim")
+    next_step = _contract_headline(scene, slots, "next_step")
+    cta_text = _contract_headline(scene, slots, "cta_text")
+    avoid_phrases = [str(item).strip() for item in slots.get("avoid_phrases", []) if str(item).strip()]
+    avoid_html = "".join(
+        f"<div style='padding:12px 16px;border-radius:12px;background:rgba(255,255,255,0.05);font-size:22px;color:rgba(248,250,252,0.74);'>{item}</div>"
+        for item in avoid_phrases
+    )
+    return f"""
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+      <div class="bg-grid" style="opacity:.25"></div>
+    </div>
+    <div class="hf-safe-zone" style="position:absolute;top:260px;left:72px;right:72px;text-align:center;">
+      <div style="font-size:20px;letter-spacing:.18em;color:{acc};margin-bottom:18px;">CHAPTER CLOSE</div>
+      <div style="font-size:64px;font-weight:900;line-height:1.08;color:#fff;max-width:900px;margin:0 auto;">{claim}</div>
+      <div style="margin:28px auto 0;max-width:760px;font-size:32px;line-height:1.42;color:rgba(248,250,252,0.82);">{next_step}</div>
+      <div class="hf-glass-panel hf-glass-cyan" style="margin:48px auto 0;max-width:620px;padding:28px 32px;border-radius:26px;">
+        <div style="font-size:20px;letter-spacing:.14em;color:rgba(248,250,252,0.62);margin-bottom:12px;">NEXT ACTION</div>
+        <div style="font-size:44px;font-weight:800;color:{acc};">{cta_text}</div>
+      </div>
+      <div style="margin:34px auto 0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;max-width:760px;">{avoid_html}</div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _render_contract_method_steps(sid: str, role: str, scene: dict[str, Any]) -> str:
+    slots = _scene_slots(scene)
+    acc = _accent(role)
+    title = _contract_headline(scene, slots, "method_title")
+    steps = [str(item).strip() for item in slots.get("steps", []) if str(item).strip()]
+    labels = [str(item).strip() for item in slots.get("step_labels", []) if str(item).strip()]
+    rows = []
+    for idx, step in enumerate(steps):
+        label = labels[idx] if idx < len(labels) else f"STEP {idx + 1}"
+        rows.append(
+            f"<div class='hf-glass-panel hf-glass-cyan' style='display:flex;gap:18px;align-items:flex-start;padding:20px 24px;border-radius:18px;margin-bottom:18px;'>"
+            f"<div style='min-width:108px;font-size:18px;font-weight:800;letter-spacing:.14em;color:{acc};'>{label}</div>"
+            f"<div style='font-size:28px;line-height:1.35;color:#fff;'>{step}</div></div>"
+        )
+    final_result = _contract_headline(scene, slots, "final_result")
+    return _render_contract_frame(
+        sid, role, title,
+        left_html="".join(rows),
+        right_html=_contract_note_card("FINAL RESULT", final_result, acc),
+    )
+
+
+def _render_contract_framework_quadrant(sid: str, role: str, scene: dict[str, Any]) -> str:
+    slots = _scene_slots(scene)
+    acc = _accent(role)
+    title = _contract_headline(scene, slots, "framework_title")
+    quadrants = slots.get("quadrants", [])
+    center_claim = _contract_headline(scene, slots, "center_claim")
+    usage_note = _contract_headline(scene, slots, "usage_note")
+    cards = []
+    colors = [acc, "#FF5577", "#FFC83D", "#A855F7"]
+    for idx, item in enumerate(quadrants[:4]):
+        label = _value_from_slot_item(item, "label", f"Q{idx + 1}")
+        text = _value_from_slot_item(item, "text", "")
+        cards.append(
+            f"<div class='hf-glass-panel' style='padding:18px;border-radius:18px;border-color:{colors[idx % len(colors)]}66;'>"
+            f"<div style='font-size:18px;font-weight:800;letter-spacing:.14em;color:{colors[idx % len(colors)]};margin-bottom:10px;'>{label}</div>"
+            f"<div style='font-size:26px;line-height:1.35;color:#fff;'>{text}</div></div>"
+        )
+    left_html = (
+        "<div style='display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;'>"
+        + "".join(cards)
+        + "</div>"
+    )
+    right_html = (
+        _contract_note_card("CENTER", center_claim, acc)
+        + _contract_note_card("USAGE", usage_note, "#FFC83D", top=520)
+    )
+    return _render_contract_frame(sid, role, title, left_html=left_html, right_html=right_html, left_top=420)
+
+
+def _render_contract_progress_tracker(sid: str, role: str, scene: dict[str, Any]) -> str:
+    slots = _scene_slots(scene)
+    acc = _accent(role)
+    title = _contract_headline(scene, slots, "progress_title")
+    stages = slots.get("stages", [])
+    current = _contract_headline(scene, slots, "current_stage")
+    completion = _contract_headline(scene, slots, "completion_signal")
+    stage_html = []
+    for idx, item in enumerate(stages):
+        label = _value_from_slot_item(item, "label", f"阶段 {idx + 1}")
+        text = _value_from_slot_item(item, "text", str(item))
+        active = current in label or current in text
+        stage_html.append(
+            f"<div style='display:flex;align-items:center;gap:16px;margin-bottom:18px;'>"
+            f"<div style='width:22px;height:22px;border-radius:50%;background:{acc if active else 'rgba(255,255,255,0.18)'};box-shadow:0 0 12px {acc if active else 'transparent'};'></div>"
+            f"<div class='hf-glass-panel' style='flex:1;padding:18px 20px;border-radius:16px;'>"
+            f"<div style='font-size:18px;font-weight:800;color:{acc};letter-spacing:.12em;margin-bottom:6px;'>{label}</div>"
+            f"<div style='font-size:26px;line-height:1.35;color:#fff;'>{text}</div></div></div>"
+        )
+    return _render_contract_frame(
+        sid, role, title,
+        left_html="".join(stage_html),
+        right_html=_contract_note_card("SIGNAL", completion, acc),
+    )
+
+
+def _render_contract_tool_stack(sid: str, role: str, scene: dict[str, Any]) -> str:
+    slots = _scene_slots(scene)
+    acc = _accent(role)
+    title = _contract_headline(scene, slots, "stack_title")
+    tools = [str(item).strip() for item in slots.get("tools", []) if str(item).strip()]
+    roles = [str(item).strip() for item in slots.get("tool_roles", []) if str(item).strip()]
+    layers = []
+    for idx, tool in enumerate(tools):
+        role_text = roles[idx] if idx < len(roles) else "负责一个关键动作"
+        layers.append(
+            f"<div class='hf-glass-panel' style='padding:18px 22px;border-radius:18px;margin-bottom:18px;'>"
+            f"<div style='font-size:32px;font-weight:800;color:{acc};margin-bottom:8px;'>{tool}</div>"
+            f"<div style='font-size:24px;line-height:1.35;color:rgba(248,250,252,0.82);'>{role_text}</div></div>"
+        )
+    result = _contract_headline(scene, slots, "workflow_result")
+    return _render_contract_frame(
+        sid, role, title,
+        left_html="".join(layers),
+        right_html=_contract_note_card("WORKFLOW RESULT", result, acc),
+    )
+
+
+def _render_contract_keyword_punchline(sid: str, role: str, scene: dict[str, Any]) -> str:
+    slots = _scene_slots(scene)
+    acc = _accent(role)
+    keyword = _contract_headline(scene, slots, "keyword")
+    punchline = _contract_headline(scene, slots, "punchline")
+    contrast = _contract_headline(scene, slots, "contrast")
+    anchor = _contract_headline(scene, slots, "memory_anchor")
+    return f"""
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};"></div>
+    <div class="hf-safe-zone" style="position:absolute;top:260px;left:72px;right:72px;text-align:center;">
+      <div style="font-size:140px;font-weight:900;line-height:.95;color:{acc};text-shadow:0 0 28px {acc}66;">{keyword}</div>
+      <div style="margin-top:24px;font-size:52px;font-weight:800;line-height:1.15;color:#fff;max-width:880px;margin-left:auto;margin-right:auto;">{punchline}</div>
+      <div style="margin-top:26px;font-size:28px;line-height:1.35;color:rgba(248,250,252,0.78);">{contrast}</div>
+      <div style="margin-top:40px;display:inline-flex;padding:12px 22px;border-radius:999px;background:rgba(255,255,255,0.05);border:1px solid {acc}55;font-size:24px;font-weight:700;color:{acc};">{anchor}</div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _render_contract_myth_bust(sid: str, role: str, scene: dict[str, Any]) -> str:
+    slots = _scene_slots(scene)
+    acc = _accent(role)
+    myth = _contract_headline(scene, slots, "myth")
+    truth = _contract_headline(scene, slots, "truth")
+    reason = _contract_headline(scene, slots, "reason")
+    correction = _contract_headline(scene, slots, "correction")
+    return _render_contract_frame(
+        sid, role, correction,
+        left_html=_contract_note_card("MYTH", myth, "#FF5577", body_size=28),
+        right_html=_contract_note_card("TRUTH", truth, acc, body_size=28) + _contract_note_card("WHY", reason, "#FFC83D", top=520, body_size=24),
+    )
+
+
+def _render_contract_case_study_card(sid: str, role: str, scene: dict[str, Any]) -> str:
+    slots = _scene_slots(scene)
+    acc = _accent(role)
+    title = _contract_headline(scene, slots, "case_title")
+    left_html = (
+        _contract_note_card("SITUATION", _contract_headline(scene, slots, "situation"), "#FF5577", top=420, body_size=24)
+        + _contract_note_card("ACTION", _contract_headline(scene, slots, "action"), acc, top=650, body_size=24)
+    )
+    right_html = (
+        _contract_note_card("RESULT", _contract_headline(scene, slots, "result"), "#FFC83D", body_size=28)
+        + _contract_note_card("LESSON", _contract_headline(scene, slots, "lesson"), "#A855F7", top=520, body_size=24)
+    )
+    return _render_contract_frame(sid, role, title, left_html=left_html, right_html=right_html)
+
+
+def _render_contract_concept_layers(sid: str, role: str, scene: dict[str, Any]) -> str:
+    slots = _scene_slots(scene)
+    acc = _accent(role)
+    title = _contract_headline(scene, slots, "concept_title")
+    layers = [str(item).strip() for item in slots.get("layers", []) if str(item).strip()]
+    descriptions = [str(item).strip() for item in slots.get("layer_descriptions", []) if str(item).strip()]
+    layer_html = []
+    for idx, label in enumerate(layers):
+        text = descriptions[idx] if idx < len(descriptions) else label
+        layer_html.append(
+            f"<div class='hf-glass-panel' style='padding:18px 22px;border-radius:18px;margin-bottom:18px;'>"
+            f"<div style='font-size:20px;font-weight:800;letter-spacing:.12em;color:{acc};margin-bottom:8px;'>{label}</div>"
+            f"<div style='font-size:26px;line-height:1.35;color:#fff;'>{text}</div></div>"
+        )
+    return _render_contract_frame(
+        sid, role, title,
+        left_html="".join(layer_html),
+        right_html=_contract_note_card("CONCLUSION", _contract_headline(scene, slots, "conclusion"), acc),
+    )
+
+
+def _render_contract_knowledge_graph(sid: str, role: str, scene: dict[str, Any]) -> str:
+    slots = _scene_slots(scene)
+    acc = _accent(role)
+    title = _contract_headline(scene, slots, "graph_title")
+    nodes = slots.get("nodes", [])
+    edges = slots.get("edges", [])
+    node_html = "".join(
+        f"<div class='hf-glass-panel' style='padding:16px 18px;border-radius:16px;display:flex;justify-content:space-between;align-items:center;'>"
+        f"<span style='font-size:24px;font-weight:700;color:#fff;'>{_value_from_slot_item(node, 'label', str(node))}</span>"
+        f"<span style='font-size:16px;letter-spacing:.12em;color:{acc};'>{_value_from_slot_item(node, 'id', '')}</span></div>"
+        for node in nodes[:4]
+    )
+    edge_lines = "".join(
+        f"<div style='font-size:22px;line-height:1.4;color:rgba(248,250,252,0.8);margin-bottom:10px;'>{_value_from_slot_item(edge, 'from', '')} → {_value_from_slot_item(edge, 'to', '')}</div>"
+        for edge in edges[:5]
+    )
+    return _render_contract_frame(
+        sid, role, title,
+        left_html=f"<div style='display:grid;gap:14px;'>{node_html}</div>",
+        right_html=_contract_note_card("INSIGHT", _contract_headline(scene, slots, "insight"), acc) + _contract_note_card("EDGES", edge_lines, "#FFC83D", top=520, body_size=22),
+    )
+
+
+def _render_contract_result_summary(sid: str, role: str, scene: dict[str, Any]) -> str:
+    slots = _scene_slots(scene)
+    acc = _accent(role)
+    title = _contract_headline(scene, slots, "result_title")
+    key_results = [str(item).strip() for item in slots.get("key_results", []) if str(item).strip()]
+    results_html = "".join(
+        f"<div class='hf-glass-panel' style='padding:18px 22px;border-radius:16px;margin-bottom:16px;font-size:26px;color:#fff;'>"
+        f"<span style='color:{acc};margin-right:10px;'>•</span>{item}</div>"
+        for item in key_results
+    )
+    return _render_contract_frame(
+        sid, role, title,
+        left_html=results_html,
+        right_html=_contract_note_card("VERDICT", _contract_headline(scene, slots, "final_verdict"), acc)
+        + _contract_note_card("NEXT STEP", _contract_headline(scene, slots, "next_step"), "#FFC83D", top=520),
+    )
+
+
+def _render_contract_simple_card(sid: str, role: str, scene: dict[str, Any]) -> str:
+    slots = _scene_slots(scene)
+    acc = _accent(role)
+    title = _contract_headline(scene, slots, "main_claim", "problem_title", "proof_title", "final_claim", "verdict")
+    message = scene.get("display_conclusion") or scene.get("display_subtitle") or "这一步先保留一个清晰判断，再继续往下推进。"
+    return f"""
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};"></div>
+    <div class="hf-safe-zone hf-glass-panel" style="position:absolute;top:420px;left:96px;right:96px;padding:36px;border-radius:28px;">
+      <div style="font-size:22px;letter-spacing:.16em;color:{acc};margin-bottom:18px;">SCENE SUMMARY</div>
+      <div style="font-size:48px;font-weight:800;line-height:1.18;color:#fff;">{title}</div>
+      <div style="margin-top:22px;font-size:30px;line-height:1.42;color:rgba(248,250,252,0.78);">{message}</div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _render_contract_simple_verdict(sid: str, role: str, scene: dict[str, Any]) -> str:
+    slots = _scene_slots(scene)
+    acc = _accent(role)
+    title = _contract_headline(scene, slots, "final_claim", "proof_title", "main_claim", "verdict")
+    message = scene.get("display_conclusion") or scene.get("display_subtitle") or "先把这一条判断稳稳落下。"
+    return f"""
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};"></div>
+    <div class="hf-safe-zone" style="position:absolute;top:520px;left:72px;right:72px;text-align:center;">
+      <div style="font-size:18px;letter-spacing:.16em;color:{acc};margin-bottom:18px;">SCENE HOLD</div>
+      <div style="font-size:62px;font-weight:900;line-height:1.12;color:#fff;">{title}</div>
+      <div style="margin-top:20px;font-size:28px;line-height:1.4;color:rgba(248,250,252,0.78);">{message}</div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _render_contract_frame(
+    sid: str,
+    role: str,
+    title: str,
+    *,
+    left_html: str,
+    right_html: str,
+    left_top: int = 420,
+) -> str:
+    acc = _accent(role)
+    return f"""
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+      <div class="bg-grid" style="opacity:.25"></div>
+    </div>
+    <div class="hf-safe-zone" style="position:absolute;top:190px;left:72px;right:72px;">
+      <div style="font-size:48px;font-weight:800;line-height:1.16;color:#fff;max-width:880px;">{title}</div>
+    </div>
+    <div style="position:absolute;top:{left_top}px;left:72px;width:560px;">{left_html}</div>
+    <div style="position:absolute;top:420px;right:72px;width:300px;">{right_html}</div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _contract_note_card(label: str, body: str, color: str, *, top: int = 420, body_size: int = 28) -> str:
+    return (
+        f"<div class='hf-glass-panel' style='padding:22px 24px;border-radius:22px;border-color:{color}66;margin-bottom:18px;'>"
+        f"<div style='font-size:18px;font-weight:800;letter-spacing:.14em;color:{color};margin-bottom:12px;'>{label}</div>"
+        f"<div style='font-size:{body_size}px;line-height:1.38;color:#fff;'>{body}</div></div>"
+    )
+
+
+def _value_from_slot_item(item: Any, key: str, default: str) -> str:
+    if isinstance(item, dict):
+        value = item.get(key, default)
+        return str(value).strip()
+    return str(item).strip() or default
 
 
 # ─── Colour palettes per role ─────────────────────────────────────
@@ -2816,6 +3299,26 @@ _TEMPLATES = {
     "evidence_centered": _template_fallback,
     "proof_centered": _template_fallback,
     "cta_centered": _template_fallback,
+}
+
+_CONTRACT_TEMPLATES = {
+    "hook": _render_contract_hook,
+    "problem_conflict": _render_contract_problem_conflict,
+    "before_after": _render_contract_before_after,
+    "proof": _render_contract_proof,
+    "final_cta": _render_contract_final_cta,
+    "method_steps": _render_contract_method_steps,
+    "framework_quadrant": _render_contract_framework_quadrant,
+    "progress_tracker": _render_contract_progress_tracker,
+    "tool_stack": _render_contract_tool_stack,
+    "keyword_punchline": _render_contract_keyword_punchline,
+    "myth_bust": _render_contract_myth_bust,
+    "case_study_card": _render_contract_case_study_card,
+    "concept_layers": _render_contract_concept_layers,
+    "knowledge_graph": _render_contract_knowledge_graph,
+    "result_summary": _render_contract_result_summary,
+    "simple_card": _render_contract_simple_card,
+    "simple_verdict": _render_contract_simple_verdict,
 }
 
 _CSS_FUNCTIONS = {
