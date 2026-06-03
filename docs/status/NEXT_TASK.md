@@ -2,33 +2,35 @@
 
 ## 当前任务
 
-**P4.0 First Real Script Production Trial** — 已完成第一条真实脚本试跑，当前进入结果收口与后续复用阶段。
+**P4.1 Multi-Script Production Batch** — 已完成三条真实脚本的第一轮批量试跑，当前进入结果收口与批量复用判断阶段。
 
 当前重点：
 
-- `outputs/p4_first_real_script_preview/`
-- `docs/status/P4_0_FIRST_REAL_SCRIPT_PRODUCTION_TRIAL.md`
+- `outputs/p4_1_batch_knowledge_method_preview/`
+- `outputs/p4_1_batch_ai_toolflow_preview/`
+- `outputs/p4_1_batch_sales_offer_preview/`
+- `docs/status/P4_1_MULTI_SCRIPT_PRODUCTION_BATCH.md`
 
 ## 本轮改动
 
-### P4.0
+### P4.1
 
-- 用一条新的真实脚本验证主线是否能稳定用于下一条真实内容
-- preview / approval / MP4 全链路均按 runbook 跑通
-- 确认当前主线可用于后续真实内容试跑
+- 用 3 条新的真实脚本验证主线是否可以批量稳定复用
+- sales / ai_toolflow preview 通过，knowledge preview 保持回归但未达发布
+- sales 通过本地 MP4 trial，确认主线可继续批量试跑真实内容
 
 ## 验证
 
 已完成：
 
-- `PYTHONPATH=src .venv/bin/python3 -m pytest tests/test_semantic_quality_gate.py tests/test_scene_pack_contracts.py tests/test_preview_pipeline.py tests/test_tts_contract.py tests/test_render_gate.py tests/test_offer_proof_cta_contracts.py -q`
+- `PYTHONPATH=src .venv/bin/python3 -m pytest`（见 P4.1 批量试跑记录）
 - `PYTHONPATH=src .venv/bin/python3 -m compileall src tests`
 - `git diff --check`
-- `render_mp4 --approved` on `p4_first_real_script_preview`
+- `render_mp4 --approved` on `p4_1_batch_sales_offer_preview`
 
 ## 交付物
 
-- `docs/status/P4_0_FIRST_REAL_SCRIPT_PRODUCTION_TRIAL.md`
+- `docs/status/P4_1_MULTI_SCRIPT_PRODUCTION_BATCH.md`
 
 ## 注意
 

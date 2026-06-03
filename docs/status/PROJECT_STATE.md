@@ -3,7 +3,7 @@
 ## 当前总控指针
 
 - 项目总控文档：`docs/status/PROJECT_CONTROL_ROADMAP.md`
-- 当前阶段计划：`docs/status/P4_0_FIRST_REAL_SCRIPT_PRODUCTION_TRIAL.md`
+- 当前阶段计划：`docs/status/P4_1_MULTI_SCRIPT_PRODUCTION_BATCH.md`
 - 当前最高总纲：AI 负责语义导演，契约文件负责约束，模板负责确定性执行，HyperFrames 负责稳定预览/渲染，QA Gate 负责阻止垃圾产出。
 
 ## 2026-06-01 P3 产品方向更新
@@ -34,10 +34,10 @@
 
 完整路线图：`docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md`
 
-当前阶段：`P4.0 First Real Script Production Trial`
-当前候选片：`p4_first_real_script_preview`
-下一任务：`按 runbook 复用主线，持续试跑真实内容`
-当前工作：`用一条新的真实脚本验证主线是否能稳定用于下一条真实内容`
+当前阶段：`P4.1 Multi-Script Production Batch`
+当前候选片：`p4_1_batch_sales_offer_preview`
+下一任务：`复用主线，批量试跑真实内容，优先保留 sales / toolflow 可发布结构`
+当前工作：`用 3 条新的真实脚本验证主线是否能稳定批量复用`
 
 ## 项目目标
 
