@@ -2,52 +2,46 @@
 
 ## 当前任务
 
-**P3.12 Publish Candidate Selection** — 已完成 P3.11C 修复与 P3.12A 预选，待人工确认首选候选片。
+**P3.12B + P3.12C MP4 Trial and Publish Readiness Review** — 已对 `v3_p311c_sales_repair_preview` 完成本地 MP4 trial，并输出 publish readiness review；当前等待最终人工确认后进入下一阶段。
 
-首选候选 preview：
+当前候选片：
 
 - `outputs/v3_p311c_sales_repair_preview/`
-- `hyperframes_timeline/index.html`（13 scenes）
-- 无 MP4
-- 无 window.__hf
-- 无 sentinel
+- `rendered/final_video.mp4`（本地，仅 trial 用）
+- 无提交到 GitHub 的 MP4
 
 ## 本轮改动
 
-### P3.11C
+### P3.12B
 
-- 通过 `semantic_planner.py` 轻量重排角色
-- 把早 CTA 回收为 `result_summary` / `offer` / `verdict`
-- 让 proof slots 变具体
-- 降低 abstract proof / early CTA / repeated CTA 风险
+- 基于 `v3_p311c_sales_repair_preview` 执行本地 MP4 trial
+- 完成文件、时长、音频、视频、字幕、CTA 的 QA
+- 保留本地 MP4，不提交到 GitHub
 
-### P3.12A
+### P3.12C
 
-- 基于三条新 preview 做 publish candidate 预选
-- 首选候选：`v3_p311c_sales_repair_preview`
-- 其余两条作为备选，不作为首选进入 P3.12
+- 输出 publish readiness review
+- 判断是否可进入人工最终确认
+- 明确下一步建议进入 P3.13A
 
 ## 验证
 
 | Check | Result |
 |-------|--------|
-| 69 tests | ✅ PASS |
-| compileall | ✅ PASS |
+| render_mp4 | ✅ PASS |
+| ffprobe | ✅ PASS |
 | git diff --check | ✅ clean |
-| 3 new previews | ✅ PASS |
-| contact sheets | ✅ PASS |
 
 ## 交付物
 
-- **preview:** `outputs/v3_p311e_reference_matched_visual_correction_preview/hyperframes_timeline/index.html`
-- **contact sheet:** `review_frames/contact-sheet.jpg`
-- **21-scene thumbnails:** `review_frames/frame-XX-at-XXXs.png`（21 frames）
-- **contact grid:** `review_frames/contact-sheet-1..3.jpg`（3 张拼接图）
+- **trial MP4:** `outputs/v3_p311c_sales_repair_preview/rendered/final_video.mp4`
+- **preview:** `outputs/v3_p311c_sales_repair_preview/hyperframes_timeline/index.html`
+- **contact sheet:** `outputs/v3_p311c_sales_repair_preview/review_frames/contact-sheet.jpg`
 
 ## Studio 验证
 
 请在 Studio 中打开验证：
-`http://localhost:3002/#project/v3_p311e_reference_matched_visual_correction_preview/hyperframes_timeline`
+`http://localhost:3002/#project/v3_p311c_sales_repair_preview/hyperframes_timeline`
 
 ---
-最后更新：2026-06-02
+最后更新：2026-06-03
