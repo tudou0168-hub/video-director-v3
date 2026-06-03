@@ -39,11 +39,15 @@ package-lock.json
 
 # Outputs - keep mainline hyperframes_timeline files visible, ignore noisy generated fragments
 test_outputs/
+outputs/*
+!outputs/archive/
+!outputs/archive/README.md
 render_tmp/
 hf_cache/
 cache/
 tmp/
 debug/
+renders/
 
 # Secrets / credentials
 *.pem
@@ -89,6 +93,7 @@ outputs/**/contact-sheet*.jpg
 # Archive outputs are historical reference only
 outputs/archive/*
 !outputs/archive/README.md
+outputs/**/.waveform-cache/
 
 # V3 Retrospective cleanup (P3.6 final stage)
 # Debug JS probes from P3.0-P3.1 era — archived in tests/manual_archive/, kept out of git
