@@ -2,35 +2,38 @@
 
 ## 当前任务
 
-**P4.1 Multi-Script Production Batch** — 已完成三条真实脚本的第一轮批量试跑，当前进入结果收口与批量复用判断阶段。
+**P4.1B Visual Differentiation + Readability Director** — 已完成三条真实脚本的视觉骨架分化验证，当前进入结果收口与人工视觉审查阶段。
 
 当前重点：
 
-- `outputs/p4_1_batch_knowledge_method_preview/`
-- `outputs/p4_1_batch_ai_toolflow_preview/`
-- `outputs/p4_1_batch_sales_offer_preview/`
-- `docs/status/P4_1_MULTI_SCRIPT_PRODUCTION_BATCH.md`
+- `outputs/p4_1b_knowledge_visual_strategy_preview/`
+- `outputs/p4_1b_ai_toolflow_visual_strategy_preview/`
+- `outputs/p4_1b_sales_visual_strategy_preview/`
+- `docs/status/P4_1B_VISUAL_DIFFERENTIATION_AND_READABILITY.md`
 
 ## 本轮改动
 
-### P4.1
+### P4.1B
 
-- 用 3 条新的真实脚本验证主线是否可以批量稳定复用
-- sales / ai_toolflow preview 通过，knowledge preview 保持回归但未达发布
-- sales 通过本地 MP4 trial，确认主线可继续批量试跑真实内容
+- 用 `visual_strategy` pack 将 knowledge / toolflow / sales 三类内容的骨架分开
+- 三条 preview 全部 `gate_status=PASS`、`approval READY`
+- knowledge / toolflow / sales 的 `video_type` 与 `template_sequence_signature` 已显式写入 `scene_pack`
+- `semantic_quality_report` 新增视觉差异化与可读性指标，且未破坏现有 contract / QA 主线
 
 ## 验证
 
 已完成：
 
-- `PYTHONPATH=src .venv/bin/python3 -m pytest`（见 P4.1 批量试跑记录）
+- `PYTHONPATH=src .venv/bin/python3 -m pytest tests/test_visual_strategy_pack.py tests/test_semantic_quality_gate.py tests/test_scene_pack_contracts.py tests/test_preview_pipeline.py tests/test_tts_contract.py tests/test_render_gate.py tests/test_offer_proof_cta_contracts.py -q`
 - `PYTHONPATH=src .venv/bin/python3 -m compileall src tests`
 - `git diff --check`
-- `render_mp4 --approved` on `p4_1_batch_sales_offer_preview`
+- `hyperframes_preview` on `p4_1b_knowledge_visual_strategy_preview`
+- `hyperframes_preview` on `p4_1b_ai_toolflow_visual_strategy_preview`
+- `hyperframes_preview` on `p4_1b_sales_visual_strategy_preview`
 
 ## 交付物
 
-- `docs/status/P4_1_MULTI_SCRIPT_PRODUCTION_BATCH.md`
+- `docs/status/P4_1B_VISUAL_DIFFERENTIATION_AND_READABILITY.md`
 
 ## 注意
 
@@ -40,4 +43,4 @@
 - 不把 `narrative_compressor.py` 接入主线
 
 ---
-最后更新：2026-06-03
+最后更新：2026-06-04

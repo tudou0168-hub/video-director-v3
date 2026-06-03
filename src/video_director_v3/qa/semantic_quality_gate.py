@@ -128,6 +128,7 @@ def build_semantic_quality_report(
     offer_info = _analyze_offer_profile(scene_pack.get("scenes", []))
     proof_asset_info = _analyze_proof_asset(scene_pack.get("scenes", []))
     cta_policy_info = _analyze_cta_policy(scene_pack.get("scenes", []))
+    visual_strategy_info = _analyze_visual_strategy_pack(scene_pack, merged_scenes, repetition_info)
     chinese_dominance_score = round(_chinese_dominance_score(merged_scenes), 3)
 
     per_scene_scores = []
@@ -144,6 +145,7 @@ def build_semantic_quality_report(
             offer_info=offer_info,
             proof_asset_info=proof_asset_info,
             cta_policy_info=cta_policy_info,
+            visual_strategy_info=visual_strategy_info,
         )
         per_scene_scores.append(
             {
@@ -203,6 +205,9 @@ def build_semantic_quality_report(
         offer_profile_risk=offer_info["offer_profile_risk"],
         proof_asset_risk=proof_asset_info["proof_asset_risk"],
         cta_policy_risk=cta_policy_info["cta_policy_risk"],
+        visual_strategy_risk=visual_strategy_info["visual_strategy_risk"],
+        layout_readability_score=visual_strategy_info["layout_readability_score"],
+        differentiation_score=visual_strategy_info["differentiation_score"],
     )
 
     gate_status = "FAIL" if hard_fail_reasons else "PASS"
@@ -212,6 +217,7 @@ def build_semantic_quality_report(
         semantic_quality_score=semantic_quality_score,
         cta_distribution_risk=cta_info["cta_distribution_risk"],
         proof_strength_risk=proof_info["proof_strength_risk"],
+        differentiation_score=visual_strategy_info["differentiation_score"],
         worst_scene_score=worst_scene_score,
         fallback_count=fallback_count,
         raw_text_dependency_count=raw_text_dependency_count,
@@ -251,6 +257,7 @@ def build_semantic_quality_report(
         "offer_profile": offer_info,
         "proof_asset": proof_asset_info,
         "cta_policy": cta_policy_info,
+        "visual_strategy": visual_strategy_info,
         "worst_3_scenes": worst_3_scenes,
         "hard_fail_reasons": hard_fail_reasons,
         "contact_sheet_exists": contact_sheet_exists,
@@ -606,6 +613,156 @@ def _analyze_cta_policy(scenes: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _analyze_visual_strategy_pack(
+    scene_pack: dict[str, Any],
+    scenes: list[dict[str, Any]],
+    repetition_info: dict[str, Any],
+) -> dict[str, Any]:
+    video_type = str(scene_pack.get("video_type") or "knowledge_method").strip() or "knowledge_method"
+    visual_strategy_id = str(scene_pack.get("visual_strategy_id") or "").strip()
+    opening_variant = str(scene_pack.get("opening_variant") or "").strip()
+    ending_variant = str(scene_pack.get("ending_variant") or "").strip()
+    template_sequence_signature = str(scene_pack.get("template_sequence_signature") or "").strip()
+    template_sequence = [str(scene.get("template_type") or "").strip() for scene in scenes if scene.get("template_type")]
+    caption_modes = [str(scene.get("caption_mode") or "standard_caption").strip() for scene in scenes]
+    layout_bands = [str(scene.get("layout_band") or "middle").strip() for scene in scenes]
+    headlines = [str(scene.get("headline_compact") or _scene_headline(scene)).strip() for scene in scenes]
+    subtitle_similarities = [float(scene.get("title_caption_similarity") or 0.0) for scene in scenes]
+    readability_risks = [float(scene.get("readability_risk") or 0.0) for scene in scenes]
+
+    counts: dict[str, int] = {}
+    for template_type in template_sequence:
+        counts[template_type] = counts.get(template_type, 0) + 1
+    dominant_template_count = max(counts.values()) if counts else 0
+    dominant_template_ids = [scene.get("id") for scene in scenes if scene.get("template_type") and counts.get(str(scene.get("template_type")), 0) == dominant_template_count and scene.get("id")]
+
+    opening_window = scenes[: min(3, len(scenes))]
+    ending_window = scenes[max(0, len(scenes) - 3) :]
+    opening_templates = [str(scene.get("template_type") or "") for scene in opening_window]
+    ending_templates = [str(scene.get("template_type") or "") for scene in ending_window]
+    opening_roles = [str(scene.get("role") or "") for scene in opening_window]
+    ending_roles = [str(scene.get("role") or "") for scene in ending_window]
+    repeated_opening_ids = [scene.get("id") for scene in opening_window if scene.get("id") and (opening_templates.count(str(scene.get("template_type") or "")) >= 2 or opening_roles.count(str(scene.get("role") or "")) >= 2)]
+    repeated_ending_ids = [scene.get("id") for scene in ending_window if scene.get("id") and (ending_templates.count(str(scene.get("template_type") or "")) >= 2 or ending_roles.count(str(scene.get("role") or "")) >= 2)]
+
+    caption_mode_runs = 0
+    caption_mode_run: list[str] = []
+    for mode in caption_modes:
+        if not caption_mode_run or mode == caption_mode_run[-1]:
+            caption_mode_run.append(mode)
+        else:
+            if len(caption_mode_run) >= 2:
+                caption_mode_runs += len(caption_mode_run) - 1
+            caption_mode_run = [mode]
+    if len(caption_mode_run) >= 2:
+        caption_mode_runs += len(caption_mode_run) - 1
+
+    caption_conflict_ids = [
+        scene.get("id")
+        for scene in scenes
+        if scene.get("id")
+        and (
+            float(scene.get("title_caption_similarity") or 0.0) > 0.68
+            or (
+                str(scene.get("caption_mode") or "") in {"minimal_caption", "standard_caption"}
+                and float(scene.get("readability_risk") or 0.0) > 0.55
+            )
+        )
+    ]
+    top_third = scenes[: max(1, len(scenes) // 3)]
+    top_heavy_ids = [
+        scene.get("id")
+        for scene in top_third
+        if scene.get("id")
+        and (
+            str(scene.get("layout_band") or "") == "upper"
+            or float(scene.get("readability_risk") or 0.0) > 0.5
+            or len(str(scene.get("headline_compact") or _scene_headline(scene))) > 18
+        )
+    ]
+    dense_readability_ids = [
+        scene.get("id")
+        for scene in scenes
+        if scene.get("id") and float(scene.get("readability_risk") or 0.0) >= 0.55
+    ]
+    long_headline_ids = [
+        scene.get("id")
+        for scene in scenes
+        if scene.get("id")
+        and len(str(scene.get("headline_compact") or _scene_headline(scene))) > 18
+    ]
+    repeated_opening_ids = list(dict.fromkeys(repeated_opening_ids))
+    repeated_ending_ids = list(dict.fromkeys(repeated_ending_ids))
+    caption_conflict_ids = list(dict.fromkeys(caption_conflict_ids))
+    top_heavy_ids = list(dict.fromkeys(top_heavy_ids))
+    dense_readability_ids = list(dict.fromkeys(dense_readability_ids))
+    long_headline_ids = list(dict.fromkeys(long_headline_ids))
+
+    unique_caption_modes = len(set(caption_modes)) or 1
+    unique_templates = len(set(template_sequence)) or 1
+    caption_conflict_count = len(caption_conflict_ids)
+    title_caption_overlap_risk = "high" if sum(1 for value in subtitle_similarities if value > 0.68) >= max(2, len(scenes) // 3) else "medium" if any(value > 0.68 for value in subtitle_similarities) else "low"
+    repeated_opening_risk = "high" if len(set(opening_templates)) <= 1 and len(opening_templates) >= 2 else "medium" if len(set(opening_templates)) <= 2 else "low"
+    repeated_ending_risk = "high" if len(set(ending_templates)) <= 1 and len(ending_templates) >= 2 else "medium" if len(set(ending_templates)) <= 2 else "low"
+    template_repetition_risk = max_risk(
+        "high" if repetition_info.get("repetition_risk") == "high" or dominant_template_count >= max(4, len(scenes) // 2 + 1) else "medium" if repetition_info.get("repetition_risk") == "medium" or dominant_template_count >= 3 else "low",
+        "medium" if unique_templates <= 2 and len(scenes) >= 4 else "low",
+    )
+    caption_mode_repetition_risk = "high" if unique_caption_modes <= 2 and caption_mode_runs >= max(2, len(scenes) // 2) else "medium" if unique_caption_modes <= 3 or caption_mode_runs >= 2 else "low"
+    top_heavy_risk = "high" if len(top_heavy_ids) >= max(2, len(top_third) - 1) else "medium" if top_heavy_ids else "low"
+    dense_scene_readability_risk = "high" if len(dense_readability_ids) >= max(3, len(scenes) // 2) else "medium" if dense_readability_ids else "low"
+    differentiation_score = _differentiation_score(
+        template_sequence=template_sequence,
+        dominant_template_count=dominant_template_count,
+        caption_mode_repetition_risk=caption_mode_repetition_risk,
+        repeated_opening_risk=repeated_opening_risk,
+        repeated_ending_risk=repeated_ending_risk,
+        caption_conflict_count=caption_conflict_count,
+        top_heavy_ids=top_heavy_ids,
+        long_headline_ids=long_headline_ids,
+        dense_readability_ids=dense_readability_ids,
+        repetition_info=repetition_info,
+    )
+    layout_readability_score = _layout_readability_score(readability_risks, subtitle_similarities, dense_readability_ids, caption_conflict_ids)
+
+    return {
+        "video_type": video_type,
+        "visual_strategy_id": visual_strategy_id,
+        "opening_variant": opening_variant,
+        "ending_variant": ending_variant,
+        "template_sequence_signature": template_sequence_signature,
+        "template_sequence": template_sequence,
+        "dominant_template_count": dominant_template_count,
+        "dominant_template_ids": dominant_template_ids,
+        "repeated_opening_risk": repeated_opening_risk,
+        "repeated_opening_count": len(repeated_opening_ids),
+        "repeated_opening_ids": repeated_opening_ids,
+        "repeated_ending_risk": repeated_ending_risk,
+        "repeated_ending_count": len(repeated_ending_ids),
+        "repeated_ending_ids": repeated_ending_ids,
+        "template_repetition_risk": template_repetition_risk,
+        "caption_mode_repetition_risk": caption_mode_repetition_risk,
+        "differentiation_score": differentiation_score,
+        "top_heavy_risk": top_heavy_risk,
+        "top_heavy_count": len(top_heavy_ids),
+        "top_heavy_ids": top_heavy_ids,
+        "title_caption_overlap_risk": title_caption_overlap_risk,
+        "title_caption_overlap_count": sum(1 for value in subtitle_similarities if value > 0.68),
+        "long_headline_count": len(long_headline_ids),
+        "long_headline_ids": long_headline_ids,
+        "dense_scene_readability_risk": dense_scene_readability_risk,
+        "dense_scene_readability_count": len(dense_readability_ids),
+        "dense_readability_ids": dense_readability_ids,
+        "caption_conflict_count": caption_conflict_count,
+        "caption_conflict_ids": caption_conflict_ids,
+        "layout_readability_score": layout_readability_score,
+        "visual_strategy_risk": max_risk(
+            max_risk(template_repetition_risk, caption_mode_repetition_risk),
+            max_risk(top_heavy_risk, dense_scene_readability_risk),
+        ),
+    }
+
+
 def _is_offer_scene(scene: dict[str, Any]) -> bool:
     role = _normalized_role(scene)
     template_type = _normalized_template(scene)
@@ -625,6 +782,7 @@ def _scene_quality_score(
     offer_info: dict[str, Any],
     proof_asset_info: dict[str, Any],
     cta_policy_info: dict[str, Any],
+    visual_strategy_info: dict[str, Any],
 ) -> tuple[float, list[str], list[str]]:
     semantic_score = scene.get("semantic_score", {})
     issues: list[str] = []
@@ -695,6 +853,26 @@ def _scene_quality_score(
         issues.append("repeated_cta_policy")
         structural_risks.append("repeated_cta_policy")
         score -= 0.05
+    if scene_id in visual_strategy_info["repeated_opening_ids"]:
+        issues.append("repeated_opening")
+        structural_risks.append("repeated_opening")
+        score -= 0.07
+    if scene_id in visual_strategy_info["repeated_ending_ids"]:
+        issues.append("repeated_ending")
+        structural_risks.append("repeated_ending")
+        score -= 0.06
+    if scene_id in visual_strategy_info["caption_conflict_ids"]:
+        issues.append("caption_conflict")
+        structural_risks.append("caption_conflict")
+        score -= 0.08
+    if scene_id in visual_strategy_info["top_heavy_ids"]:
+        issues.append("top_heavy")
+        structural_risks.append("top_heavy")
+        score -= 0.05
+    if scene_id in visual_strategy_info["dense_readability_ids"]:
+        issues.append("dense_readability")
+        structural_risks.append("dense_readability")
+        score -= 0.05
     if director_scene and director_scene.get("template_contract_fallback_used"):
         issues.append("fallback_used")
         structural_risks.append("fallback_used")
@@ -717,6 +895,7 @@ def _publish_candidate_readiness(
     semantic_quality_score: float,
     cta_distribution_risk: str,
     proof_strength_risk: str,
+    differentiation_score: float,
     worst_scene_score: float,
     fallback_count: int,
     raw_text_dependency_count: int,
@@ -729,6 +908,7 @@ def _publish_candidate_readiness(
         semantic_quality_score >= 90
         and cta_distribution_risk == "low"
         and proof_strength_risk == "low"
+        and differentiation_score >= 80
         and worst_scene_score >= 0.75
         and fallback_count == 0
         and raw_text_dependency_count == 0
@@ -739,6 +919,7 @@ def _publish_candidate_readiness(
     if (
         cta_distribution_risk == "high"
         or proof_strength_risk == "high"
+        or differentiation_score < 55
         or semantic_quality_score < 75
     ):
         return "NO_GO"
@@ -769,6 +950,9 @@ def _overall_quality_score(
     offer_profile_risk: str,
     proof_asset_risk: str,
     cta_policy_risk: str,
+    visual_strategy_risk: str,
+    layout_readability_score: float,
+    differentiation_score: float,
 ) -> float:
     score = average_scene_score * 100.0
     score -= _risk_penalty(cta_distribution_risk, low=0.0, medium=4.0, high=8.0)
@@ -778,12 +962,15 @@ def _overall_quality_score(
     score -= _risk_penalty(offer_profile_risk, low=0.0, medium=2.0, high=5.0)
     score -= _risk_penalty(proof_asset_risk, low=0.0, medium=2.0, high=5.0)
     score -= _risk_penalty(cta_policy_risk, low=0.0, medium=3.0, high=7.0)
+    score -= _risk_penalty(visual_strategy_risk, low=0.0, medium=2.0, high=6.0)
     score -= fallback_ratio * 20.0
     score -= placeholder_count * 15.0
     score -= raw_text_dependency_count * 20.0
     score -= role_template_mismatch_count * 15.0
     score -= max(0.0, 0.78 - chinese_dominance_score) * 30.0
     score -= max(0.0, 0.85 - worst_scene_score) * 20.0
+    score -= max(0.0, 70.0 - layout_readability_score) * 0.35
+    score -= max(0.0, 80.0 - differentiation_score) * 0.25
     return round(max(0.0, min(100.0, score)), 2)
 
 
@@ -793,6 +980,57 @@ def _risk_penalty(risk: str, *, low: float, medium: float, high: float) -> float
     if risk == "medium":
         return medium
     return low
+
+
+def _differentiation_score(
+    *,
+    template_sequence: list[str],
+    dominant_template_count: int,
+    caption_mode_repetition_risk: str,
+    repeated_opening_risk: str,
+    repeated_ending_risk: str,
+    caption_conflict_count: int,
+    top_heavy_ids: list[str],
+    long_headline_ids: list[str],
+    dense_readability_ids: list[str],
+    repetition_info: dict[str, Any],
+) -> float:
+    unique_templates = len(set(template_sequence)) or 1
+    score = 100.0
+    score -= max(0, dominant_template_count - 2) * 8.0
+    score -= max(0, len(template_sequence) - unique_templates) * 3.0
+    score -= _risk_penalty(caption_mode_repetition_risk, low=0.0, medium=6.0, high=12.0)
+    score -= _risk_penalty(repeated_opening_risk, low=0.0, medium=6.0, high=10.0)
+    score -= _risk_penalty(repeated_ending_risk, low=0.0, medium=6.0, high=10.0)
+    score -= caption_conflict_count * 3.5
+    score -= len(top_heavy_ids) * 2.5
+    score -= len(long_headline_ids) * 1.5
+    score -= len(dense_readability_ids) * 2.0
+    score -= repetition_info.get("repeated_template_runs", 0) * 2.5
+    score -= repetition_info.get("repeated_role_runs", 0) * 1.5
+    return round(max(0.0, min(100.0, score)), 2)
+
+
+def _layout_readability_score(
+    readability_risks: list[float],
+    subtitle_similarities: list[float],
+    dense_readability_ids: list[str],
+    caption_conflict_ids: list[str],
+) -> float:
+    if readability_risks:
+        average_readability = mean(readability_risks)
+    else:
+        average_readability = 0.12
+    if subtitle_similarities:
+        average_overlap = mean(subtitle_similarities)
+    else:
+        average_overlap = 0.0
+    score = 100.0
+    score -= average_readability * 60.0
+    score -= average_overlap * 25.0
+    score -= len(dense_readability_ids) * 2.5
+    score -= len(caption_conflict_ids) * 2.0
+    return round(max(0.0, min(100.0, score)), 2)
 
 
 def _is_cta_scene(scene: dict[str, Any]) -> bool:

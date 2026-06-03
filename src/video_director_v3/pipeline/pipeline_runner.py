@@ -155,6 +155,7 @@ def run_preview(args: argparse.Namespace, project_dir: Path) -> int:
             narration_plan=narration_plan,
             storyboard=storyboard or {},
             audio_timeline=audio_timeline,
+            source_text=script_content,
         )
         write_scene_pack(scene_pack, project_dir)
         scene_pack_status = scene_pack.get("lint", {}).get("scene_pack_status", "UNKNOWN")

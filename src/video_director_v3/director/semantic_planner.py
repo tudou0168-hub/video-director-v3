@@ -8,6 +8,17 @@ from typing import Any
 
 from video_director_v3.director.cta_policy import load_default_cta_policy
 from video_director_v3.director.offer_profile import load_default_offer_profile
+from video_director_v3.director.visual_strategy import (
+    build_visual_strategy_pack,
+    caption_mode_for_scene,
+    choose_ending_variant,
+    choose_opening_variant,
+    headline_compact,
+    layout_band_for_scene,
+    sequence_slot_for_scene,
+    template_sequence_signature,
+    title_caption_similarity,
+)
 from video_director_v3.director.scene_pack_schema import (
     SCENE_PACK_VERSION,
     normalize_scene_role,
@@ -41,10 +52,19 @@ def build_scene_pack(
     narration_plan: dict[str, Any],
     storyboard: dict[str, Any],
     audio_timeline: dict[str, Any] | None = None,
+    source_text: str | None = None,
 ) -> dict[str, Any]:
     offer_profile = load_default_offer_profile()
     proof_asset = load_default_proof_asset()
     cta_policy = load_default_cta_policy()
+    visual_strategy = build_visual_strategy_pack(
+        text=_visual_strategy_text(source_text=source_text, narration_plan=narration_plan, storyboard=storyboard),
+        title=str(narration_plan.get("title") or project_id),
+        script_path=str(narration_plan.get("script_path") or ""),
+    )
+    video_type = str(visual_strategy.get("video_type") or "knowledge_method")
+    opening_variant = str(visual_strategy.get("opening_variant") or choose_opening_variant(video_type, str(narration_plan.get("title") or project_id), source_text or ""))
+    ending_variant = str(visual_strategy.get("ending_variant") or choose_ending_variant(video_type))
     scenes = []
     all_scenes = storyboard.get("scenes", [])
     for index, scene in enumerate(all_scenes):
@@ -55,10 +75,20 @@ def build_scene_pack(
             index,
             len(all_scenes),
             scenes[-1]["role"] if scenes else "",
+            video_type=video_type,
+            total_scenes=len(all_scenes),
         )
-        template_type = _template_type_for_scene(scene, role, index, len(all_scenes))
-        headline = _headline_from_voiceover(voiceover, role)
-        subtitle = _subtitle_from_voiceover(voiceover, headline)
+        template_type = _template_type_for_scene(
+            scene,
+            role,
+            index,
+            len(all_scenes),
+            video_type=video_type,
+            opening_variant=opening_variant,
+            ending_variant=ending_variant,
+        )
+        headline = _headline_from_voiceover(voiceover, role, template_type, video_type)
+        subtitle = _subtitle_from_voiceover(voiceover, headline, video_type=video_type)
         display_conclusion = _display_conclusion(voiceover, subtitle)
         contract_context = _contract_context_for_scene(
             role=role,
@@ -68,6 +98,7 @@ def build_scene_pack(
             offer_profile=offer_profile.as_dict(),
             proof_asset=proof_asset.as_dict(),
             cta_policy=cta_policy.as_dict(),
+            video_type=video_type,
         )
         slot_context = {
             **contract_context,
@@ -84,6 +115,8 @@ def build_scene_pack(
             role,
             contract_context=slot_context,
         )
+        title_caption_overlap = title_caption_similarity(headline, subtitle or voiceover)
+        caption_mode = caption_mode_for_scene(video_type, role, template_type, index, len(all_scenes))
         scenes.append({
             "id": scene.get("scene_id") or f"S{index + 1:02d}",
             "role": role,
@@ -92,6 +125,14 @@ def build_scene_pack(
             "voiceover": voiceover,
             "display_headline": headline,
             "display_subtitle": subtitle,
+            "headline_compact": headline,
+            "title_caption_similarity": round(title_caption_overlap, 3),
+            "caption_mode": caption_mode,
+            "visual_role": _visual_role_for_scene(role, template_type, video_type),
+            "sequence_slot": sequence_slot_for_scene(index, len(all_scenes)),
+            "visual_strategy_reason": _visual_strategy_reason(video_type, role, template_type, index, len(all_scenes)),
+            "layout_band": layout_band_for_scene(video_type, role, template_type, index, len(all_scenes)),
+            "readability_risk": round(_scene_readability_risk(headline, subtitle, slots, title_caption_overlap), 3),
             "display_conclusion": display_conclusion,
             "template_type": template_type,
             "slots": slots,
@@ -116,6 +157,17 @@ def build_scene_pack(
         "project_id": project_id,
         "contract": "V3 semantic director -> HyperFrames native preview",
         "status": "dry_run",
+        "video_type": video_type,
+        "visual_strategy_id": visual_strategy.get("strategy_id", "vs_knowledge_method_v1"),
+        "opening_variant": opening_variant,
+        "ending_variant": ending_variant,
+        "template_sequence_signature": template_sequence_signature(
+            video_type=video_type,
+            opening_variant=opening_variant,
+            ending_variant=ending_variant,
+            template_types=[scene["template_type"] for scene in scenes],
+        ),
+        "visual_strategy": visual_strategy,
         "scenes": scenes,
     }
     schema_errors = validate_scene_pack(scene_pack)
@@ -154,36 +206,72 @@ def _scene_voiceover(scene: dict[str, Any], narration_plan: dict[str, Any], audi
     return "这一段的重点是把动作先跑通。"
 
 
-def _template_type_for_scene(scene: dict[str, Any], role: str, index: int, total: int) -> str:
+def _template_type_for_scene(
+    scene: dict[str, Any],
+    role: str,
+    index: int,
+    total: int,
+    *,
+    video_type: str,
+    opening_variant: str,
+    ending_variant: str,
+) -> str:
     visual_template = str(scene.get("visual_template") or "")
+    strategy_cycle = _strategy_template_cycle(video_type)
+    if index == 0:
+        return _opening_template_for_strategy(video_type, opening_variant, visual_template, role)
+    if index == total - 1:
+        return _ending_template_for_strategy(video_type, ending_variant, role, visual_template)
+
     if visual_template in VISUAL_TEMPLATE_TO_CONTRACT:
         template_type = VISUAL_TEMPLATE_TO_CONTRACT[visual_template]
-        if template_type == "final_cta" and index != total - 1:
-            if role in {"offer", "verdict"}:
+        if template_type == "final_cta":
+            if role == "cta" and index == total - 1:
+                return _ending_template_for_strategy(video_type, ending_variant, role, visual_template)
+            if role in {"offer", "verdict"} and index < total - 1:
                 return _summary_variant_for_scene(index, total)
-            if role == "cta":
-                return "final_cta" if index == total - 1 else _summary_variant_for_scene(index, total)
-            return "before_after"
-        if template_type == "before_after" and role == "proof":
+            return _ending_template_for_strategy(video_type, ending_variant, role, visual_template)
+        if template_type in strategy_cycle and _template_allowed_for_role(template_type, role):
+            return template_type
+
+    if role == "hook":
+        return _opening_template_for_strategy(video_type, opening_variant, visual_template, role)
+
+    if role == "proof":
+        if video_type == "sales_offer":
             return "proof"
-        if template_type == "problem_conflict" and role == "hook":
-            return "myth_bust"
-        return template_type
-    if index == total - 1 and role in {"cta", "offer", "verdict"}:
-        return "final_cta"
+        if video_type == "ai_toolflow":
+            return "case_study_card" if index % 2 else "knowledge_graph"
+        return "case_study_card" if index % 2 else "knowledge_graph"
+
+    if role == "problem":
+        return "problem_conflict" if video_type == "sales_offer" else "myth_bust"
+
+    if role == "conflict":
+        return "problem_conflict" if video_type == "sales_offer" else "before_after"
+
+    if role == "method":
+        if video_type == "ai_toolflow":
+            method_cycle = ("tool_stack", "progress_tracker", "method_steps", "knowledge_graph")
+            return method_cycle[index % len(method_cycle)]
+        if video_type == "sales_offer":
+            method_cycle = ("problem_conflict", "before_after", "method_steps")
+            return method_cycle[index % len(method_cycle)]
+        method_cycle = ("method_steps", "framework_quadrant", "concept_layers", "knowledge_graph", "before_after")
+        return method_cycle[index % len(method_cycle)]
+
+    if role == "offer":
+        if video_type == "sales_offer":
+            return _summary_variant_for_scene(index, total) if index < total - 1 else "final_cta"
+        return _summary_variant_for_scene(index, total)
+
     if role == "verdict":
         return _summary_variant_for_scene(index, total)
-    if role == "offer":
-        return "final_cta" if index == total - 1 else _summary_variant_for_scene(index, total)
-    if role == "hook":
-        return "hook"
-    if role in {"problem", "conflict"}:
-        return "problem_conflict"
-    if role == "proof":
-        return "proof"
-    if role in {"cta", "offer"}:
-        return "final_cta"
-    return "before_after"
+
+    if role == "cta":
+        return _ending_template_for_strategy(video_type, ending_variant, role, visual_template)
+
+    return strategy_cycle[index % len(strategy_cycle)] if strategy_cycle else "before_after"
 
 
 def _summary_variant_for_scene(index: int, total: int) -> str:
@@ -202,6 +290,9 @@ def _rebalance_scene_role(
     index: int,
     total: int,
     previous_role: str,
+    *,
+    video_type: str,
+    total_scenes: int,
 ) -> str:
     """Slightly rebalance role assignments so CTA/proof distribution matches human review."""
     normalized = normalize_scene_role(role)
@@ -226,11 +317,17 @@ def _rebalance_scene_role(
     if normalized == "cta":
         if index < early_cutoff:
             if summary_like:
-                return "verdict"
-            return "offer" if action_like else "verdict"
+                return "verdict" if video_type != "sales_offer" else "offer"
+            return "offer" if action_like and video_type == "sales_offer" else "verdict"
         return "offer"
 
     if normalized == "offer":
+        if video_type != "sales_offer":
+            if index < max(2, int(total * 0.55)):
+                return "method"
+            if summary_like:
+                return "verdict"
+            return "method" if action_like else "method"
         if index < max(2, int(total * 0.55)):
             return "method" if action_like or summary_like else "method"
         if summary_like and previous_role in {"offer", "verdict"}:
@@ -259,6 +356,8 @@ def _rebalance_scene_role(
 
     if normalized == "verdict":
         if index < last_index:
+            if video_type != "sales_offer":
+                return "method" if not proof_like else "proof"
             if summary_like and previous_role in {"offer", "verdict"}:
                 return "method"
             if summary_like:
@@ -300,6 +399,75 @@ def _intent_for_role(role: str, voiceover: str, template_type: str) -> str:
         "cta": "close_with_action",
         "verdict": "summarize_judgement",
     }.get(role, "explain_actionable_method"))
+
+
+def _template_allowed_for_role(template_type: str, role: str) -> bool:
+    contract_roles = {
+        "hook": {"hook"},
+        "problem_conflict": {"problem", "conflict", "method"},
+        "before_after": {"method", "offer", "proof", "verdict"},
+        "proof": {"proof", "verdict", "method"},
+        "final_cta": {"cta", "offer", "verdict"},
+        "method_steps": {"method", "offer"},
+        "framework_quadrant": {"method", "proof"},
+        "progress_tracker": {"proof", "method"},
+        "tool_stack": {"method", "offer"},
+        "keyword_punchline": {"hook", "problem"},
+        "myth_bust": {"hook", "problem", "method"},
+        "case_study_card": {"proof", "offer", "verdict"},
+        "concept_layers": {"method", "proof"},
+        "knowledge_graph": {"proof", "method"},
+        "result_summary": {"verdict", "cta", "proof", "offer"},
+    }
+    return role in contract_roles.get(template_type, {role})
+
+
+def _strategy_template_cycle(video_type: str) -> tuple[str, ...]:
+    return {
+        "knowledge_method": ("method_steps", "framework_quadrant", "concept_layers", "knowledge_graph", "before_after", "result_summary"),
+        "ai_toolflow": ("tool_stack", "progress_tracker", "method_steps", "knowledge_graph", "case_study_card", "before_after", "result_summary"),
+        "sales_offer": ("problem_conflict", "before_after", "proof", "case_study_card", "result_summary", "final_cta"),
+    }.get(video_type, ("before_after", "result_summary"))
+
+
+def _opening_template_for_strategy(video_type: str, opening_variant: str, visual_template: str, role: str) -> str:
+    if video_type == "sales_offer":
+        if opening_variant == "pain_hook":
+            return "hook" if role == "hook" else "problem_conflict"
+        if opening_variant == "contrast_hook":
+            return "before_after" if role != "hook" else "hook"
+        if opening_variant == "mistake_hook":
+            return "myth_bust" if role != "hook" else "hook"
+        return "hook"
+    if video_type == "ai_toolflow":
+        if opening_variant == "process_hook":
+            return "hook" if role == "hook" else "tool_stack"
+        if opening_variant == "result_hook":
+            return "hook" if role == "hook" else "progress_tracker"
+        if opening_variant == "contrast_hook":
+            return "hook" if role == "hook" else "before_after"
+        return "hook"
+    if opening_variant == "mistake_hook":
+        return "myth_bust" if role != "hook" else "hook"
+    if opening_variant == "contrast_hook":
+        return "before_after" if role != "hook" else "hook"
+    return "hook"
+
+
+def _ending_template_for_strategy(video_type: str, ending_variant: str, role: str, visual_template: str) -> str:
+    if role == "cta":
+        return "final_cta"
+    if video_type == "sales_offer":
+        if ending_variant == "offer_close":
+            return "final_cta"
+        return "result_summary"
+    if video_type == "ai_toolflow":
+        if ending_variant == "checklist_close":
+            return "result_summary"
+        if ending_variant == "action_close":
+            return "result_summary"
+        return "result_summary"
+    return "result_summary"
 
 
 def _slots_for_template(
@@ -487,7 +655,7 @@ def _semantic_score(role: str, template_type: str, slots: dict[str, Any]) -> dic
     }
 
 
-def _headline_from_voiceover(voiceover: str, role: str) -> str:
+def _headline_from_voiceover(voiceover: str, role: str, template_type: str, video_type: str) -> str:
     cleaned = re.sub(r"[\n\r]+", " ", voiceover).strip()
     if not cleaned:
         return {
@@ -497,12 +665,41 @@ def _headline_from_voiceover(voiceover: str, role: str) -> str:
             "proof": "结果要能被看见",
             "cta": "现在跑一遍",
         }.get(role, "这一段的重点")
-    return _clip(cleaned, 30)
+    if should_compact_headline(cleaned) or len(cleaned) > 20:
+        cleaned = headline_compact(cleaned, video_type=video_type, role=role, template_type=template_type)
+    limit = 16 if role == "hook" else 18
+    return _clip(cleaned, limit)
 
 
-def _subtitle_from_voiceover(voiceover: str, headline: str) -> str:
+def should_compact_headline(text: str) -> bool:
+    compact = re.sub(r"\s+", "", str(text)).strip()
+    if len(compact) >= 18:
+        return True
+    if any(marker in compact for marker in ("，", "。", "；", "：", "？", "！")):
+        return len(compact) >= 12
+    if any(token in compact for token in ("不是", "而是", "以前", "现在", "但是", "所以")):
+        return True
+    return False
+
+
+def _trim_fillers(text: str) -> str:
+    compact = re.sub(r"\s+", "", str(text)).strip()
+    for filler in ("这个", "那个", "然后", "其实", "就是", "有点", "一下", "我们", "可以"):
+        compact = compact.replace(filler, "")
+    compact = compact.strip(" ，。；;:：")
+    return compact or str(text).strip()
+
+
+def _subtitle_from_voiceover(voiceover: str, headline: str, *, video_type: str) -> str:
     remainder = voiceover.replace(headline.replace("…", ""), "", 1).strip(" ，。；;:：")
-    return _clip(remainder or voiceover, 52)
+    candidate = remainder or voiceover
+    if title_caption_similarity(headline, candidate) > 0.65:
+        candidate = _trim_fillers(candidate)
+    if video_type == "sales_offer":
+        return _clip(candidate, 34)
+    if video_type == "ai_toolflow":
+        return _clip(candidate, 38)
+    return _clip(candidate, 40)
 
 
 def _display_conclusion(voiceover: str, subtitle: str) -> str:
@@ -515,6 +712,29 @@ def _display_conclusion(voiceover: str, subtitle: str) -> str:
     return _clip(subtitle or voiceover, 38)
 
 
+def _visual_strategy_text(
+    *,
+    source_text: str | None,
+    narration_plan: dict[str, Any],
+    storyboard: dict[str, Any],
+) -> str:
+    parts: list[str] = []
+    if source_text:
+        parts.append(source_text)
+    title = str(narration_plan.get("title") or "").strip()
+    if title:
+        parts.append(title)
+    for sentence in narration_plan.get("sentence_list", []):
+        text = str(sentence.get("text") or "").strip()
+        if text:
+            parts.append(text)
+    for scene in storyboard.get("scenes", []) or []:
+        text = str(scene.get("narration") or "").strip()
+        if text:
+            parts.append(text)
+    return "\n".join(parts)
+
+
 def _contract_context_for_scene(
     *,
     role: str,
@@ -524,6 +744,7 @@ def _contract_context_for_scene(
     offer_profile: dict[str, Any],
     proof_asset: dict[str, Any],
     cta_policy: dict[str, Any],
+    video_type: str,
 ) -> dict[str, Any]:
     context: dict[str, Any] = {}
     if template_type in {"result_summary", "final_cta"} or role in {"offer", "cta", "verdict"}:
@@ -535,6 +756,45 @@ def _contract_context_for_scene(
     if template_type in {"proof", "case_study_card", "knowledge_graph", "progress_tracker"} or role == "proof":
         context["proof_asset_ref"] = str(proof_asset.get("asset_id") or "default_ai_content_system_proof")
     return context
+
+
+def _visual_role_for_scene(role: str, template_type: str, video_type: str) -> str:
+    if template_type in {"method_steps", "framework_quadrant", "concept_layers", "knowledge_graph", "tool_stack", "progress_tracker"}:
+        return f"{video_type}:structure"
+    if template_type in {"proof", "case_study_card"}:
+        return f"{video_type}:evidence"
+    if template_type in {"final_cta", "result_summary"}:
+        return f"{video_type}:closing"
+    if role == "hook":
+        return f"{video_type}:opening"
+    if role in {"problem", "conflict"}:
+        return f"{video_type}:pain"
+    return f"{video_type}:{role}"
+
+
+def _visual_strategy_reason(video_type: str, role: str, template_type: str, index: int, total: int) -> str:
+    slot = sequence_slot_for_scene(index, total)
+    return f"{video_type}:{slot}:{role}->{template_type}"
+
+
+def _scene_readability_risk(headline: str, subtitle: str, slots: dict[str, Any], title_caption_similarity_value: float) -> float:
+    risk = 0.12
+    headline_chars = len(re.findall(r"[\u4e00-\u9fff]", headline))
+    headline_total = len(headline.strip())
+    if headline_chars > 26 or headline_total > 32:
+        risk += 0.24
+    if headline_chars > 18:
+        risk += 0.12
+    if title_caption_similarity_value > 0.65:
+        risk += 0.22
+    if subtitle and len(subtitle.strip()) > 48:
+        risk += 0.10
+    list_heaviness = sum(len(value) for value in slots.values() if isinstance(value, list))
+    if list_heaviness >= 8:
+        risk += 0.12
+    if len(slots) >= 5:
+        risk += 0.08
+    return min(risk, 1.0)
 
 
 def _cta_stage_for_scene(*, index: int, total: int, role: str, template_type: str) -> str:

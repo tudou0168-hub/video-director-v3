@@ -34,10 +34,10 @@
 
 完整路线图：`docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md`
 
-当前阶段：`P4.1 Multi-Script Production Batch`
-当前候选片：`p4_1_batch_sales_offer_preview`
-下一任务：`复用主线，批量试跑真实内容，优先保留 sales / toolflow 可发布结构`
-当前工作：`用 3 条新的真实脚本验证主线是否能稳定批量复用`
+当前阶段：`P4.1B Visual Differentiation + Readability Director`
+当前候选片：`p4_1b_sales_visual_strategy_preview`
+下一任务：`进入 P4.1C，对三条 preview 做人工视觉审查与候选片收口`
+当前工作：`用 visual_strategy pack 将 knowledge / toolflow / sales 三类内容骨架分开，并验证 scene_pack / semantic_quality / approval gate 的稳定性`
 
 ## 项目目标
 

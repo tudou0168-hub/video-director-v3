@@ -42,6 +42,23 @@ OPTIONAL_SCENE_EXTENSIONS = {
     "cta_policy_ref",
     "cta_stage",
     "cta_strength",
+    "caption_mode",
+    "visual_role",
+    "sequence_slot",
+    "visual_strategy_reason",
+    "layout_band",
+    "headline_compact",
+    "title_caption_similarity",
+    "readability_risk",
+}
+
+TOP_LEVEL_OPTIONAL_EXTENSIONS = {
+    "video_type",
+    "visual_strategy_id",
+    "opening_variant",
+    "ending_variant",
+    "template_sequence_signature",
+    "visual_strategy",
 }
 
 CTA_STAGES = {"opening", "mid", "late", "final"}
@@ -67,6 +84,7 @@ def validate_scene_pack(scene_pack: dict[str, Any]) -> list[str]:
     errors: list[str] = []
     if scene_pack.get("version") != SCENE_PACK_VERSION:
         errors.append(f"version must be {SCENE_PACK_VERSION!r}")
+    errors.extend(validate_scene_pack_extensions(scene_pack))
     if not isinstance(scene_pack.get("scenes"), list) or not scene_pack.get("scenes"):
         errors.append("scenes must be a non-empty list")
         return errors
@@ -112,4 +130,54 @@ def validate_scene(scene: dict[str, Any], index: int = 0) -> list[str]:
         value = scene.get("cta_strength")
         if value not in CTA_STRENGTHS:
             errors.append(f"{prefix}.cta_strength {value!r} is not supported")
+    if "caption_mode" in scene:
+        value = scene.get("caption_mode")
+        if not isinstance(value, str) or not value.strip():
+            errors.append(f"{prefix}.caption_mode must be a non-empty string when present")
+    if "visual_role" in scene:
+        value = scene.get("visual_role")
+        if not isinstance(value, str) or not value.strip():
+            errors.append(f"{prefix}.visual_role must be a non-empty string when present")
+    if "sequence_slot" in scene:
+        value = scene.get("sequence_slot")
+        if value not in {"opening", "middle", "ending"}:
+            errors.append(f"{prefix}.sequence_slot {value!r} is not supported")
+    if "visual_strategy_reason" in scene:
+        value = scene.get("visual_strategy_reason")
+        if not isinstance(value, str) or not value.strip():
+            errors.append(f"{prefix}.visual_strategy_reason must be a non-empty string when present")
+    if "layout_band" in scene:
+        value = scene.get("layout_band")
+        if value not in {"upper", "middle", "lower"}:
+            errors.append(f"{prefix}.layout_band {value!r} is not supported")
+    if "headline_compact" in scene:
+        value = scene.get("headline_compact")
+        if not isinstance(value, str) or not value.strip():
+            errors.append(f"{prefix}.headline_compact must be a non-empty string when present")
+    if "title_caption_similarity" in scene:
+        value = scene.get("title_caption_similarity")
+        if not isinstance(value, (int, float)) or float(value) < 0 or float(value) > 1:
+            errors.append(f"{prefix}.title_caption_similarity must be between 0 and 1")
+    if "readability_risk" in scene:
+        value = scene.get("readability_risk")
+        if not isinstance(value, (int, float)) or float(value) < 0 or float(value) > 1:
+            errors.append(f"{prefix}.readability_risk must be between 0 and 1")
+    return errors
+
+
+def validate_scene_pack_extensions(scene_pack: dict[str, Any]) -> list[str]:
+    errors: list[str] = []
+    for field in ("video_type", "visual_strategy_id", "opening_variant", "ending_variant", "template_sequence_signature"):
+        if field in scene_pack:
+            value = scene_pack.get(field)
+            if not isinstance(value, str) or not value.strip():
+                errors.append(f"{field} must be a non-empty string when present")
+    if "video_type" in scene_pack and scene_pack.get("video_type") not in {"knowledge_method", "ai_toolflow", "sales_offer"}:
+        errors.append(f"video_type {scene_pack.get('video_type')!r} is not supported")
+    if "opening_variant" in scene_pack and scene_pack.get("opening_variant") not in {"pain_hook", "result_hook", "mistake_hook", "contrast_hook", "process_hook"}:
+        errors.append(f"opening_variant {scene_pack.get('opening_variant')!r} is not supported")
+    if "ending_variant" in scene_pack and scene_pack.get("ending_variant") not in {"insight_close", "action_close", "checklist_close", "offer_close"}:
+        errors.append(f"ending_variant {scene_pack.get('ending_variant')!r} is not supported")
+    if "visual_strategy" in scene_pack and not isinstance(scene_pack.get("visual_strategy"), dict):
+        errors.append("visual_strategy must be an object when present")
     return errors
