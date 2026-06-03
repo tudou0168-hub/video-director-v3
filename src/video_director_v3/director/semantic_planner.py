@@ -43,7 +43,13 @@ def build_scene_pack(
     all_scenes = storyboard.get("scenes", [])
     for index, scene in enumerate(all_scenes):
         voiceover = _scene_voiceover(scene, narration_plan, audio_timeline or {})
-        role = normalize_scene_role(scene.get("role", "method"))
+        role = _rebalance_scene_role(
+            normalize_scene_role(scene.get("role", "method")),
+            voiceover,
+            index,
+            len(all_scenes),
+            scenes[-1]["role"] if scenes else "",
+        )
         template_type = _template_type_for_scene(scene, role, index, len(all_scenes))
         headline = _headline_from_voiceover(voiceover, role)
         subtitle = _subtitle_from_voiceover(voiceover, headline)
@@ -122,6 +128,8 @@ def _template_type_for_scene(scene: dict[str, Any], role: str, index: int, total
     visual_template = str(scene.get("visual_template") or "")
     if visual_template in VISUAL_TEMPLATE_TO_CONTRACT:
         template_type = VISUAL_TEMPLATE_TO_CONTRACT[visual_template]
+        if template_type == "final_cta" and index != total - 1:
+            return "result_summary" if role in {"offer", "verdict", "cta"} else "before_after"
         if template_type == "before_after" and role == "proof":
             return "proof"
         if template_type == "problem_conflict" and role == "hook":
@@ -129,6 +137,10 @@ def _template_type_for_scene(scene: dict[str, Any], role: str, index: int, total
         return template_type
     if index == total - 1 and role in {"cta", "offer", "verdict"}:
         return "final_cta"
+    if role == "verdict":
+        return "result_summary"
+    if role == "offer":
+        return "final_cta" if index == total - 1 else "result_summary"
     if role == "hook":
         return "hook"
     if role in {"problem", "conflict"}:
@@ -138,6 +150,68 @@ def _template_type_for_scene(scene: dict[str, Any], role: str, index: int, total
     if role in {"cta", "offer"}:
         return "final_cta"
     return "before_after"
+
+
+def _rebalance_scene_role(
+    role: str,
+    voiceover: str,
+    index: int,
+    total: int,
+    previous_role: str,
+) -> str:
+    """Slightly rebalance role assignments so CTA/proof distribution matches human review."""
+    normalized = normalize_scene_role(role)
+    text = (voiceover or "").strip()
+    if not text:
+        return normalized
+
+    last_index = max(0, total - 1)
+    early_cutoff = max(2, int(total * 0.7))
+    summary_like = _looks_like_summary_line(text)
+    action_like = _looks_like_action_line(text)
+    proof_like = _looks_like_concrete_evidence(text)
+    problem_like = _looks_like_problem_line(text)
+
+    if index == last_index:
+        if normalized in {"cta", "offer", "verdict"}:
+            return "cta"
+        if summary_like:
+            return "cta"
+        return normalized
+
+    if normalized == "cta":
+        if index < early_cutoff:
+            if summary_like:
+                return "verdict"
+            return "offer" if action_like else "verdict"
+        return "offer"
+
+    if normalized == "offer":
+        if index < max(2, int(total * 0.55)):
+            return "verdict" if summary_like else "method"
+        if summary_like and not proof_like:
+            return "verdict"
+        return "offer"
+
+    if normalized in {"problem", "conflict"}:
+        if summary_like or (previous_role in {"problem", "conflict"} and (action_like or proof_like)):
+            return "verdict"
+        if previous_role in {"problem", "conflict"} and not problem_like:
+            return "method"
+
+    if normalized == "method":
+        if index >= total - 2 and summary_like:
+            return "verdict"
+        if index > 0 and previous_role in {"problem", "conflict"} and action_like and not problem_like:
+            return "method"
+
+    if normalized == "proof":
+        if index >= total - 2 and summary_like and not proof_like:
+            return "verdict"
+        if summary_like and not proof_like:
+            return "verdict"
+
+    return normalized
 
 
 def _intent_for_role(role: str, voiceover: str, template_type: str) -> str:
@@ -206,9 +280,9 @@ def _slots_for_template(
     if template_type == "proof":
         return {
             "proof_title": headline,
-            "proof_items": _split_short_phrases(voiceover, 3, defaults=["结果更稳", "资料可复用", "过程可验证"]),
+            "proof_items": _proof_items_from_text(voiceover),
             "metric_or_evidence": _metric_or_evidence_for_text(voiceover),
-            "credibility_note": _clip(conclusion or "这不是空谈，而是已经跑通的路径。", 36),
+            "credibility_note": _clip(conclusion or "这是有执行记录的路径，不是空话。", 36),
         }
     if template_type == "final_cta":
         return {
@@ -268,12 +342,15 @@ def _slots_for_template(
         }
     if template_type == "case_study_card":
         situation, action, result = _case_story_triplet(voiceover)
+        metric_or_evidence = _metric_or_evidence_for_text(voiceover)
         return {
             "case_title": _clip(headline, 28),
             "situation": _clip(situation, 24),
             "action": _clip(action, 24),
             "result": _clip(result, 24),
             "lesson": _clip(conclusion or "先跑通最小路径，再扩大系统规模。", 28),
+            "metric_or_evidence": metric_or_evidence,
+            "credibility_note": _clip("有执行记录，不是空谈。", 22),
         }
     if template_type == "concept_layers":
         layers = _concept_layers(voiceover)
@@ -294,8 +371,8 @@ def _slots_for_template(
     if template_type == "result_summary":
         return {
             "result_title": _clip(headline, 28),
-            "key_results": _split_short_phrases(voiceover, 3, defaults=["流程已闭环", "关键阻塞点已明确", "下一步可执行"]),
-            "final_verdict": _clip(conclusion or "系统不是越大越好，而是先能稳定使用。", 34),
+            "key_results": _summary_key_results(voiceover),
+            "final_verdict": _clip(conclusion or "这一轮你已经拿到一个可执行、可复用的结论。", 34),
             "next_step": _clip(_next_step_from_text(voiceover), 30),
         }
     return {
@@ -478,10 +555,55 @@ def _metric_or_evidence_for_text(text: str) -> str:
     if number_match:
         return number_match.group(0)
     if "以前" in text and "现在" in text:
-        return "前后对照"
-    if "案例" in text or "真实" in text:
-        return "真实案例"
-    return "可复用路径"
+        return "前后对比"
+    for marker in ("截图", "日志", "记录", "执行", "流程", "闭环", "对比", "素材包"):
+        if marker in text:
+            return f"{marker}记录"
+    if "案例" in text:
+        return "执行记录"
+    return "前后对比"
+
+
+def _proof_items_from_text(text: str) -> list[str]:
+    cues = []
+    for phrase in ("前后对比", "执行记录", "流程闭环", "素材包", "步骤可追溯", "结果可见"):
+        if phrase in text:
+            cues.append(phrase)
+    if cues:
+        return _split_short_phrases("，".join(cues), 3, defaults=["前后对比", "执行记录", "流程闭环"])
+    if "以前" in text and "现在" in text:
+        return ["前后对比", "执行记录", "流程闭环"]
+    return _split_short_phrases(text, 3, defaults=["前后对比", "执行记录", "流程闭环"])
+
+
+def _summary_key_results(text: str) -> list[str]:
+    cues = []
+    for phrase in ("可执行", "可复用", "可追溯", "流程闭环", "问题已明确", "下一步清楚"):
+        if phrase in text:
+            cues.append(phrase)
+    if not cues:
+        cues = ["流程闭环", "阻塞点已明确", "下一步可执行"]
+    return _split_short_phrases("，".join(cues), 3, defaults=["流程闭环", "阻塞点已明确", "下一步可执行"])
+
+
+def _looks_like_summary_line(text: str) -> bool:
+    markers = ("所以", "结果", "最后", "总结", "收束", "下一步", "先跑通", "先完成", "接下来", "建议", "价值", "真正", "其实", "实际上", "靠的是", "不在", "而在")
+    return any(marker in text for marker in markers)
+
+
+def _looks_like_action_line(text: str) -> bool:
+    markers = ("先", "再", "然后", "接着", "开始", "跑通", "执行", "调用", "整理", "统一", "建立")
+    return any(marker in text for marker in markers)
+
+
+def _looks_like_concrete_evidence(text: str) -> bool:
+    markers = ("截图", "日志", "记录", "前后", "对比", "流程", "闭环", "素材包", "步骤", "场景", "结果")
+    return any(marker in text for marker in markers)
+
+
+def _looks_like_problem_line(text: str) -> bool:
+    markers = ("问题", "卡住", "散", "焦虑", "不够", "太多", "更慢", "更难", "没有")
+    return any(marker in text for marker in markers)
 
 
 def _next_step_from_text(text: str) -> str:

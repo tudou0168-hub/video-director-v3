@@ -71,6 +71,99 @@ def test_scene_pack_schema_accepts_minimal_planner_output():
     assert scene_pack["lint"]["status"] == "PASS"
 
 
+def test_scene_pack_rebalances_early_cta_into_summary_role():
+    storyboard = {
+        "scenes": [
+            {
+                "scene_id": "S01",
+                "role": "hook",
+                "duration": 4.0,
+                "narration": "为什么很多人记了很多笔记，最后还是写不出来？",
+                "visual_template": "hook_big_claim",
+            },
+            {
+                "scene_id": "S02",
+                "role": "cta",
+                "duration": 5.0,
+                "narration": "你有没有这种感觉，收藏越来越多，真正想输出的时候却一句都拼不出来？",
+                "visual_template": "checklist_cta",
+            },
+            {
+                "scene_id": "S03",
+                "role": "problem",
+                "duration": 5.0,
+                "narration": "问题不是不努力，而是入口太散，下一步要先统一入口。",
+                "visual_template": "broken_chain",
+            },
+            {
+                "scene_id": "S04",
+                "role": "cta",
+                "duration": 4.0,
+                "narration": "先跑通一个最小闭环，再去想扩展。",
+                "visual_template": "checklist_cta",
+            },
+        ]
+    }
+
+    scene_pack = build_scene_pack(
+        project_id="rebalance_cta",
+        narration_plan={"sentence_list": []},
+        storyboard=storyboard,
+        audio_timeline={"sentence_timings": []},
+    )
+    roles = [scene["role"] for scene in scene_pack["scenes"]]
+    template_types = [scene["template_type"] for scene in scene_pack["scenes"]]
+
+    assert roles[0] == "hook"
+    assert roles[1] in {"offer", "verdict"}
+    assert template_types[1] == "result_summary"
+    assert roles[-1] == "cta"
+    assert template_types[-1] == "final_cta"
+
+
+def test_scene_pack_proof_slots_use_concrete_evidence():
+    storyboard = {
+        "scenes": [
+            {
+                "scene_id": "S01",
+                "role": "hook",
+                "duration": 4.0,
+                "narration": "为什么很多人记了很多笔记，最后还是写不出来？",
+                "visual_template": "hook_big_claim",
+            },
+            {
+                "scene_id": "S02",
+                "role": "proof",
+                "duration": 5.0,
+                "narration": "以前每次都从零开始，现在可以直接拿到一版素材包。",
+                "visual_template": "case_study_card",
+            },
+            {
+                "scene_id": "S03",
+                "role": "cta",
+                "duration": 4.0,
+                "narration": "先跑通一个最小闭环，再去想扩展。",
+                "visual_template": "checklist_cta",
+            },
+        ]
+    }
+
+    scene_pack = build_scene_pack(
+        project_id="proof_concrete",
+        narration_plan={"sentence_list": []},
+        storyboard=storyboard,
+        audio_timeline={"sentence_timings": []},
+    )
+    proof_scene = scene_pack["scenes"][1]
+    metric = proof_scene["slots"]["metric_or_evidence"]
+    note = proof_scene["slots"]["credibility_note"]
+
+    assert proof_scene["role"] == "proof"
+    assert metric in {"前后对比", "执行记录", "流程闭环"} or "记录" in metric
+    assert "真实案例" not in metric
+    assert "经验" not in note
+
+
 def _valid_scene_for_contract(template_id: str) -> dict:
     fixtures = {
         "hook": {"role": "hook", "slots": {"main_claim": "系统先跑通", "pain_point": "收藏越多越难输出", "status_badge": "QUESTION", "visual_emphasis": "闭环"}},
