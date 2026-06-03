@@ -80,7 +80,7 @@ TEMPLATE_CONTRACTS: dict[str, TemplateContract] = {
     ),
     "before_after": _contract(
         template_id="before_after",
-        role_compatibility=("method", "offer", "proof"),
+        role_compatibility=("method", "offer", "proof", "verdict"),
         required_slots=("before_label", "after_label", "before_items", "after_items", "verdict"),
         optional_slots=("display_headline",),
         max_chars={"before_label": 12, "after_label": 12, "verdict": 36},

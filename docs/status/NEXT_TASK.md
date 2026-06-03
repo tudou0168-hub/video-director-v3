@@ -2,23 +2,25 @@
 
 ## 当前任务
 
-**P3.13B + P3.13C Contract-Driven Preview Validation and Regression** — 正在验证 P3.13A 的 offer / proof / CTA 契约是否真正进入 preview 链路，并确认没有破坏 knowledge / toolflow 回归。
+**P3.13D Lightweight Sales Polish + P3.14 Operator Runbook Prep** — 正在做 sales 轻量 polish，同时整理 operator runbook，让后续可以稳定复用这条主线。
 
 当前重点：
 
-- `outputs/v3_p313b_sales_contract_preview/`
-- `outputs/v3_p313c_knowledge_contract_regression_preview/`
-- `outputs/v3_p313c_toolflow_contract_regression_preview/`
-- `docs/status/P3_13B_CONTRACT_PREVIEW_VALIDATION.md`
-- `docs/status/P3_13C_CONTRACT_REGRESSION_REPORT.md`
+- `outputs/v3_p313d_sales_polish_preview/`
+- `docs/runbooks/CREATE_VIDEO.md`
+- `docs/runbooks/REVIEW_PREVIEW.md`
+- `docs/runbooks/RENDER_MP4.md`
+- `docs/runbooks/TROUBLESHOOTING.md`
+- `docs/status/P3_13D_LIGHTWEIGHT_SALES_POLISH.md`
+- `docs/status/P3_14_OPERATOR_RUNBOOK_PREP.md`
 
 ## 本轮改动
 
-### P3.13B / P3.13C
+### P3.13D
 
-- 重新跑 sales preview，确认 refs 进入 scene_pack / semantic_quality / approval 链路
-- 重新跑 knowledge / toolflow 回归 preview，确认契约没有引入回归
-- 本地执行 sales MP4 regression trial，音视频与同步均通过
+- 对 sales contract-driven preview 做轻量 polish，减少 repeated role / repeated template 噪音
+- 本地执行 sales MP4 polish trial，音视频与同步均通过
+- 新增 operator runbook，让后续可以稳定复用主线
 
 ## 验证
 
@@ -27,12 +29,16 @@
 - `PYTHONPATH=src .venv/bin/python3 -m pytest tests/test_semantic_quality_gate.py tests/test_scene_pack_contracts.py tests/test_preview_pipeline.py tests/test_tts_contract.py tests/test_render_gate.py tests/test_offer_proof_cta_contracts.py -q`
 - `PYTHONPATH=src .venv/bin/python3 -m compileall src tests`
 - `git diff --check`
-- `render_mp4 --approved` on `v3_p313b_sales_contract_preview`
+- `render_mp4 --approved` on `v3_p313d_sales_polish_preview`
 
 ## 交付物
 
-- `docs/status/P3_13B_CONTRACT_PREVIEW_VALIDATION.md`
-- `docs/status/P3_13C_CONTRACT_REGRESSION_REPORT.md`
+- `docs/status/P3_13D_LIGHTWEIGHT_SALES_POLISH.md`
+- `docs/status/P3_14_OPERATOR_RUNBOOK_PREP.md`
+- `docs/runbooks/CREATE_VIDEO.md`
+- `docs/runbooks/REVIEW_PREVIEW.md`
+- `docs/runbooks/RENDER_MP4.md`
+- `docs/runbooks/TROUBLESHOOTING.md`
 
 ## 注意
 

@@ -116,7 +116,7 @@ def test_scene_pack_rebalances_early_cta_into_summary_role():
 
     assert roles[0] == "hook"
     assert roles[1] in {"offer", "verdict"}
-    assert template_types[1] == "result_summary"
+    assert template_types[1] in {"result_summary", "case_study_card", "before_after"}
     assert roles[-1] == "cta"
     assert template_types[-1] == "final_cta"
 
@@ -307,3 +307,56 @@ def test_template_contract_lint_fails_forbidden_field_and_bounds():
 
     assert any("forbidden field" in item for item in errors)
     assert any("needs at least" in item for item in errors)
+
+
+def test_summary_like_scenes_rotate_away_from_repeated_result_summary():
+    storyboard = {
+        "scenes": [
+            {
+                "scene_id": "S01",
+                "role": "hook",
+                "duration": 4.0,
+                "narration": "为什么很多人总是在最后一步卡住？",
+                "visual_template": "hook_big_claim",
+            },
+            {
+                "scene_id": "S02",
+                "role": "verdict",
+                "duration": 4.0,
+                "narration": "很多人平时讲了很多价值，到了最后一步却不敢明确提出下一步动作。",
+                "visual_template": "checklist_cta",
+            },
+            {
+                "scene_id": "S03",
+                "role": "verdict",
+                "duration": 4.0,
+                "narration": "以前的做法，是想到哪说到哪，客户听懂了一部分，但不知道接下来要做什么。",
+                "visual_template": "checklist_cta",
+            },
+            {
+                "scene_id": "S04",
+                "role": "verdict",
+                "duration": 4.0,
+                "narration": "现在更有效的做法，是把成交拆成四步：问题、代价、方案、下一步。",
+                "visual_template": "checklist_cta",
+            },
+            {
+                "scene_id": "S05",
+                "role": "cta",
+                "duration": 4.0,
+                "narration": "先做一版最小成交流程，再去优化细节。",
+                "visual_template": "checklist_cta",
+            },
+        ]
+    }
+
+    scene_pack = build_scene_pack(
+        project_id="summary_rotation",
+        narration_plan={"sentence_list": []},
+        storyboard=storyboard,
+        audio_timeline={"sentence_timings": []},
+    )
+
+    summary_like_templates = [scene["template_type"] for scene in scene_pack["scenes"] if scene["role"] in {"offer", "verdict"}]
+    assert len(set(summary_like_templates)) >= 2
+    assert scene_pack["scenes"][-1]["template_type"] == "final_cta"

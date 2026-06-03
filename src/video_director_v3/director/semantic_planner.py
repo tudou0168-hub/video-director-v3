@@ -159,7 +159,11 @@ def _template_type_for_scene(scene: dict[str, Any], role: str, index: int, total
     if visual_template in VISUAL_TEMPLATE_TO_CONTRACT:
         template_type = VISUAL_TEMPLATE_TO_CONTRACT[visual_template]
         if template_type == "final_cta" and index != total - 1:
-            return "result_summary" if role in {"offer", "verdict", "cta"} else "before_after"
+            if role in {"offer", "verdict"}:
+                return _summary_variant_for_scene(index, total)
+            if role == "cta":
+                return "final_cta" if index == total - 1 else _summary_variant_for_scene(index, total)
+            return "before_after"
         if template_type == "before_after" and role == "proof":
             return "proof"
         if template_type == "problem_conflict" and role == "hook":
@@ -168,9 +172,9 @@ def _template_type_for_scene(scene: dict[str, Any], role: str, index: int, total
     if index == total - 1 and role in {"cta", "offer", "verdict"}:
         return "final_cta"
     if role == "verdict":
-        return "result_summary"
+        return _summary_variant_for_scene(index, total)
     if role == "offer":
-        return "final_cta" if index == total - 1 else "result_summary"
+        return "final_cta" if index == total - 1 else _summary_variant_for_scene(index, total)
     if role == "hook":
         return "hook"
     if role in {"problem", "conflict"}:
@@ -180,6 +184,16 @@ def _template_type_for_scene(scene: dict[str, Any], role: str, index: int, total
     if role in {"cta", "offer"}:
         return "final_cta"
     return "before_after"
+
+
+def _summary_variant_for_scene(index: int, total: int) -> str:
+    """Rotate summary-like scenes across a small reusable template set.
+
+    This keeps offer / verdict scenes readable while avoiding repeated
+    result_summary blocks in contract-driven previews.
+    """
+    cycle = ("result_summary", "case_study_card", "before_after")
+    return cycle[index % len(cycle)] if total else "result_summary"
 
 
 def _rebalance_scene_role(
@@ -218,10 +232,12 @@ def _rebalance_scene_role(
 
     if normalized == "offer":
         if index < max(2, int(total * 0.55)):
-            return "verdict" if summary_like else "method"
-        if summary_like and not proof_like:
-            return "verdict"
-        return "offer"
+            return "method" if action_like or summary_like else "method"
+        if summary_like and previous_role in {"offer", "verdict"}:
+            return "method"
+        if summary_like:
+            return "offer"
+        return "method" if action_like and not proof_like else "offer"
 
     if normalized in {"problem", "conflict"}:
         if summary_like or (previous_role in {"problem", "conflict"} and (action_like or proof_like)):
@@ -240,6 +256,16 @@ def _rebalance_scene_role(
             return "verdict"
         if summary_like and not proof_like:
             return "verdict"
+
+    if normalized == "verdict":
+        if index < last_index:
+            if summary_like and previous_role in {"offer", "verdict"}:
+                return "method"
+            if summary_like:
+                return "offer"
+            if action_like:
+                return "offer"
+            return "method"
 
     return normalized
 
