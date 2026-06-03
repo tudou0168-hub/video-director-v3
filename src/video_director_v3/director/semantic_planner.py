@@ -400,7 +400,7 @@ def _slots_for_template(
     if template_type == "tool_stack":
         stack = _tool_stack(voiceover)
         return {
-            "stack_title": headline,
+            "stack_title": _clip(f"{_keyword_from_text(voiceover)}工具栈", 18),
             "tools": [item["tool"] for item in stack],
             "tool_roles": [item["role"] for item in stack],
             "workflow_result": _clip(conclusion or "工具各司其职，结果才能稳定产出。", 34),
@@ -607,9 +607,10 @@ def _tool_stack(text: str) -> list[dict[str, str]]:
         if tool in text and all(existing["tool"] != tool for existing in tools):
             tools.append({"tool": tool, "role": role})
     if not tools:
-        tools = known[:3]
+        tools = [{"tool": tool, "role": role} for tool, role in known[:3]]
     while len(tools) < 3:
-        tools.append(known[len(tools)])
+        tool, role = known[len(tools)]
+        tools.append({"tool": tool, "role": role})
     return tools[:4]
 
 

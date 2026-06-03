@@ -169,7 +169,7 @@ TEMPLATE_CONTRACTS: dict[str, TemplateContract] = {
     ),
     "case_study_card": _contract(
         template_id="case_study_card",
-        role_compatibility=("proof", "offer"),
+        role_compatibility=("proof", "offer", "verdict"),
         required_slots=("case_title", "situation", "action", "result", "lesson"),
         max_chars={"case_title": 28, "situation": 24, "action": 24, "result": 24, "lesson": 28},
         fallback_template="simple_card",
