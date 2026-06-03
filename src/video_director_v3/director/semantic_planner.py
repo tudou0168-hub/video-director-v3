@@ -6,11 +6,14 @@ import re
 from pathlib import Path
 from typing import Any
 
+from video_director_v3.director.cta_policy import load_default_cta_policy
+from video_director_v3.director.offer_profile import load_default_offer_profile
 from video_director_v3.director.scene_pack_schema import (
     SCENE_PACK_VERSION,
     normalize_scene_role,
     validate_scene_pack,
 )
+from video_director_v3.director.proof_asset import load_default_proof_asset
 from video_director_v3.director.template_contracts import lint_scene_pack_contracts
 
 
@@ -39,6 +42,9 @@ def build_scene_pack(
     storyboard: dict[str, Any],
     audio_timeline: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    offer_profile = load_default_offer_profile()
+    proof_asset = load_default_proof_asset()
+    cta_policy = load_default_cta_policy()
     scenes = []
     all_scenes = storyboard.get("scenes", [])
     for index, scene in enumerate(all_scenes):
@@ -54,7 +60,30 @@ def build_scene_pack(
         headline = _headline_from_voiceover(voiceover, role)
         subtitle = _subtitle_from_voiceover(voiceover, headline)
         display_conclusion = _display_conclusion(voiceover, subtitle)
-        slots = _slots_for_template(template_type, headline, subtitle, display_conclusion, voiceover, role)
+        contract_context = _contract_context_for_scene(
+            role=role,
+            template_type=template_type,
+            index=index,
+            total=len(all_scenes),
+            offer_profile=offer_profile.as_dict(),
+            proof_asset=proof_asset.as_dict(),
+            cta_policy=cta_policy.as_dict(),
+        )
+        slot_context = {
+            **contract_context,
+            "offer_profile": offer_profile.as_dict(),
+            "proof_asset": proof_asset.as_dict(),
+            "cta_policy": cta_policy.as_dict(),
+        }
+        slots = _slots_for_template(
+            template_type,
+            headline,
+            subtitle,
+            display_conclusion,
+            voiceover,
+            role,
+            contract_context=slot_context,
+        )
         scenes.append({
             "id": scene.get("scene_id") or f"S{index + 1:02d}",
             "role": role,
@@ -66,6 +95,7 @@ def build_scene_pack(
             "display_conclusion": display_conclusion,
             "template_type": template_type,
             "slots": slots,
+            **contract_context,
             "qa_rules": {
                 "headline_max_chars": 32,
                 "requires_voiceover": True,
@@ -253,7 +283,13 @@ def _slots_for_template(
     conclusion: str,
     voiceover: str,
     role: str,
+    *,
+    contract_context: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
+    contract_context = contract_context or {}
+    offer_profile = contract_context.get("offer_profile", {})
+    proof_asset = contract_context.get("proof_asset", {})
+    cta_policy = contract_context.get("cta_policy", {})
     if template_type == "hook":
         return {
             "main_claim": headline,
@@ -278,18 +314,37 @@ def _slots_for_template(
             "verdict": _clip(conclusion or "把链路接起来，动作才会稳定。", 36),
         }
     if template_type == "proof":
+        metric_or_evidence = _metric_or_evidence_for_text(voiceover)
+        if _looks_generic_proof(metric_or_evidence) and isinstance(proof_asset, dict):
+            metric_or_evidence = str(proof_asset.get("metric_source") or metric_or_evidence).strip()
         return {
             "proof_title": headline,
-            "proof_items": _proof_items_from_text(voiceover),
-            "metric_or_evidence": _metric_or_evidence_for_text(voiceover),
-            "credibility_note": _clip(conclusion or "这是有执行记录的路径，不是空话。", 36),
+            "proof_items": _proof_items_from_text(voiceover, proof_asset=proof_asset),
+            "metric_or_evidence": metric_or_evidence,
+            "credibility_note": _clip(
+                conclusion
+                or str(proof_asset.get("credibility_note") or "这是有执行记录的路径，不是空话。"),
+                36,
+            ),
         }
     if template_type == "final_cta":
+        cta_text = _cta_text_for_text(voiceover)
+        if _looks_generic_cta(cta_text) and isinstance(cta_policy, dict):
+            cta_text = str(cta_policy.get("preferred_cta_text") or cta_text).strip()
+        avoid_phrases = _avoid_phrases_for_cta(voiceover)
+        policy_forbidden = [str(item).strip() for item in cta_policy.get("forbidden_phrases", []) if str(item).strip()]
+        for item in policy_forbidden:
+            if item not in avoid_phrases:
+                avoid_phrases.append(item)
         return {
-            "final_claim": headline,
-            "next_step": _clip(conclusion or "先完成一次真实执行，再继续升级。", 34),
-            "cta_text": _cta_text_for_text(voiceover),
-            "avoid_phrases": _avoid_phrases_for_cta(voiceover),
+            "final_claim": _clip(str(offer_profile.get("core_promise") or headline), 30),
+            "next_step": _clip(
+                conclusion
+                or str(offer_profile.get("next_step") or "先完成一次真实执行，再继续升级。"),
+                34,
+            ),
+            "cta_text": cta_text,
+            "avoid_phrases": avoid_phrases,
         }
     if template_type == "method_steps":
         steps = _sentence_steps(voiceover)
@@ -348,9 +403,9 @@ def _slots_for_template(
             "situation": _clip(situation, 24),
             "action": _clip(action, 24),
             "result": _clip(result, 24),
-            "lesson": _clip(conclusion or "先跑通最小路径，再扩大系统规模。", 28),
+            "lesson": _clip(conclusion or str(offer_profile.get("core_promise") or "先跑通最小路径，再扩大系统规模。"), 28),
             "metric_or_evidence": metric_or_evidence,
-            "credibility_note": _clip("有执行记录，不是空谈。", 22),
+            "credibility_note": _clip(str(proof_asset.get("credibility_note") or "有执行记录，不是空谈。"), 22),
         }
     if template_type == "concept_layers":
         layers = _concept_layers(voiceover)
@@ -372,8 +427,14 @@ def _slots_for_template(
         return {
             "result_title": _clip(headline, 28),
             "key_results": _summary_key_results(voiceover),
-            "final_verdict": _clip(conclusion or "这一轮你已经拿到一个可执行、可复用的结论。", 34),
-            "next_step": _clip(_next_step_from_text(voiceover), 30),
+            "final_verdict": _clip(
+                conclusion or str(offer_profile.get("core_promise") or "这一轮你已经拿到一个可执行、可复用的结论。"),
+                34,
+            ),
+            "next_step": _clip(
+                _next_step_from_text(voiceover) or str(offer_profile.get("next_step") or ""),
+                30,
+            ),
         }
     return {
         "final_claim": headline,
@@ -426,6 +487,47 @@ def _display_conclusion(voiceover: str, subtitle: str) -> str:
         if tail:
             return _clip(tail, 38)
     return _clip(subtitle or voiceover, 38)
+
+
+def _contract_context_for_scene(
+    *,
+    role: str,
+    template_type: str,
+    index: int,
+    total: int,
+    offer_profile: dict[str, Any],
+    proof_asset: dict[str, Any],
+    cta_policy: dict[str, Any],
+) -> dict[str, Any]:
+    context: dict[str, Any] = {}
+    if template_type in {"result_summary", "final_cta"} or role in {"offer", "cta", "verdict"}:
+        context["offer_profile_ref"] = str(offer_profile.get("profile_id") or "default_ai_content_system")
+        context["cta_policy_ref"] = str(cta_policy.get("policy_id") or "default_value_first")
+        stage = _cta_stage_for_scene(index=index, total=total, role=role, template_type=template_type)
+        context["cta_stage"] = stage
+        context["cta_strength"] = _cta_strength_for_stage(stage, role=role, template_type=template_type)
+    if template_type in {"proof", "case_study_card", "knowledge_graph", "progress_tracker"} or role == "proof":
+        context["proof_asset_ref"] = str(proof_asset.get("asset_id") or "default_ai_content_system_proof")
+    return context
+
+
+def _cta_stage_for_scene(*, index: int, total: int, role: str, template_type: str) -> str:
+    if index >= max(0, total - 1) and (role == "cta" or template_type == "final_cta"):
+        return "final"
+    ratio = index / max(total - 1, 1)
+    if ratio >= 0.78:
+        return "late"
+    if ratio >= 0.45:
+        return "mid"
+    return "opening"
+
+
+def _cta_strength_for_stage(stage: str, *, role: str, template_type: str) -> str:
+    if stage == "final" or template_type == "final_cta":
+        return "strong"
+    if stage == "late" or role in {"offer", "verdict"}:
+        return "normal"
+    return "soft"
 
 
 def _before_after_from_text(text: str) -> tuple[str, str]:
@@ -564,11 +666,27 @@ def _metric_or_evidence_for_text(text: str) -> str:
     return "前后对比"
 
 
-def _proof_items_from_text(text: str) -> list[str]:
+def _looks_generic_proof(text: str) -> bool:
+    compact = text.strip()
+    if not compact:
+        return True
+    if compact in {"真实案例", "经验", "可复用", "已验证", "已经跑通", "结果看得见"}:
+        return True
+    return any(term in compact for term in ("真实案例", "经验", "案例", "实例", "已经跑通", "可复用"))
+
+
+def _proof_items_from_text(text: str, proof_asset: dict[str, Any] | None = None) -> list[str]:
     cues = []
     for phrase in ("前后对比", "执行记录", "流程闭环", "素材包", "步骤可追溯", "结果可见"):
         if phrase in text:
             cues.append(phrase)
+    if proof_asset:
+        for item in proof_asset.get("evidence_items", []):
+            value = str(item).strip()
+            if value and value not in cues:
+                cues.append(value)
+                if len(cues) >= 4:
+                    break
     if cues:
         return _split_short_phrases("，".join(cues), 3, defaults=["前后对比", "执行记录", "流程闭环"])
     if "以前" in text and "现在" in text:
@@ -653,6 +771,13 @@ def _cta_text_for_text(text: str) -> str:
     if "跑" in text:
         return "先跑一遍"
     return "现在开始"
+
+
+def _looks_generic_cta(text: str) -> bool:
+    compact = text.strip()
+    if not compact:
+        return True
+    return compact in {"现在开始", "先开始", "先收藏", "继续看下去", "下一步"}
 
 
 def _avoid_phrases_for_cta(text: str) -> list[str]:

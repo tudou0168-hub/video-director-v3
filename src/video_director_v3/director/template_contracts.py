@@ -107,7 +107,7 @@ TEMPLATE_CONTRACTS: dict[str, TemplateContract] = {
         optional_slots=("display_subtitle",),
         max_chars={"final_claim": 30, "next_step": 34, "cta_text": 18},
         min_items={"avoid_phrases": 1},
-        max_items={"avoid_phrases": 4},
+        max_items={"avoid_phrases": 8},
         fallback_template="simple_verdict",
         semantic_intent="close_with_action",
     ),

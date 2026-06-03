@@ -1,0 +1,15 @@
+{
+  "asset_id": "default_ai_content_system_proof",
+  "claim_supported": "系统先跑通，再谈扩展",
+  "evidence_items": [
+    "真实预览可播放",
+    "音视频同步通过",
+    "结构化 scene_pack 可追踪"
+  ],
+  "metric_source": "preview_report / sync_report / scene_pack",
+  "credibility_note": "有执行记录，非空话",
+  "factual_boundaries": [
+    "不伪造数字",
+    "不编造结果"
+  ]
+}

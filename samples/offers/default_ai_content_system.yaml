@@ -1,0 +1,13 @@
+{
+  "profile_id": "default_ai_content_system",
+  "target_user": "需要把知识、素材和动作接成闭环的内容创作者",
+  "core_promise": "先跑通一个最小成交流程，再继续优化",
+  "delivery_shape": "文案 -> TTS -> 预览 -> 确认 -> 发布",
+  "risk_reversal": "先用最小闭环验证，再逐步扩展",
+  "next_step": "先做一版最小成交流程",
+  "prohibited_cta": [
+    "评论区打关键词领取资料",
+    "私信领取资料",
+    "评论区回复领取"
+  ]
+}

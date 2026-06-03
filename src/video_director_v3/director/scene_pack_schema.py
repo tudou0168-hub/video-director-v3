@@ -36,6 +36,17 @@ REQUIRED_SCENE_FIELDS = {
     "qa_rules",
 }
 
+OPTIONAL_SCENE_EXTENSIONS = {
+    "offer_profile_ref",
+    "proof_asset_ref",
+    "cta_policy_ref",
+    "cta_stage",
+    "cta_strength",
+}
+
+CTA_STAGES = {"opening", "mid", "late", "final"}
+CTA_STRENGTHS = {"soft", "normal", "strong"}
+
 ROLE_ALIASES = {
     "pain": "problem",
     "explain": "method",
@@ -86,4 +97,19 @@ def validate_scene(scene: dict[str, Any], index: int = 0) -> list[str]:
         errors.append(f"{prefix}.slots must be an object")
     if not isinstance(scene.get("qa_rules"), dict):
         errors.append(f"{prefix}.qa_rules must be an object")
+
+    for field in ("offer_profile_ref", "proof_asset_ref", "cta_policy_ref"):
+        if field in scene:
+            value = scene.get(field)
+            if not isinstance(value, str) or not value.strip():
+                errors.append(f"{prefix}.{field} must be a non-empty string when present")
+
+    if "cta_stage" in scene:
+        value = scene.get("cta_stage")
+        if value not in CTA_STAGES:
+            errors.append(f"{prefix}.cta_stage {value!r} is not supported")
+    if "cta_strength" in scene:
+        value = scene.get("cta_strength")
+        if value not in CTA_STRENGTHS:
+            errors.append(f"{prefix}.cta_strength {value!r} is not supported")
     return errors

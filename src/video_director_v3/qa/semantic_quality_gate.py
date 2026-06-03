@@ -7,6 +7,10 @@ from pathlib import Path
 from statistics import mean
 from typing import Any
 
+from video_director_v3.director.cta_policy import load_default_cta_policy
+from video_director_v3.director.offer_profile import load_default_offer_profile
+from video_director_v3.director.proof_asset import load_default_proof_asset, proof_metric_is_suspicious
+
 
 CTA_TEMPLATE_HINTS = {
     "button_banner",
@@ -121,6 +125,9 @@ def build_semantic_quality_report(
     proof_info = _analyze_proof_strength(merged_scenes)
     repetition_info = _analyze_scene_repetition(merged_scenes)
     hook_info = _analyze_hook_strength(merged_scenes)
+    offer_info = _analyze_offer_profile(scene_pack.get("scenes", []))
+    proof_asset_info = _analyze_proof_asset(scene_pack.get("scenes", []))
+    cta_policy_info = _analyze_cta_policy(scene_pack.get("scenes", []))
     chinese_dominance_score = round(_chinese_dominance_score(merged_scenes), 3)
 
     per_scene_scores = []
@@ -134,6 +141,9 @@ def build_semantic_quality_report(
             proof_info=proof_info,
             repetition_info=repetition_info,
             hook_info=hook_info,
+            offer_info=offer_info,
+            proof_asset_info=proof_asset_info,
+            cta_policy_info=cta_policy_info,
         )
         per_scene_scores.append(
             {
@@ -169,6 +179,9 @@ def build_semantic_quality_report(
         hard_fail_reasons.append("Chinese dominance too low")
     if role_template_mismatch_count > 0:
         hard_fail_reasons.append("role/template contract mismatch")
+    hard_fail_reasons.extend(offer_info["hard_fail_reasons"])
+    hard_fail_reasons.extend(proof_asset_info["hard_fail_reasons"])
+    hard_fail_reasons.extend(cta_policy_info["hard_fail_reasons"])
     if not contact_sheet_exists:
         hard_fail_reasons.append("contact sheet missing")
     if stage_status.get("studio_native_preview") != "PASS" or (review_frames_data or {}).get("status") != "PASS":
@@ -187,6 +200,9 @@ def build_semantic_quality_report(
         proof_strength_risk=proof_info["proof_strength_risk"],
         scene_repetition_risk=repetition_info["repetition_risk"],
         hook_strength_risk=hook_info["hook_strength_risk"],
+        offer_profile_risk=offer_info["offer_profile_risk"],
+        proof_asset_risk=proof_asset_info["proof_asset_risk"],
+        cta_policy_risk=cta_policy_info["cta_policy_risk"],
     )
 
     gate_status = "FAIL" if hard_fail_reasons else "PASS"
@@ -232,6 +248,9 @@ def build_semantic_quality_report(
         "proof_strength": proof_info,
         "scene_repetition": repetition_info,
         "hook_strength": hook_info,
+        "offer_profile": offer_info,
+        "proof_asset": proof_asset_info,
+        "cta_policy": cta_policy_info,
         "worst_3_scenes": worst_3_scenes,
         "hard_fail_reasons": hard_fail_reasons,
         "contact_sheet_exists": contact_sheet_exists,
@@ -385,6 +404,214 @@ def _analyze_hook_strength(scenes: list[dict[str, Any]]) -> dict[str, Any]:
     }
 
 
+def _analyze_offer_profile(scenes: list[dict[str, Any]]) -> dict[str, Any]:
+    active = any(scene.get("offer_profile_ref") for scene in scenes)
+    offer_profile = load_default_offer_profile()
+    offer_scene_ids = [scene.get("id") for scene in scenes if _is_offer_scene(scene) and scene.get("id")]
+    missing_offer_profile_ids = [scene.get("id") for scene in scenes if _is_offer_scene(scene) and not scene.get("offer_profile_ref") and scene.get("id")]
+    missing_core_promise_ids: list[str] = []
+    for scene in scenes:
+        if _is_offer_scene(scene) and scene.get("offer_profile_ref") and not offer_profile.core_promise.strip() and scene.get("id"):
+            missing_core_promise_ids.append(scene["id"])
+
+    if not active:
+        return {
+            "offer_scene_count": len(offer_scene_ids),
+            "offer_scene_ids": offer_scene_ids,
+            "missing_offer_profile_count": 0,
+            "missing_offer_profile_ids": [],
+            "missing_core_promise_count": 0,
+            "missing_core_promise_ids": [],
+            "offer_profile_risk": "low" if offer_scene_ids else "skip",
+            "hard_fail_reasons": [],
+        }
+
+    hard_fail_reasons: list[str] = []
+    if missing_offer_profile_ids:
+        hard_fail_reasons.append("offer_profile_ref missing on offer scenes")
+    if missing_core_promise_ids or not offer_profile.core_promise.strip():
+        hard_fail_reasons.append("offer core promise missing")
+
+    if hard_fail_reasons:
+        risk = "high"
+    elif len(offer_scene_ids) >= 4:
+        risk = "medium"
+    else:
+        risk = "low"
+
+    return {
+        "offer_scene_count": len(offer_scene_ids),
+        "offer_scene_ids": offer_scene_ids,
+        "missing_offer_profile_count": len(missing_offer_profile_ids),
+        "missing_offer_profile_ids": missing_offer_profile_ids,
+        "missing_core_promise_count": len(missing_core_promise_ids),
+        "missing_core_promise_ids": missing_core_promise_ids,
+        "offer_profile_risk": risk,
+        "hard_fail_reasons": hard_fail_reasons,
+    }
+
+
+def _analyze_proof_asset(scenes: list[dict[str, Any]]) -> dict[str, Any]:
+    active = any(scene.get("proof_asset_ref") for scene in scenes)
+    proof_asset = load_default_proof_asset()
+    proof_scene_ids = [scene.get("id") for scene in scenes if _is_proof_scene(scene) and scene.get("id")]
+    generic_proof_ids: list[str] = []
+    fake_metric_ids: list[str] = []
+    missing_proof_ref_ids: list[str] = []
+    for scene in scenes:
+        if not _is_proof_scene(scene):
+            continue
+        scene_id = scene.get("id")
+        if scene_id and not scene.get("proof_asset_ref"):
+            missing_proof_ref_ids.append(scene_id)
+        blob = " ".join(_slot_strings(scene.get("slots", {})))
+        if _is_abstract_proof(blob):
+            if scene_id:
+                generic_proof_ids.append(scene_id)
+        metric = str(scene.get("slots", {}).get("metric_or_evidence", "")).strip()
+        if metric and proof_metric_is_suspicious(metric):
+            if scene_id:
+                fake_metric_ids.append(scene_id)
+
+    if not active:
+        return {
+            "proof_scene_count": len(proof_scene_ids),
+            "proof_scene_ids": proof_scene_ids,
+            "generic_proof_count": 0,
+            "generic_proof_ids": [],
+            "fake_metric_count": 0,
+            "fake_metric_ids": [],
+            "missing_proof_ref_count": 0,
+            "missing_proof_ref_ids": [],
+            "proof_asset_risk": "low" if proof_scene_ids else "skip",
+            "hard_fail_reasons": [],
+        }
+
+    hard_fail_reasons: list[str] = []
+    if missing_proof_ref_ids:
+        hard_fail_reasons.append("proof_asset_ref missing on proof scenes")
+    if fake_metric_ids:
+        hard_fail_reasons.append("fake proof metric detected")
+
+    if hard_fail_reasons:
+        risk = "high"
+    elif generic_proof_ids:
+        risk = "medium"
+    else:
+        risk = "low"
+
+    return {
+        "proof_scene_count": len(proof_scene_ids),
+        "proof_scene_ids": proof_scene_ids,
+        "generic_proof_count": len(generic_proof_ids),
+        "generic_proof_ids": generic_proof_ids,
+        "fake_metric_count": len(fake_metric_ids),
+        "fake_metric_ids": fake_metric_ids,
+        "missing_proof_ref_count": len(missing_proof_ref_ids),
+        "missing_proof_ref_ids": missing_proof_ref_ids,
+        "proof_asset_risk": risk,
+        "hard_fail_reasons": hard_fail_reasons,
+    }
+
+
+def _analyze_cta_policy(scenes: list[dict[str, Any]]) -> dict[str, Any]:
+    active = any(scene.get("cta_policy_ref") for scene in scenes)
+    cta_policy = load_default_cta_policy()
+    cta_scene_ids = [scene.get("id") for scene in scenes if _is_cta_scene(scene) and scene.get("id")]
+    early_cta_ids: list[str] = []
+    repeated_cta_ids: list[str] = []
+    forbidden_cta_ids: list[str] = []
+
+    cta_indices = [(index, scene) for index, scene in enumerate(scenes) if _is_cta_scene(scene)]
+    early_threshold = max(1, int(len(scenes) * cta_policy.early_cta_ratio)) if len(scenes) >= 8 else 0
+    seen_cta_texts: set[str] = set()
+    for index, scene in cta_indices:
+        scene_id = scene.get("id")
+        stage = str(scene.get("cta_stage") or "").strip().lower()
+        text = " ".join(
+            item
+            for item in [
+                _scene_headline(scene),
+                str(scene.get("display_subtitle") or "").strip(),
+                str(scene.get("display_conclusion") or "").strip(),
+                str(scene.get("voiceover") or "").strip(),
+                str(scene.get("slots", {}).get("cta_text") or "").strip(),
+                str(scene.get("slots", {}).get("next_step") or "").strip(),
+            ]
+            if item
+        )
+        if scene_id and text in seen_cta_texts:
+            repeated_cta_ids.append(scene_id)
+        seen_cta_texts.add(text)
+        if early_threshold and index < early_threshold:
+            if scene_id:
+                early_cta_ids.append(scene_id)
+        if stage == "opening" and scene_id:
+            early_cta_ids.append(scene_id)
+        proof_count_before_final_cta = sum(1 for prior in scenes[:index] if _is_proof_scene(prior))
+        if stage == "final" and proof_count_before_final_cta < cta_policy.min_proof_scenes_before_final_cta:
+            if scene_id:
+                early_cta_ids.append(scene_id)
+        for phrase in cta_policy.forbidden_phrases:
+            if phrase and phrase in text and scene_id:
+                forbidden_cta_ids.append(scene_id)
+
+    missing_policy_ref_ids = [scene.get("id") for scene in scenes if _is_cta_scene(scene) and not scene.get("cta_policy_ref") and scene.get("id")]
+    early_cta_ids = list(dict.fromkeys(early_cta_ids))
+    repeated_cta_ids = list(dict.fromkeys(repeated_cta_ids))
+    forbidden_cta_ids = list(dict.fromkeys(forbidden_cta_ids))
+
+    if not active:
+        return {
+            "cta_scene_count": len(cta_scene_ids),
+            "cta_scene_ids": cta_scene_ids,
+            "early_cta_count": 0,
+            "early_cta_ids": [],
+            "repeated_cta_count": 0,
+            "repeated_cta_ids": [],
+            "forbidden_cta_count": 0,
+            "forbidden_cta_ids": [],
+            "missing_policy_ref_count": 0,
+            "missing_policy_ref_ids": [],
+            "cta_policy_risk": "low" if cta_scene_ids else "skip",
+            "hard_fail_reasons": [],
+        }
+
+    hard_fail_reasons: list[str] = []
+    if missing_policy_ref_ids:
+        hard_fail_reasons.append("cta_policy_ref missing on CTA scenes")
+    if forbidden_cta_ids:
+        hard_fail_reasons.append("forbidden CTA phrase detected")
+
+    if hard_fail_reasons:
+        risk = "high"
+    elif len(cta_scene_ids) > cta_policy.max_cta_scenes or len(early_cta_ids) > 1 or len(repeated_cta_ids) > cta_policy.repeated_cta_soft_limit:
+        risk = "medium"
+    else:
+        risk = "low"
+
+    return {
+        "cta_scene_count": len(cta_scene_ids),
+        "cta_scene_ids": cta_scene_ids,
+        "early_cta_count": len(early_cta_ids),
+        "early_cta_ids": early_cta_ids,
+        "repeated_cta_count": len(repeated_cta_ids),
+        "repeated_cta_ids": repeated_cta_ids,
+        "forbidden_cta_count": len(forbidden_cta_ids),
+        "forbidden_cta_ids": forbidden_cta_ids,
+        "missing_policy_ref_count": len(missing_policy_ref_ids),
+        "missing_policy_ref_ids": missing_policy_ref_ids,
+        "cta_policy_risk": risk,
+        "hard_fail_reasons": hard_fail_reasons,
+    }
+
+
+def _is_offer_scene(scene: dict[str, Any]) -> bool:
+    role = _normalized_role(scene)
+    template_type = _normalized_template(scene)
+    return role in {"offer", "verdict", "cta"} or template_type in {"result_summary", "final_cta"}
+
+
 def _scene_quality_score(
     scene: dict[str, Any],
     director_scene: dict[str, Any] | None,
@@ -395,6 +622,9 @@ def _scene_quality_score(
     proof_info: dict[str, Any],
     repetition_info: dict[str, Any],
     hook_info: dict[str, Any],
+    offer_info: dict[str, Any],
+    proof_asset_info: dict[str, Any],
+    cta_policy_info: dict[str, Any],
 ) -> tuple[float, list[str], list[str]]:
     semantic_score = scene.get("semantic_score", {})
     issues: list[str] = []
@@ -429,6 +659,42 @@ def _scene_quality_score(
         issues.append("weak_hook")
         structural_risks.append("weak_hook")
         score -= 0.12 if hook_info["hook_strength_risk"] == "medium" else 0.18
+    if scene_id in offer_info["missing_offer_profile_ids"]:
+        issues.append("missing_offer_profile_ref")
+        structural_risks.append("missing_offer_profile_ref")
+        score -= 0.08
+    if scene_id in offer_info["missing_core_promise_ids"]:
+        issues.append("missing_core_promise")
+        structural_risks.append("missing_core_promise")
+        score -= 0.12
+    if scene_id in proof_asset_info["missing_proof_ref_ids"]:
+        issues.append("missing_proof_asset_ref")
+        structural_risks.append("missing_proof_asset_ref")
+        score -= 0.08
+    if scene_id in proof_asset_info["generic_proof_ids"]:
+        issues.append("generic_proof")
+        structural_risks.append("generic_proof")
+        score -= 0.10
+    if scene_id in proof_asset_info["fake_metric_ids"]:
+        issues.append("fake_proof_metric")
+        structural_risks.append("fake_proof_metric")
+        score -= 0.18
+    if scene_id in cta_policy_info["missing_policy_ref_ids"]:
+        issues.append("missing_cta_policy_ref")
+        structural_risks.append("missing_cta_policy_ref")
+        score -= 0.08
+    if scene_id in cta_policy_info["forbidden_cta_ids"]:
+        issues.append("forbidden_cta_phrase")
+        structural_risks.append("forbidden_cta_phrase")
+        score -= 0.20
+    if scene_id in cta_policy_info["early_cta_ids"]:
+        issues.append("early_cta_policy")
+        structural_risks.append("early_cta_policy")
+        score -= 0.06
+    if scene_id in cta_policy_info["repeated_cta_ids"]:
+        issues.append("repeated_cta_policy")
+        structural_risks.append("repeated_cta_policy")
+        score -= 0.05
     if director_scene and director_scene.get("template_contract_fallback_used"):
         issues.append("fallback_used")
         structural_risks.append("fallback_used")
@@ -500,12 +766,18 @@ def _overall_quality_score(
     proof_strength_risk: str,
     scene_repetition_risk: str,
     hook_strength_risk: str,
+    offer_profile_risk: str,
+    proof_asset_risk: str,
+    cta_policy_risk: str,
 ) -> float:
     score = average_scene_score * 100.0
     score -= _risk_penalty(cta_distribution_risk, low=0.0, medium=4.0, high=8.0)
     score -= _risk_penalty(proof_strength_risk, low=0.0, medium=3.0, high=6.0)
     score -= _risk_penalty(scene_repetition_risk, low=0.0, medium=3.0, high=6.0)
     score -= _risk_penalty(hook_strength_risk, low=0.0, medium=2.0, high=4.0)
+    score -= _risk_penalty(offer_profile_risk, low=0.0, medium=2.0, high=5.0)
+    score -= _risk_penalty(proof_asset_risk, low=0.0, medium=2.0, high=5.0)
+    score -= _risk_penalty(cta_policy_risk, low=0.0, medium=3.0, high=7.0)
     score -= fallback_ratio * 20.0
     score -= placeholder_count * 15.0
     score -= raw_text_dependency_count * 20.0

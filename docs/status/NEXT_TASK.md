@@ -2,46 +2,48 @@
 
 ## 当前任务
 
-**P3.12B + P3.12C MP4 Trial and Publish Readiness Review** — 已对 `v3_p311c_sales_repair_preview` 完成本地 MP4 trial，并输出 publish readiness review；当前等待最终人工确认后进入下一阶段。
+**P3.13A Offer-Proof-CTA System** — 正在把成交结构独立成显式契约层，补齐 offer / proof / CTA 资产与 QA gate，保持主线不变、不 render MP4。
 
-当前候选片：
+当前重点：
 
-- `outputs/v3_p311c_sales_repair_preview/`
-- `rendered/final_video.mp4`（本地，仅 trial 用）
-- 无提交到 GitHub 的 MP4
+- `samples/offers/default_ai_content_system.yaml`
+- `samples/proofs/default_ai_content_system.yaml`
+- `samples/cta/default_value_first.yaml`
+- `src/video_director_v3/director/offer_profile.py`
+- `src/video_director_v3/director/proof_asset.py`
+- `src/video_director_v3/director/cta_policy.py`
+- `src/video_director_v3/director/semantic_planner.py`
+- `src/video_director_v3/qa/semantic_quality_gate.py`
+- `tests/test_offer_proof_cta_contracts.py`
 
 ## 本轮改动
 
-### P3.12B
+### P3.13A
 
-- 基于 `v3_p311c_sales_repair_preview` 执行本地 MP4 trial
-- 完成文件、时长、音频、视频、字幕、CTA 的 QA
-- 保留本地 MP4，不提交到 GitHub
-
-### P3.12C
-
-- 输出 publish readiness review
-- 判断是否可进入人工最终确认
-- 明确下一步建议进入 P3.13A
+- 新增 offer / proof / CTA contract assets
+- 让 `scene_pack` 持有 offer / proof / CTA refs 与 stage/strength 扩展字段
+- 让 semantic planner 为 sales-like 场景注入更稳的承诺与证据资产
+- 让 QA gate 拦截早 CTA、重复 CTA、伪造 proof metric、低质 CTA phrase
 
 ## 验证
 
-| Check | Result |
-|-------|--------|
-| render_mp4 | ✅ PASS |
-| ffprobe | ✅ PASS |
-| git diff --check | ✅ clean |
+待完成：
+
+- `pytest tests/test_semantic_quality_gate.py tests/test_scene_pack_contracts.py tests/test_preview_pipeline.py tests/test_tts_contract.py tests/test_render_gate.py tests/test_offer_proof_cta_contracts.py -q`
+- `python -m compileall src tests`
+- `git diff --check`
 
 ## 交付物
 
-- **trial MP4:** `outputs/v3_p311c_sales_repair_preview/rendered/final_video.mp4`
-- **preview:** `outputs/v3_p311c_sales_repair_preview/hyperframes_timeline/index.html`
-- **contact sheet:** `outputs/v3_p311c_sales_repair_preview/review_frames/contact-sheet.jpg`
+- `docs/status/P3_13A_OFFER_PROOF_CTA_SYSTEM.md`
+- `docs/status/P3_13A_IMPLEMENTATION_REPORT.md`
 
-## Studio 验证
+## 注意
 
-请在 Studio 中打开验证：
-`http://localhost:3002/#project/v3_p311c_sales_repair_preview/hyperframes_timeline`
+- 不 render MP4
+- 不提交 outputs/
+- 不提交 renders/
+- 不把 `narrative_compressor.py` 接入主线
 
 ---
 最后更新：2026-06-03

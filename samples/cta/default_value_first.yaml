@@ -1,0 +1,15 @@
+{
+  "policy_id": "default_value_first",
+  "preferred_cta_text": "先跑一版最小成交流程",
+  "forbidden_phrases": [
+    "评论区打关键词领取资料",
+    "私信领取资料",
+    "评论区回复领取",
+    "评论区打字领取"
+  ],
+  "min_proof_scenes_before_final_cta": 1,
+  "max_cta_scenes": 4,
+  "early_cta_ratio": 0.35,
+  "strong_cta_ratio": 0.8,
+  "repeated_cta_soft_limit": 2
+}
