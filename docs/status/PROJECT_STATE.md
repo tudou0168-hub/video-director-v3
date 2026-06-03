@@ -3,7 +3,7 @@
 ## 当前总控指针
 
 - 项目总控文档：`docs/status/PROJECT_CONTROL_ROADMAP.md`
-- 当前阶段计划：`docs/status/P3_12A_PUBLISH_CANDIDATE_PRESELECTION.md`
+- 当前阶段计划：`docs/status/P3_12_PUBLISH_CANDIDATE_SELECTION.md`
 - 当前最高总纲：AI 负责语义导演，契约文件负责约束，模板负责确定性执行，HyperFrames 负责稳定预览/渲染，QA Gate 负责阻止垃圾产出。
 
 ## 2026-06-01 P3 产品方向更新
@@ -35,8 +35,8 @@
 完整路线图：`docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md`
 
 当前阶段：`P3.12 Publish Candidate Selection`
-下一任务：`基于 v3_p311c_sales_repair_preview 做正式候选片筛选，必要时回到 P3.11D`
-当前工作：`只做候选片预选与审查，不 render MP4`
+下一任务：`进入 P3.12B Confirmed MP4 Trial（仅在用户确认后才 render MP4）`
+当前工作：`只做候选片确认与审查，不 render MP4`
 
 ## 项目目标
 
