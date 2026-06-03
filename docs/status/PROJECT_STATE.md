@@ -3,7 +3,7 @@
 ## 当前总控指针
 
 - 项目总控文档：`docs/status/PROJECT_CONTROL_ROADMAP.md`
-- 当前阶段计划：`docs/status/P3_13A_OFFER_PROOF_CTA_SYSTEM.md`
+- 当前阶段计划：`docs/status/P3_13B_CONTRACT_PREVIEW_VALIDATION.md`
 - 当前最高总纲：AI 负责语义导演，契约文件负责约束，模板负责确定性执行，HyperFrames 负责稳定预览/渲染，QA Gate 负责阻止垃圾产出。
 
 ## 2026-06-01 P3 产品方向更新
@@ -34,10 +34,10 @@
 
 完整路线图：`docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md`
 
-当前阶段：`P3.13A Offer-Proof-CTA System`
-当前候选片：`v3_p311c_sales_repair_preview`
-下一任务：`完成 offer / proof / CTA contract wiring 与 QA gate 验证`
-当前工作：`把成交结构独立成系统，让 offer / proof / CTA 由显式契约和结构化资产驱动`
+当前阶段：`P3.13B + P3.13C Contract-Driven Preview Validation and Regression`
+当前候选片：`v3_p313b_sales_contract_preview`
+下一任务：`围绕 sales / knowledge / toolflow 完成 contract-driven preview 验证与回归报告`
+当前工作：`验证 P3.13A 的 offer / proof / CTA 契约是否真的进入 preview 链路，并确认没有破坏 knowledge / toolflow 回归`
 
 ## 项目目标
 
