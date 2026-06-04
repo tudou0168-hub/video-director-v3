@@ -583,6 +583,176 @@ def test_contract_native_project_uses_scene_pack_slots_in_director_timeline(tmp_
     assert "这段原始 CTA 也不该被模板直接消费。" not in html
 
 
+def test_visual_chapter_aggregation_reduces_scene_count_and_keeps_captions(tmp_path: Path):
+    """R4.1: long-form preview should aggregate sentence-level scenes into
+    visual chapters while keeping caption beats intact."""
+    audio_path = tmp_path / "voiceover.mp3"
+    audio_path.write_bytes(b"fake-audio")
+
+    source_rows = [
+        ("S01", "hook", "hook_big_claim", "hero_metric", 5.7, "先记住这个点：10分钟定一个能写", "别再刷热点了，有主业的人怎么用 10 分钟定一个能写、能卖的选题"),
+        ("S02", "method", "step_ladder", "config_panel", 3.3, "输入-整理-调用-输出", "如果你是看完视频点进来的，我先不绕"),
+        ("S03", "method", "tool_stack", "file_tree", 5.0, "也不教你再装一个", "这篇不讲 Hermes 多厉害，也不教你再装一个新工具"),
+        ("S04", "pain", "myth_bust", "checklist_close", 2.5, "我只解决一个", "我只解决一个很具体的问题："),
+        ("S05", "method", "tool_stack", "tool_pipeline", 4.3, "输入-整理-调用-输出", "晚上打开电脑，别再刷半小时热点还不知道写什么"),
+        ("S06", "evidence", "case_study_card", "framework_map", 3.9, "输入-整理-调用-输出", "这篇给你看一条真正跑通的链路"),
+        ("S07", "explain", "step_ladder", "file_tree", 3.5, "输入-整理-调用-输出", "把素材统一放进一个入口"),
+        ("S08", "method", "knowledge_graph", "framework_map", 7.0, "输入-整理-调用-输出", "信息不是不够，而是没结构"),
+        ("S09", "explain", "tool_stack", "tool_pipeline", 6.2, "输入-整理-调用-输出", "工具不是越多越好，而是要接成线"),
+        ("S10", "method", "step_ladder", "config_panel", 5.6, "输入-整理-调用-输出", "先让动作能执行"),
+        ("S11", "explain", "tool_stack", "file_tree", 4.1, "看完一个", "再看两个，不如先做一个"),
+        ("S12", "method", "knowledge_graph", "framework_map", 4.5, "再看两个", "把入口和出口连起来"),
+        ("S13", "explain", "knowledge_graph", "framework_map", 5.0, "输入-整理-调用-输出", "结构比收藏更重要"),
+        ("S14", "explain", "progress_tracker", "config_panel", 3.7, "输入-整理-调用-输出", "不是一口气做完，而是持续跑"),
+        ("S15", "evidence", "progress_tracker", "file_tree", 3.5, "输入-整理-调用-输出", "每一步都留下痕迹"),
+        ("S16", "explain", "knowledge_graph", "framework_map", 6.0, "今天哪条", "今天哪条最先跑"),
+        ("S17", "evidence", "section_board", "checklist_close", 3.1, "帮我做最前面那一步", "先把最小闭环跑出来"),
+        ("S18", "explain", "knowledge_graph", "framework_map", 2.9, "输入-整理-调用-输出", "让信息回到可调用状态"),
+        ("S19", "pain", "myth_bust", "checklist_close", 5.4, "输入-整理-调用-输出", "不是你不努力，是入口太乱"),
+        ("S20", "pain", "myth_bust", "action_close", 9.5, "1分钟", "先把最小动作跑通"),
+        ("S21", "evidence", "knowledge_graph", "framework_map", 4.5, "而是每一步", "每一步都能追踪"),
+        ("S22", "explain", "progress_tracker", "config_panel", 2.3, "输入-整理-调用-输出", "把步骤写清楚"),
+        ("S23", "pain", "myth_bust", "file_tree", 5.8, "如果你最近最卡", "如果你最近最卡，先回到入口"),
+        ("S24", "cta", "checklist_cta", "checklist_close", 2.1, "输入-整理-调用-输出", "先跑一遍最小闭环"),
+    ]
+
+    storyboard_scenes = []
+    scene_pack_scenes = []
+    caption_beats = []
+    current_start = 0.0
+    for index, (sid, role, template, layout_family, duration, anchor, narration) in enumerate(source_rows, start=1):
+        source_scene = {
+            "scene_id": sid,
+            "role": role,
+            "visual_template": template,
+            "layout_family": layout_family,
+            "caption_mode": "action_caption" if role == "cta" else ("emphasis_caption" if role == "hook" else "standard_caption"),
+            "visual_object": layout_family,
+            "memory_anchor": anchor,
+            "save_reason": f"下次可直接套这条工具链：{anchor}",
+            "display_headline": narration[:20],
+            "display_subtitle": narration,
+            "narration": narration,
+            "start": current_start,
+            "duration": duration,
+        }
+        storyboard_scenes.append(source_scene)
+        scene_pack_scenes.append(
+            {
+                "id": sid,
+                "role": role,
+                "template_type": {
+                    "hook": "hook",
+                    "pain": "myth_bust",
+                    "method": "tool_stack",
+                    "evidence": "case_study_card",
+                    "explain": "framework_quadrant",
+                    "cta": "final_cta",
+                }[role],
+                "layout_family": layout_family,
+                "caption_mode": source_scene["caption_mode"],
+                "display_headline": narration[:20],
+                "display_subtitle": narration,
+                "visual_headline": narration[:20],
+                "display_conclusion": narration,
+                "memory_anchor": anchor,
+                "save_reason": f"下次可直接套这条工具链：{anchor}",
+                "slots": {
+                    "main_claim": narration[:20],
+                    "pain_point": narration,
+                    "status_badge": role.upper(),
+                    "visual_emphasis": anchor,
+                    "final_claim": narration[:20],
+                    "next_step": "先跑一遍最小闭环",
+                    "cta_text": "先跑一遍最小闭环",
+                    "avoid_phrases": ["评论区打关键词领取资料"],
+                    "problem_title": "问题不是努力不够",
+                    "conflict_items": ["入口太多", "素材太散"],
+                    "consequence": "总要重来",
+                    "warning_label": "RISK",
+                    "proof_title": "结果更稳",
+                    "proof_items": ["入口统一", "调用更快"],
+                    "metric_or_evidence": "真实案例",
+                    "credibility_note": "已经跑通",
+                    "framework_title": "结构图",
+                    "quadrants": [{"label": "Q1", "text": "输入"}, {"label": "Q2", "text": "整理"}, {"label": "Q3", "text": "调用"}, {"label": "Q4", "text": "输出"}],
+                    "center_claim": "闭环",
+                    "method_title": "三步法",
+                    "steps": ["统一入口", "建立结构", "开始调用"],
+                    "step_labels": ["STEP 1", "STEP 2", "STEP 3"],
+                    "final_result": "拿到可复用路径",
+                    "stack_title": "三件套",
+                    "tools": ["Obsidian", "Claude", "Hermes"],
+                    "tool_roles": ["存储与链接", "检索与整理", "复盘与跟进"],
+                    "workflow_result": "把工具接成线",
+                    "checklist": ["统一入口", "建立结构", "开始调用"],
+                    "key_results": ["流程已闭环", "下一步可执行"],
+                },
+            }
+        )
+        caption_beats.append(
+            {
+                "caption_id": f"{sid}_C01",
+                "scene_id": sid,
+                "start": current_start,
+                "duration": duration,
+                "text": narration,
+                "source_sentence": narration,
+            }
+        )
+        current_start += duration
+
+    audio_duration = round(current_start, 3)
+    build_studio_native_project(
+        project_dir=tmp_path,
+        storyboard={"scenes": storyboard_scenes},
+        narration_plan={"title": "visual aggregation test"},
+        tts_result={"audio_path": str(audio_path), "real_duration": audio_duration},
+        caption_beats={"caption_beats": caption_beats},
+        visual_beats={},
+        transitions={"transition_count": 0, "transitions": []},
+        scene_pack={"scenes": scene_pack_scenes},
+    )
+
+    director_timeline = json.loads(
+        (tmp_path / "hyperframes_timeline" / "data" / "director_timeline.json").read_text(encoding="utf-8")
+    )
+    caption_payload = json.loads(
+        (tmp_path / "hyperframes_timeline" / "data" / "caption_beats.json").read_text(encoding="utf-8")
+    )
+    html = (tmp_path / "hyperframes_timeline" / "index.html").read_text(encoding="utf-8")
+
+    scenes = director_timeline["scenes"]
+    assert 7 <= len(scenes) <= 10
+    assert len(caption_payload["beats"]) == len(caption_beats)
+    assert all(scene.get("source_scene_ids") for scene in scenes)
+    assert all(scene.get("caption_ids") for scene in scenes)
+    assert director_timeline["source_scene_count"] == len(source_rows)
+    assert director_timeline["visual_chapter_count"] == len(scenes)
+    assert (tmp_path / "hyperframes_timeline" / "meta.json").exists()
+    average_duration = sum(float(scene["duration"]) for scene in scenes) / len(scenes)
+    assert average_duration >= 7.0
+    shortest_duration = min(float(scene["duration"]) for scene in scenes)
+    longest_duration = max(float(scene["duration"]) for scene in scenes)
+    assert shortest_duration >= 4.0
+    assert longest_duration <= 18.0
+    layout_families = [scene.get("layout_family") for scene in scenes]
+    runs = []
+    run = 1
+    for prev, curr in zip(layout_families, layout_families[1:]):
+        if curr == prev:
+            run += 1
+        else:
+            runs.append(run)
+            run = 1
+    runs.append(run)
+    assert max(runs) <= 2
+    assert "FINAL SCORE" not in html
+    assert "COMPLETE" not in html
+    for scene in scenes:
+        assert scene.get("content_item_count", 0) <= scene.get("content_item_limit", 999)
+
+
 def test_all_fifteen_contract_renderers_emit_html_without_dev_artifacts():
     fixtures = {
         "hook": ("hook", {"main_claim": "系统先跑通", "pain_point": "收藏越多越难输出", "status_badge": "QUESTION", "visual_emphasis": "闭环"}),

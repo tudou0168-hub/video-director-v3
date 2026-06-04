@@ -459,3 +459,43 @@ def test_missing_contact_sheet_is_hard_fail(tmp_path: Path):
 
     assert report["gate_status"] == "FAIL"
     assert any("contact sheet missing" == reason for reason in report["hard_fail_reasons"])
+
+
+def test_layout_density_gate_detects_overflow_and_repeated_family(tmp_path: Path):
+    scenes = [
+        _scene("V01", "method", "tool_stack", {
+            "stack_title": "工具栈",
+            "tools": ["Obsidian", "Claude", "Hermes"],
+            "tool_roles": ["存储", "整理", "复盘"],
+            "workflow_result": "把工具接成线",
+        }),
+        _scene("V02", "method", "tool_stack", {
+            "stack_title": "工具栈",
+            "tools": ["Obsidian", "Claude", "Hermes"],
+            "tool_roles": ["存储", "整理", "复盘"],
+            "workflow_result": "把工具接成线",
+        }),
+        _scene("V03", "method", "tool_stack", {
+            "stack_title": "工具栈",
+            "tools": ["Obsidian", "Claude", "Hermes"],
+            "tool_roles": ["存储", "整理", "复盘"],
+            "workflow_result": "把工具接成线",
+        }),
+        _scene("V04", "cta", "final_cta", {
+            "final_claim": "现在开始",
+            "next_step": "先跑一遍",
+            "cta_text": "现在开始",
+            "avoid_phrases": ["空谈"],
+        }),
+    ]
+    for scene in scenes:
+        scene["layout_family"] = "tool_pipeline"
+        scene["layout_variant"] = "stack"
+        scene["content_item_count"] = 7
+        scene["content_item_limit"] = 6
+
+    report = _report(tmp_path, scenes)
+
+    assert report["layout_density"]["density_overflow_count"] == 4
+    assert report["layout_density"]["repeated_layout_family_run_count"] >= 1
+    assert any("layout_density_overflow" in reason or "layout_family repeated" in reason for reason in report["hard_fail_reasons"])

@@ -34,10 +34,10 @@
 
 完整路线图：`docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md`
 
-当前阶段：`P4.1B-R4 Real Follow-up: Preview Load Fix + Unified Visual Layout Rules`
-当前候选片：`p4_1b_r4_real_followup_visual_layout_preview`
-下一任务：`继续留在 P4.1B-R4 范围内，根据真实 contact sheet 判断是否还需要一次 follow-up fix；不要进入 R5 / P4.2`
-当前工作：`修复 preview 加载到正确项目目录的根因；把 vf-visual-stage / vf-skeleton-main / vf-visual-center-band / vf-support-layer / vf-caption-zone / vf-glass-anchor-card 落到通用布局；统一字幕 foundation；让主体下移并占住中部；玻璃卡改成语义承托层`
+当前阶段：`P4.1B-R4.1 Visual Scene Aggregation`
+当前候选片：`p4_1b_r4_1_visual_scene_aggregation_preview`
+下一任务：`先根据本轮 smoke contact sheet 与聚合数据判断是否需要 follow-up fix；不要进入 P4.2`
+当前工作：`把 24 个源 scene 聚合成更少的视觉章节，保留 caption beats，新增 layout density gate，确保 director_timeline / index.html 使用 visual chapters 作为实际预览单元`
 
 ## 项目目标
 
@@ -95,6 +95,7 @@ script.md
 | **V3 Retrospective + Cleanup（批次 12）** | **PASS** | 112 调试 JS 归档到 `tests/manual_archive/` + gitignore 隔离；129 untracked 文件全部分类（9 个 add，120 个 gitignore）；新增 9 个正式资产（`viral_script_distiller` / `native_mp4_renderer` / HUD 提炼文档 / 路线图 / 2 demo 脚本 / `test_native_sync_report.py`）；新增 `docs/decisions/V3_RETROSPECTIVE.md`（6 阶段判断/教训/统计/V4 建议）；新增 `docs/V3_CAPABILITY_INDEX.md`（63 资产盘点 + 110 测试 + 0.0s drift 基线）；`scripts/` 未用目录删除；110 测试基线 `PASS`；preview / smoke 继续 PASS |
 | **V3-P3.8 Preview Visual Quality Upgrade** | **PASS（preview-only）** | 仅 preview 范围升级，未做 render_mp4。修复 2026-05-26 run 的 3 个根因：(1) 7/20 scene 撞 `broken_chain` 骨架 → Layer 1 `RENDER_TEMPLATE_POOLS` 按 scene_index 轮换（explain 5 / evidence 6 / method 4）+ Layer 2 fallback 在 studio_native_project_builder 兜底，连续 scene 不撞 template；(2) S20 CTA 漏出 `*情报来源,…*` → narration_planner 早过滤 + 末帧 CTA fallback 改用真实 CTA 文案；(3) 末帧视觉权重不足 → 最后一帧 CTA 默认 `end_score_goodbye` (score=100 + 下期预告)；新增 2 个 broken_chain 变体（`vertical_flow` / `knowledge_triangle`）。新 run `outputs/v3_p38_visual_upgrade_preview/` 21 scenes / 15 distinct templates / 0 metadata leakage / 21/21 data↔HTML 一致 / 0 MP4；115 测试 `PASS`（110 baseline + 5 新 T1-T5）。**主线不变**，未引入新播放内核 / 未接入 motion / 未回退到 combined / file://。下一步：人工视觉验收 + Codex diff 复审（见 `docs/status/NEXT_TASK.md`），不直接进入 P3.9。 |
 | **V3-P3.8R1 Engineering Contract Fix** | **PASS（preview-only）** | Codex 复审 V3-P3.8 后要求修 3 处工程合同：(1) `design_variance` 语义不收敛 → `scene_protocol.should_enable_v3_p38_features` 单一函数统一 3 特性开关，`pipeline_runner.py:128` 把 `args.design_variance` 真正传到 `build_motion_storyboard`（之前漏接，CLI 参数空跑）；(2) `motion_storyboard.json` / `director_timeline.json` / `index.html` 关系没写明 → docstring 锁 + T10 代码断言；(3) metadata 过滤需补"不过度"测试 → T11-T13。新增 11 个测试 T6-T16；`outputs/v3_p38r1_contract_fix_preview/` 21 scenes / 15 templates / 0 MP4 / 21/21 data↔HTML 一致；126 测试 `PASS`（110 baseline + 5 V3-P3.8 + 11 V3-P3.8R1）。**主线不变**，未引入新视觉模板 / 未改 publish_templates.py / 未动 AGENTS.md / DECISION_LOG.md。下一步：等 Codex 二次复审 + 人工视觉验收（见 `docs/status/NEXT_TASK.md`），不直接进入 P3.9。 |
+| **P4.1B-R4.1 Visual Scene Aggregation** | **in progress** | `p4_1b_r4_1_visual_scene_aggregation_preview` 已生成；24 个源 scene 聚合为 8 个 visual chapters，caption beats 保持 39 条，layout density gate 已接入；当前需要根据 contact sheet 判断是否还要 follow-up fix。 |
 
 **V3-P2 视觉渲染技术栈**：Remotion → HTML/CSS/React 动画 → MP4
 

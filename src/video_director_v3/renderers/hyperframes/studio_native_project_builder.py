@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+from collections import Counter
 from html import escape
 from pathlib import Path
 from typing import Any
@@ -24,6 +25,329 @@ def _scene_flag(scene: dict[str, Any], key: str) -> bool:
     if isinstance(value, str):
         return value.strip().lower() in {"1", "true", "yes", "on"}
     return False
+
+
+def _visual_scene_family(scene: dict[str, Any]) -> str:
+    role = str(scene.get("role") or scene.get("scene_pack_role") or "").strip().lower()
+    layout_family = str(scene.get("layout_family") or "").strip()
+    if role == "hook" or layout_family in {"hero_metric", "hero_statement"}:
+        return "hook"
+    if role in {"cta", "offer", "verdict"} or layout_family in {"action_close", "checklist_close", "insight_close", "offer_close"}:
+        return "close"
+    if role in {"pain", "problem", "conflict"} or layout_family in {"myth_bust", "broken_chain", "pain_card_stack"}:
+        return "problem"
+    if role in {"proof", "evidence"} or layout_family in {"proof_matrix", "comparison_board"}:
+        return "proof"
+    if layout_family in {"framework_map", "knowledge_graph", "concept_layers", "progress_tracker", "section_board"}:
+        return "framework"
+    if layout_family in {"tool_pipeline", "config_panel", "file_tree", "process_ladder", "step_ladder", "tool_stack", "decision_fork", "opportunity_map"}:
+        return "tool"
+    if role == "method":
+        return "tool"
+    return "other"
+
+
+def _visual_scene_target_spec(audio_duration: float, source_scene_count: int) -> dict[str, float | int]:
+    if audio_duration < 30 or source_scene_count <= 4:
+        target = max(1, min(source_scene_count, max(1, source_scene_count)))
+        return {
+            "target_visual_scenes": target,
+            "max_visual_scenes": source_scene_count,
+            "min_visual_scene_duration": 1.0,
+            "preferred_visual_scene_duration": round(audio_duration / max(target, 1), 3) if target else 0.0,
+        }
+    if audio_duration <= 60:
+        target = max(4, round(audio_duration / 12))
+        target = min(target, source_scene_count)
+        return {
+            "target_visual_scenes": target,
+            "max_visual_scenes": min(6, source_scene_count),
+            "min_visual_scene_duration": 4.0,
+            "preferred_visual_scene_duration": round(max(7.0, audio_duration / max(target, 1)), 3),
+        }
+    if audio_duration <= 90:
+        target = max(6, min(8, round(audio_duration / 12)))
+        target = min(target, source_scene_count)
+        return {
+            "target_visual_scenes": target,
+            "max_visual_scenes": min(9, source_scene_count),
+            "min_visual_scene_duration": 7.0,
+            "preferred_visual_scene_duration": round(audio_duration / max(target, 1), 3),
+        }
+    if audio_duration <= 120:
+        target = min(8, source_scene_count)
+        return {
+            "target_visual_scenes": target,
+            "max_visual_scenes": min(10, source_scene_count),
+            "min_visual_scene_duration": 7.0,
+            "preferred_visual_scene_duration": round(max(10.0, min(16.0, audio_duration / max(target, 1))), 3),
+        }
+    target = max(9, min(12, round(audio_duration / 14)))
+    target = min(target, source_scene_count)
+    return {
+        "target_visual_scenes": target,
+        "max_visual_scenes": min(14, source_scene_count),
+        "min_visual_scene_duration": 7.0,
+        "preferred_visual_scene_duration": round(max(10.0, min(16.0, audio_duration / max(target, 1))), 3),
+    }
+
+
+def _chapter_content_item_limit(layout_family: str) -> int:
+    return {
+        "hero_metric": 4,
+        "hero_statement": 4,
+        "tool_pipeline": 6,
+        "config_panel": 6,
+        "file_tree": 6,
+        "process_ladder": 6,
+        "step_ladder": 6,
+        "tool_stack": 6,
+        "framework_map": 6,
+        "proof_matrix": 6,
+        "comparison_board": 6,
+        "knowledge_graph": 6,
+        "concept_layers": 6,
+        "progress_tracker": 6,
+        "section_board": 6,
+        "action_close": 6,
+        "checklist_close": 6,
+        "insight_close": 6,
+        "offer_close": 6,
+    }.get(layout_family, 5)
+
+
+def _chapter_content_item_count(scene: dict[str, Any]) -> int:
+    layout_family = str(scene.get("layout_family") or "").strip()
+    slots = scene.get("slots", {}) if isinstance(scene.get("slots", {}), dict) else {}
+    headline = str(scene.get("display_headline") or scene.get("visual_headline") or "").strip()
+    subtitle = str(scene.get("display_subtitle") or scene.get("display_conclusion") or "").strip()
+    anchor = str(scene.get("memory_anchor") or "").strip()
+    result = str(scene.get("save_reason") or "").strip()
+
+    if layout_family in {"hero_metric", "hero_statement"}:
+        count = sum(1 for value in (headline, subtitle, anchor, result) if value)
+        return max(3, min(4, count or 3))
+
+    if layout_family in {"tool_pipeline", "config_panel", "file_tree", "process_ladder", "step_ladder", "tool_stack"}:
+        items = []
+        for key in ("steps", "tools"):
+            values = slots.get(key)
+            if isinstance(values, list):
+                items.extend([str(value).strip() for value in values if str(value).strip()])
+        visible = len(items) or 3
+        return max(4, min(6, visible + 1))
+
+    if layout_family in {"framework_map", "proof_matrix", "comparison_board", "knowledge_graph", "concept_layers", "progress_tracker", "section_board"}:
+        items = []
+        for key in ("quadrants", "nodes", "layers", "stages", "sections", "key_results", "proof_items"):
+            values = slots.get(key)
+            if isinstance(values, list):
+                items.extend([str(value).strip() for value in values if str(value).strip()])
+        visible = len(items) or 4
+        return max(4, min(6, visible + 1))
+
+    if layout_family in {"action_close", "checklist_close", "insight_close", "offer_close"}:
+        items = []
+        for key in ("checklist", "next_steps", "key_results"):
+            values = slots.get(key)
+            if isinstance(values, list):
+                items.extend([str(value).strip() for value in values if str(value).strip()])
+        visible = len(items) or 3
+        return max(4, min(6, visible + 1))
+
+    return max(3, min(5, sum(1 for value in (headline, subtitle, anchor, result) if value) or 3))
+
+
+def _pick_representative_scene(group: list[dict[str, Any]]) -> dict[str, Any]:
+    if len(group) == 1:
+        return group[0]
+    family_counts = Counter(_visual_scene_family(scene) for scene in group)
+    dominant_family = max(family_counts.items(), key=lambda item: (item[1], item[0]))[0]
+
+    def score(scene: dict[str, Any], index: int) -> tuple[float, float, float, float]:
+        layout_family = str(scene.get("layout_family") or "").strip()
+        family = _visual_scene_family(scene)
+        content_count = _chapter_content_item_count(scene)
+        limit = _chapter_content_item_limit(layout_family)
+        match_score = 3.0 if family == dominant_family else 0.0
+        limit_score = 1.0 if content_count <= limit else -2.5
+        duration_score = float(scene.get("duration", 0))
+        center_bonus = -abs(index - (len(group) - 1) / 2.0) * 0.1
+        return (match_score + limit_score, duration_score, center_bonus, -float(content_count))
+
+    best_index = max(range(len(group)), key=lambda idx: score(group[idx], idx))
+    return group[best_index]
+
+
+def _segment_visual_chapters(
+    scenes: list[dict[str, Any]],
+    *,
+    audio_duration: float,
+) -> list[tuple[int, int]]:
+    scene_count = len(scenes)
+    if scene_count <= 1:
+        return [(0, scene_count)]
+    spec = _visual_scene_target_spec(audio_duration, scene_count)
+    target_count = int(spec["target_visual_scenes"])
+    if target_count >= scene_count:
+        return [(index, index + 1) for index in range(scene_count)]
+    min_duration = float(spec["min_visual_scene_duration"])
+    preferred_duration = float(spec["preferred_visual_scene_duration"])
+    max_duration = float(spec["max_visual_scenes"]) * preferred_duration if preferred_duration else audio_duration
+    prefix = [0.0]
+    for scene in scenes:
+        prefix.append(prefix[-1] + float(scene.get("duration", 0)))
+
+    def segment_duration(start: int, end: int) -> float:
+        return round(prefix[end] - prefix[start], 3)
+
+    def segment_cost(start: int, end: int) -> float:
+        group = scenes[start:end]
+        duration = segment_duration(start, end)
+        families = [_visual_scene_family(scene) for scene in group]
+        counts = Counter(families)
+        dominant_count = max(counts.values()) if counts else 0
+        dominant_ratio = dominant_count / len(group) if group else 0.0
+        content_counts = [_chapter_content_item_count(scene) for scene in group]
+        average_items = sum(content_counts) / len(content_counts) if content_counts else 0.0
+        cost = abs(duration - preferred_duration) * 1.4
+        if duration < min_duration:
+            cost += (min_duration - duration) * 8.0
+        if duration > max_duration:
+            cost += (duration - max_duration) * 4.0
+        if len(group) > 4:
+            cost += (len(group) - 4) * 1.0
+        if len(counts) > 2:
+            cost += (len(counts) - 2) * 2.0
+        if dominant_ratio < 0.6:
+            cost += 1.5
+        if average_items > 0:
+            cost += max(0.0, average_items - 5.0) * 0.8
+        if start > 0 and _visual_scene_family(scenes[start - 1]) == families[0]:
+            cost += 0.35
+        return round(cost, 4)
+
+    # DP over exact chapter count so the result is stable and close to the
+    # requested density range. The project is small enough that the O(n^2 * k)
+    # partition search is cheap.
+    inf = 10**9
+    dp = [[inf] * (target_count + 1) for _ in range(scene_count + 1)]
+    back: list[list[int | None]] = [[None] * (target_count + 1) for _ in range(scene_count + 1)]
+    dp[0][0] = 0.0
+    for end in range(1, scene_count + 1):
+        for chapters in range(1, target_count + 1):
+            for start in range(chapters - 1, end):
+                previous = dp[start][chapters - 1]
+                if previous >= inf:
+                    continue
+                candidate = previous + segment_cost(start, end)
+                if candidate < dp[end][chapters]:
+                    dp[end][chapters] = candidate
+                    back[end][chapters] = start
+
+    if dp[scene_count][target_count] >= inf:
+        return [(index, index + 1) for index in range(scene_count)]
+
+    ranges: list[tuple[int, int]] = []
+    end = scene_count
+    chapters = target_count
+    while chapters > 0:
+        start = back[end][chapters]
+        if start is None:
+            return [(index, index + 1) for index in range(scene_count)]
+        ranges.append((start, end))
+        end = start
+        chapters -= 1
+    ranges.reverse()
+    return ranges
+
+
+def _build_visual_chapters(
+    *,
+    storyboard_scenes: list[dict[str, Any]],
+    caption_beats: list[dict[str, Any]],
+    audio_duration: float,
+    scene_pack_by_id: dict[str, dict[str, Any]],
+) -> list[dict[str, Any]]:
+    if not storyboard_scenes:
+        return []
+    if audio_duration < 30 or len(storyboard_scenes) <= 4:
+        ranges = [(index, index + 1) for index in range(len(storyboard_scenes))]
+    else:
+        ranges = _segment_visual_chapters(storyboard_scenes, audio_duration=audio_duration)
+
+    caption_items: list[dict[str, Any]] = []
+    for caption in caption_beats:
+        if not isinstance(caption, dict):
+            continue
+        start = float(caption.get("start", caption.get("start_time", 0)) or 0)
+        end = float(caption.get("end_time", 0) or caption.get("end", 0) or (start + float(caption.get("duration", 0) or 0)))
+        caption_items.append({**caption, "start_time": start, "end_time": end})
+
+    chapters: list[dict[str, Any]] = []
+    for chapter_index, (start_idx, end_idx) in enumerate(ranges, start=1):
+        group = storyboard_scenes[start_idx:end_idx]
+        group_family_counts = Counter(_visual_scene_family(scene) for scene in group)
+        chapter_family = max(group_family_counts.items(), key=lambda item: (item[1], item[0]))[0] if group_family_counts else "other"
+        representative = _pick_representative_scene(group)
+        representative_id = str(representative.get("scene_id") or representative.get("id") or f"S{chapter_index:02d}")
+        rep_pack = scene_pack_by_id.get(representative_id, {})
+        chapter_start = float(group[0].get("start", group[0].get("start_time", 0)) or 0)
+        chapter_end = float(group[-1].get("start", group[-1].get("start_time", 0)) or 0) + float(group[-1].get("duration", 0) or 0)
+        chapter_duration = round(max(chapter_end - chapter_start, 0.0), 3)
+        source_scene_ids = [
+            str(item.get("scene_id") or item.get("id") or f"S{start_idx + offset + 1:02d}")
+            for offset, item in enumerate(group)
+        ]
+        caption_ids = [
+            str(item.get("caption_id") or "")
+            for item in caption_items
+            if chapter_start <= float(item.get("start_time", 0) or 0) < chapter_end
+            and str(item.get("caption_id") or "").strip()
+        ]
+        if chapter_family == "hook":
+            role = "hook"
+        elif chapter_family == "problem":
+            role = "problem"
+        elif chapter_family == "tool":
+            role = "method"
+        elif chapter_family == "proof":
+            role = "proof"
+        elif chapter_family == "close":
+            role = "cta" if chapter_index >= len(ranges) else "verdict"
+        else:
+            role = str(representative.get("role") or representative.get("scene_pack_role") or "method").strip() or "method"
+            if role in {"evidence", "result"}:
+                role = "proof"
+            elif role in {"explain", "method"}:
+                role = "method"
+            elif role == "pain":
+                role = "problem"
+        layout_family = str(representative.get("layout_family") or "hero_statement").strip() or "hero_statement"
+        content_item_count = _chapter_content_item_count(representative)
+        content_item_limit = _chapter_content_item_limit(layout_family)
+        chapters.append({
+            **representative,
+            "scene_id": f"V{chapter_index:02d}",
+            "id": f"V{chapter_index:02d}",
+            "source_scene_ids": source_scene_ids,
+            "caption_ids": caption_ids,
+            "source_scene_count": len(group),
+            "source_scene_range": [start_idx + 1, end_idx],
+            "role": role,
+            "scene_pack_role": role,
+            "layout_family": layout_family,
+            "start": round(chapter_start, 3),
+            "start_time": round(chapter_start, 3),
+            "duration": chapter_duration,
+            "end": round(chapter_end, 3),
+            "end_time": round(chapter_end, 3),
+            "scene_pack_scene": rep_pack or representative,
+            "content_item_count": content_item_count,
+            "content_item_limit": content_item_limit,
+            "layout_density_overflow": max(0, content_item_count - content_item_limit),
+        })
+    return chapters
 
 
 def scale_storyboard_to_audio(storyboard: dict[str, Any], audio_duration: float) -> dict[str, Any]:
@@ -146,25 +470,31 @@ def build_studio_native_project(
     shutil.copy2(audio_path, assets_dir / "voiceover.mp3")
     duration = float(tts_result["real_duration"])
 
-    scenes = storyboard.get("scenes", [])
+    source_scenes = storyboard.get("scenes", [])
     scene_pack_by_id = {
         item.get("id"): item
         for item in (scene_pack or {}).get("scenes", [])
         if item.get("id")
     }
     captions = caption_beats.get("caption_beats", [])
+    visual_chapters = _build_visual_chapters(
+        storyboard_scenes=source_scenes,
+        caption_beats=captions,
+        audio_duration=duration,
+        scene_pack_by_id=scene_pack_by_id,
+    )
     scene_html = []
     director_scenes = []
     prev_template: str | None = None
     prev_variant: str | None = None
     from video_director_v3.templates.scene_protocol import should_enable_v3_p38_features
     use_layer2 = should_enable_v3_p38_features(design_variance)
-    for original_scene in scenes:
+    for original_scene in visual_chapters:
         # V3-P3.8: deep-copy each scene so the caller's storyboard dict is
         # never mutated. Layer 2 may rewrite the visual_template on the
         # working copy; the caller's input stays pristine.
         scene = json.loads(json.dumps(original_scene)) if use_layer2 else original_scene
-        sid = scene.get("scene_id", "S01")
+        sid = scene.get("scene_id", "V01")
         role = scene.get("role", "explain")
         start = float(scene.get("start", 0))
         scene_duration = max(float(scene.get("duration", 0)) - 0.001, 0)
@@ -178,12 +508,14 @@ def build_studio_native_project(
             new_prev_t, _ = _anti_repeat_rotate_scene(
                 scene, len(director_scenes), prev_template, prev_variant
             )
-        contract_scene = scene_pack_by_id.get(sid)
+        contract_scene = scene.get("scene_pack_scene")
+        if not isinstance(contract_scene, dict):
+            contract_scene = scene_pack_by_id.get(scene.get("source_scene_ids", [""])[0], {})
         if contract_scene and contract_scene.get("template_type") in _SUPPORTED_CONTRACT_TEMPLATES:
             hud_scene = _contract_hud_scene_config(
                 scene=scene,
                 contract_scene=contract_scene,
-                is_last_scene=len(director_scenes) == len(scenes) - 1,
+                is_last_scene=len(director_scenes) == len(visual_chapters) - 1,
             )
         else:
             if contract_scene:
@@ -197,7 +529,7 @@ def build_studio_native_project(
         if (
             use_layer2
             and role == "cta"
-            and len(director_scenes) == len(scenes) - 1
+            and len(director_scenes) == len(visual_chapters) - 1
             and hud_scene.get("layout_variant") == "checklist_steps"
         ):
             hud_scene["layout_variant"] = "end_score_goodbye"
@@ -691,17 +1023,24 @@ html,body{{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--
     _write_json(data_dir / "script.json", narration_plan)
     _write_json(data_dir / "tts_result.json", tts_result)
     _write_json(data_dir / "caption_beats.json", {"duration_sec": duration, "beats": normalized_captions})
-    _write_json(data_dir / "director_timeline.json", {"total_duration_sec": duration, "scenes": director_scenes})
+    timeline_payload = {
+        "total_duration_sec": duration,
+        "source_scene_count": len(source_scenes),
+        "visual_chapter_count": len(director_scenes),
+        "visual_chapters": director_scenes,
+        "scenes": director_scenes,
+    }
+    _write_json(data_dir / "director_timeline.json", timeline_payload)
     _write_json(data_dir / "visual_beats.json", visual_beats)
     _write_json(data_dir / "transition_map.json", transitions)
     _write_json(timeline_dir / "meta.json", {
         "phase": "V3-P3.1-Audio-First", "project": project_dir.name,
         "canvas": {"width": 1080, "height": 1920},
-        "audio_duration": duration, "scene_count": len(scenes), "caption_count": len(captions),
+        "audio_duration": duration, "scene_count": len(director_scenes), "source_scene_count": len(source_scenes), "caption_count": len(captions),
     })
     return {
         "timeline_dir": str(timeline_dir), "index": str(timeline_dir / "index.html"),
-        "duration": duration, "scene_count": len(scenes), "caption_count": len(captions),
+        "duration": duration, "scene_count": len(director_scenes), "source_scene_count": len(source_scenes), "caption_count": len(captions),
     }
 
 

@@ -128,6 +128,7 @@ def build_semantic_quality_report(
     offer_info = _analyze_offer_profile(scene_pack.get("scenes", []))
     proof_asset_info = _analyze_proof_asset(scene_pack.get("scenes", []))
     cta_policy_info = _analyze_cta_policy(scene_pack.get("scenes", []))
+    layout_density_info = _analyze_layout_density(merged_scenes)
     visual_strategy_info = _analyze_visual_strategy_pack(scene_pack, merged_scenes, repetition_info)
     chinese_dominance_score = round(_chinese_dominance_score(merged_scenes), 3)
     layout_families = [str(scene.get("layout_family") or "").strip() for scene in merged_scenes]
@@ -219,6 +220,10 @@ def build_semantic_quality_report(
         hard_fail_reasons.append("save_reason_missing_count > 0")
     if visual_strategy_enabled and visual_strategy_info["headline_fragment_risk_count"] > 0:
         hard_fail_reasons.append("headline_fragment_risk_count > 0")
+    if layout_density_info["density_overflow_count"] > 0:
+        hard_fail_reasons.append("layout_density_overflow_count > 0")
+    if layout_density_info["repeated_layout_family_run_count"] > 0:
+        hard_fail_reasons.append("layout_family repeated > 2 with no variant")
     if visual_strategy_enabled and visual_strategy_info["same_video_risk"] == "high":
         if visual_strategy_info["differentiation_score"] < 25 or unique_layout_families <= 3:
             hard_fail_reasons.append("same_video_risk = high")
@@ -249,6 +254,7 @@ def build_semantic_quality_report(
         visual_strategy_risk=visual_strategy_scoring["visual_strategy_risk"],
         layout_readability_score=visual_strategy_scoring["layout_readability_score"],
         differentiation_score=visual_strategy_scoring["differentiation_score"],
+        layout_density_risk=layout_density_info["layout_density_risk"],
     )
 
     gate_status = "FAIL" if hard_fail_reasons else "PASS"
@@ -298,6 +304,7 @@ def build_semantic_quality_report(
         "offer_profile": offer_info,
         "proof_asset": proof_asset_info,
         "cta_policy": cta_policy_info,
+        "layout_density": layout_density_info,
         "visual_strategy": visual_strategy_info,
         "worst_3_scenes": worst_3_scenes,
         "hard_fail_reasons": hard_fail_reasons,
@@ -651,6 +658,87 @@ def _analyze_cta_policy(scenes: list[dict[str, Any]]) -> dict[str, Any]:
         "missing_policy_ref_ids": missing_policy_ref_ids,
         "cta_policy_risk": risk,
         "hard_fail_reasons": hard_fail_reasons,
+    }
+
+
+def _analyze_layout_density(scenes: list[dict[str, Any]]) -> dict[str, Any]:
+    density_overflow_ids: list[str] = []
+    dense_layout_ids: list[str] = []
+    repeated_layout_family_run_ids: list[str] = []
+    repeated_layout_family_run_count = 0
+    max_run = 0
+
+    def _content_limit(layout_family: str) -> int:
+        return {
+            "hero_metric": 4,
+            "hero_statement": 4,
+            "tool_pipeline": 6,
+            "config_panel": 6,
+            "file_tree": 6,
+            "process_ladder": 6,
+            "step_ladder": 6,
+            "tool_stack": 6,
+            "framework_map": 6,
+            "proof_matrix": 6,
+            "comparison_board": 6,
+            "knowledge_graph": 6,
+            "concept_layers": 6,
+            "progress_tracker": 6,
+            "section_board": 6,
+            "action_close": 6,
+            "checklist_close": 6,
+            "insight_close": 6,
+            "offer_close": 6,
+        }.get(layout_family, 5)
+
+    run_layout_family = ""
+    run_layout_variant = ""
+    run_ids: list[str] = []
+    for scene in scenes:
+        scene_id = str(scene.get("id") or "").strip()
+        layout_family = str(scene.get("layout_family") or "").strip()
+        layout_variant = str(scene.get("layout_variant") or "").strip()
+        content_count = int(scene.get("content_item_count") or 0)
+        content_limit = int(scene.get("content_item_limit") or _content_limit(layout_family))
+        if content_count and content_count > content_limit and scene_id:
+            density_overflow_ids.append(scene_id)
+        if content_count and content_count >= max(1, content_limit - 1) and scene_id:
+            dense_layout_ids.append(scene_id)
+
+        if layout_family and layout_family == run_layout_family and layout_variant == run_layout_variant:
+            if scene_id:
+                run_ids.append(scene_id)
+        else:
+            if len(run_ids) >= 3:
+                repeated_layout_family_run_ids.extend(run_ids)
+                repeated_layout_family_run_count += 1
+            max_run = max(max_run, len(run_ids))
+            run_layout_family = layout_family
+            run_layout_variant = layout_variant
+            run_ids = [scene_id] if scene_id else []
+    if len(run_ids) >= 3:
+        repeated_layout_family_run_ids.extend(run_ids)
+        repeated_layout_family_run_count += 1
+    max_run = max(max_run, len(run_ids))
+
+    if density_overflow_ids:
+        risk = "high"
+    elif repeated_layout_family_run_count > 0 or max_run >= 3:
+        risk = "high"
+    elif dense_layout_ids:
+        risk = "medium"
+    else:
+        risk = "low"
+
+    return {
+        "density_overflow_count": len(density_overflow_ids),
+        "density_overflow_ids": density_overflow_ids,
+        "dense_layout_count": len(dense_layout_ids),
+        "dense_layout_ids": dense_layout_ids,
+        "repeated_layout_family_run_count": repeated_layout_family_run_count,
+        "repeated_layout_family_run_ids": repeated_layout_family_run_ids,
+        "max_layout_family_run": max_run,
+        "layout_density_risk": risk,
     }
 
 
@@ -1063,6 +1151,7 @@ def _overall_quality_score(
     visual_strategy_risk: str,
     layout_readability_score: float,
     differentiation_score: float,
+    layout_density_risk: str,
 ) -> float:
     score = average_scene_score * 100.0
     score -= _risk_penalty(cta_distribution_risk, low=0.0, medium=4.0, high=8.0)
@@ -1081,6 +1170,7 @@ def _overall_quality_score(
     score -= max(0.0, 0.85 - worst_scene_score) * 20.0
     score -= max(0.0, 70.0 - layout_readability_score) * 0.35
     score -= max(0.0, 80.0 - differentiation_score) * 0.25
+    score -= _risk_penalty(layout_density_risk, low=0.0, medium=3.0, high=6.0)
     return round(max(0.0, min(100.0, score)), 2)
 
 
