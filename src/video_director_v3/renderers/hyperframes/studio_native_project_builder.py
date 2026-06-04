@@ -217,7 +217,7 @@ def build_studio_native_project(
         composition_class = _COMPOSITIONS_BY_INDEX[len(director_scenes) % 3]
         debug_visual_strategy = _scene_flag(hud_scene, "debug_visual_strategy")
         scene_html.append(f"""
-<section id="scene-{escape(sid.lower())}" class="scene clip role-{escape(role)} tpl-{escape(prev_template)} hf-bg-cinematic hf-bg-{escape(role)} {composition_class} vf-layout-{escape(layout_family)} vf-caption-{escape(caption_mode)} vf-ending-{escape(ending_variant or 'none')}" style="{escape(_scene_strategy_style(hud_scene))}" data-start="{start}" data-duration="{round(scene_duration, 3)}" data-track-index="1" data-visual-template="{escape(prev_template)}" data-role="{escape(role)}" data-layout-family="{escape(layout_family)}" data-caption-mode="{escape(caption_mode)}" data-ending-variant="{escape(ending_variant)}" data-debug-visual-strategy="{str(debug_visual_strategy).lower()}">
+<section id="scene-{escape(sid.lower())}" class="scene clip role-{escape(role)} tpl-{escape(prev_template)} hf-bg-cinematic hf-bg-{escape(role)} {composition_class} vf-visual-stage vf-layout-{escape(layout_family)} vf-caption-{escape(caption_mode)} vf-ending-{escape(ending_variant or 'none')}" style="{escape(_scene_strategy_style(hud_scene))}" data-start="{start}" data-duration="{round(scene_duration, 3)}" data-track-index="1" data-visual-template="{escape(prev_template)}" data-role="{escape(role)}" data-layout-family="{escape(layout_family)}" data-caption-mode="{escape(caption_mode)}" data-ending-variant="{escape(ending_variant)}" data-debug-visual-strategy="{str(debug_visual_strategy).lower()}">
   {get_scene_body(sid, role, hud_scene)}
   <div class="hf-vignette"></div>
   <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">{escape((hud_scene.get("hud_label_en") or role.upper() + " / HUD SYSTEM").strip())}</span><b class="hf-hud-sid">{escape(sid)}</b>{('<i class="hf-hud-zh">' + escape(hud_scene.get("hud_label_zh", "").strip()) + '</i>') if hud_scene.get("hud_label_zh", "").strip() else ""}</div>
@@ -467,8 +467,8 @@ html,body{{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--
 
 /* Caption — mode-aware, not one flat bottom strip for every scene */
 .caption{{
-  position:absolute;left:var(--vf-caption-left,54px);right:var(--vf-caption-right,54px);bottom:var(--vf-caption-bottom,120px);
-  padding:var(--vf-caption-padding,22px 32px);
+  position:absolute;left:var(--vf-caption-left,60px);right:var(--vf-caption-right,60px);bottom:var(--vf-caption-bottom,56px);
+  padding:var(--vf-caption-padding,18px 24px);
   border:1.5px solid var(--vf-caption-border,rgba(56,225,255,0.55));
   border-radius:22px;
   background:var(--vf-caption-bg,rgba(2,4,12,0.82));
@@ -476,33 +476,33 @@ html,body{{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--
   -webkit-backdrop-filter:blur(16px);
   box-shadow:0 0 42px rgba(56,225,255,0.22), inset 0 1px 0 rgba(255,255,255,0.10);
   max-width:min(1120px, calc(100% - 140px));
-  font-size:var(--vf-caption-size,38px);line-height:1.22;font-weight:850;text-align:center;
+  font-size:var(--vf-caption-size,32px);line-height:1.22;font-weight:850;text-align:center;
   color:#FFFFFF;
   z-index:6;
 }}
-.caption.caption--minimal_caption{{font-size:var(--vf-caption-size,34px);letter-spacing:-.02em;opacity:.94;}}
-.caption.caption--emphasis_caption{{font-size:var(--vf-caption-size,40px);border-width:2px;box-shadow:0 0 54px rgba(255,107,53,0.30), inset 0 1px 0 rgba(255,255,255,0.14);letter-spacing:-.02em;font-weight:900;}}
-.caption.caption--quote_caption{{font-size:var(--vf-caption-size,36px);font-style:italic;letter-spacing:-.01em;}}
-.caption.caption--action_caption{{font-size:var(--vf-caption-size,38px);text-transform:none;letter-spacing:.01em;font-weight:900;}}
+.caption.caption--minimal_caption{{font-size:var(--vf-caption-size,30px);letter-spacing:-.01em;opacity:.94;}}
+.caption.caption--emphasis_caption{{font-size:var(--vf-caption-size,34px);border-width:2px;box-shadow:0 0 54px rgba(255,107,53,0.24), inset 0 1px 0 rgba(255,255,255,0.14);letter-spacing:-.01em;font-weight:900;}}
+.caption.caption--quote_caption{{font-size:var(--vf-caption-size,32px);font-style:italic;letter-spacing:-.01em;}}
+.caption.caption--action_caption{{font-size:var(--vf-caption-size,34px);text-transform:none;letter-spacing:.01em;font-weight:900;}}
 .caption.caption--minimal_caption{{
-  --vf-caption-left:96px;--vf-caption-right:96px;--vf-caption-bottom:56px;
-  --vf-caption-padding:16px 22px;--vf-caption-size:30px;
+  --vf-caption-left:72px;--vf-caption-right:72px;--vf-caption-bottom:56px;
+  --vf-caption-padding:18px 24px;--vf-caption-size:30px;
   --vf-caption-bg:rgba(2,4,12,0.78);--vf-caption-border:rgba(255,255,255,0.20);
 }}
 .caption.caption--emphasis_caption{{
-  --vf-caption-left:72px;--vf-caption-right:72px;--vf-caption-bottom:60px;
-  --vf-caption-padding:18px 26px;--vf-caption-size:34px;
+  --vf-caption-left:72px;--vf-caption-right:72px;--vf-caption-bottom:56px;
+  --vf-caption-padding:18px 24px;--vf-caption-size:34px;
   --vf-caption-bg:rgba(255,107,53,0.14);--vf-caption-border:rgba(255,107,53,0.80);
 }}
 .caption.caption--quote_caption{{
-  --vf-caption-left:110px;--vf-caption-right:110px;--vf-caption-bottom:58px;
+  --vf-caption-left:72px;--vf-caption-right:72px;--vf-caption-bottom:56px;
   --vf-caption-padding:18px 24px;--vf-caption-size:32px;
   --vf-caption-bg:rgba(56,225,255,0.10);--vf-caption-border:rgba(56,225,255,0.66);
-  text-align:left;border-left:6px solid var(--hf-cyan);padding-left:28px;
+  font-style:italic;
 }}
 .caption.caption--action_caption{{
-  --vf-caption-left:88px;--vf-caption-right:88px;--vf-caption-bottom:52px;
-  --vf-caption-padding:18px 24px;--vf-caption-size:32px;
+  --vf-caption-left:72px;--vf-caption-right:72px;--vf-caption-bottom:56px;
+  --vf-caption-padding:18px 24px;--vf-caption-size:34px;
   --vf-caption-bg:rgba(46,232,116,0.12);--vf-caption-border:rgba(46,232,116,0.72);
   text-align:center;
 }}
@@ -516,6 +516,27 @@ html,body{{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--
 /* Scene bottom safe-zone — reserves 300px so cards never occlude captions (V3-P3.11A: expanded from 280) */
 .scene .hf-safe-zone{{top:var(--vf-safe-top,190px) !important;left:var(--vf-safe-left,72px) !important;right:var(--vf-safe-right,72px) !important;bottom:auto !important;padding-bottom:var(--vf-safe-bottom,300px) !important;}}
 .vf-strategy-shell{{position:absolute;inset:0;pointer-events:none;}}
+.vf-visual-stage{{
+  position:absolute;inset:0;pointer-events:none;z-index:2;
+}}
+.vf-skeleton-main{{
+  position:absolute;top:var(--vf-main-top,260px);left:var(--vf-main-left,72px);right:var(--vf-main-right,72px);bottom:var(--vf-main-bottom,280px);
+  pointer-events:none;z-index:3;
+}}
+.vf-visual-center-band{{
+  position:relative;display:grid;align-items:start;gap:var(--vf-center-gap,24px);
+}}
+.vf-support-layer{{
+  position:relative;display:grid;align-content:start;gap:18px;
+}}
+.vf-caption-zone{{
+  position:absolute;inset:0;pointer-events:none;z-index:6;
+}}
+.vf-glass-anchor-card{{
+  position:relative;
+  backdrop-filter:blur(18px);
+  -webkit-backdrop-filter:blur(18px);
+}}
 .vf-content-region{{
   position:absolute;inset:0;pointer-events:none;z-index:3;
 }}
@@ -660,7 +681,9 @@ html,body{{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--
 <div id="root" data-composition-id="{escape(project_dir.name)}" data-start="0" data-width="1080" data-height="1920" data-duration="{duration}">
 <audio id="voiceover-audio" data-start="0" data-duration="{duration}" data-track-index="0" data-volume="1" src="assets/voiceover.mp3"></audio>
 {"".join(scene_html)}
+<div class="vf-caption-zone">
 {"".join(caption_html)}
+</div>
 </div>
 <script>window.__timelines = window.__timelines || {{}};</script>
 </body></html>"""
@@ -804,6 +827,9 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
     ending_variant = str(scene.get("ending_variant") or "").strip() or "none"
     layout_presets = {
         "hero_statement": {
+            "--vf-main-top": "260px",
+            "--vf-main-bottom": "300px",
+            "--vf-center-gap": "24px",
             "--vf-safe-top": "150px",
             "--vf-safe-left": "72px",
             "--vf-safe-right": "72px",
@@ -816,6 +842,9 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
             "--vf-ending-right": "72px",
         },
         "hero_metric": {
+            "--vf-main-top": "286px",
+            "--vf-main-bottom": "280px",
+            "--vf-center-gap": "24px",
             "--vf-safe-top": "180px",
             "--vf-safe-left": "72px",
             "--vf-safe-right": "72px",
@@ -826,6 +855,9 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
             "--vf-ending-bottom": "170px",
         },
         "process_ladder": {
+            "--vf-main-top": "284px",
+            "--vf-main-bottom": "286px",
+            "--vf-center-gap": "22px",
             "--vf-safe-top": "148px",
             "--vf-safe-left": "56px",
             "--vf-safe-right": "56px",
@@ -836,6 +868,9 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
             "--vf-ending-bottom": "164px",
         },
         "tool_pipeline": {
+            "--vf-main-top": "292px",
+            "--vf-main-bottom": "262px",
+            "--vf-center-gap": "24px",
             "--vf-safe-top": "146px",
             "--vf-safe-left": "52px",
             "--vf-safe-right": "52px",
@@ -846,6 +881,9 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
             "--vf-ending-bottom": "164px",
         },
         "config_panel": {
+            "--vf-main-top": "286px",
+            "--vf-main-bottom": "290px",
+            "--vf-center-gap": "22px",
             "--vf-safe-top": "142px",
             "--vf-safe-left": "56px",
             "--vf-safe-right": "56px",
@@ -856,6 +894,9 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
             "--vf-ending-bottom": "164px",
         },
         "file_tree": {
+            "--vf-main-top": "286px",
+            "--vf-main-bottom": "290px",
+            "--vf-center-gap": "22px",
             "--vf-safe-top": "142px",
             "--vf-safe-left": "56px",
             "--vf-safe-right": "56px",
@@ -866,6 +907,9 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
             "--vf-ending-bottom": "166px",
         },
         "comparison_board": {
+            "--vf-main-top": "284px",
+            "--vf-main-bottom": "284px",
+            "--vf-center-gap": "24px",
             "--vf-safe-top": "174px",
             "--vf-safe-left": "64px",
             "--vf-safe-right": "64px",
@@ -876,6 +920,9 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
             "--vf-ending-bottom": "174px",
         },
         "proof_matrix": {
+            "--vf-main-top": "288px",
+            "--vf-main-bottom": "290px",
+            "--vf-center-gap": "24px",
             "--vf-safe-top": "174px",
             "--vf-safe-left": "64px",
             "--vf-safe-right": "64px",
@@ -886,6 +933,9 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
             "--vf-ending-bottom": "174px",
         },
         "framework_map": {
+            "--vf-main-top": "288px",
+            "--vf-main-bottom": "290px",
+            "--vf-center-gap": "24px",
             "--vf-safe-top": "160px",
             "--vf-safe-left": "64px",
             "--vf-safe-right": "64px",
@@ -896,6 +946,9 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
             "--vf-ending-bottom": "170px",
         },
         "decision_fork": {
+            "--vf-main-top": "286px",
+            "--vf-main-bottom": "286px",
+            "--vf-center-gap": "24px",
             "--vf-safe-top": "160px",
             "--vf-safe-left": "64px",
             "--vf-safe-right": "64px",
@@ -906,6 +959,9 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
             "--vf-ending-bottom": "170px",
         },
         "opportunity_map": {
+            "--vf-main-top": "286px",
+            "--vf-main-bottom": "286px",
+            "--vf-center-gap": "24px",
             "--vf-safe-top": "160px",
             "--vf-safe-left": "64px",
             "--vf-safe-right": "64px",
@@ -916,6 +972,9 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
             "--vf-ending-bottom": "170px",
         },
         "action_close": {
+            "--vf-main-top": "292px",
+            "--vf-main-bottom": "276px",
+            "--vf-center-gap": "22px",
             "--vf-safe-top": "168px",
             "--vf-safe-left": "72px",
             "--vf-safe-right": "72px",
@@ -926,6 +985,9 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
             "--vf-ending-bottom": "136px",
         },
         "insight_close": {
+            "--vf-main-top": "292px",
+            "--vf-main-bottom": "276px",
+            "--vf-center-gap": "22px",
             "--vf-safe-top": "168px",
             "--vf-safe-left": "72px",
             "--vf-safe-right": "72px",
@@ -936,6 +998,9 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
             "--vf-ending-bottom": "136px",
         },
         "checklist_close": {
+            "--vf-main-top": "290px",
+            "--vf-main-bottom": "276px",
+            "--vf-center-gap": "22px",
             "--vf-safe-top": "166px",
             "--vf-safe-left": "72px",
             "--vf-safe-right": "72px",
@@ -946,6 +1011,9 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
             "--vf-ending-bottom": "142px",
         },
         "offer_close": {
+            "--vf-main-top": "292px",
+            "--vf-main-bottom": "276px",
+            "--vf-center-gap": "22px",
             "--vf-safe-top": "168px",
             "--vf-safe-left": "72px",
             "--vf-safe-right": "72px",

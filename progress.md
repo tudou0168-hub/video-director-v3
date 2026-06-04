@@ -355,4 +355,13 @@
   3. 强化 caption mode 差异；
   4. 让 2-3 个旧 HUD 组件在 `p4_batch_ai_toolflow.md` smoke preview 中真实复用；
   5. 生成 `P4_1B_R2_DEBUG_CLEANUP_AND_COMPONENT_REUSE_SMOKE.md` 报告；
-  6. 跑测试、compileall、git diff --check，并准备提交。
+ 6. 跑测试、compileall、git diff --check，并准备提交。
+
+### 2026-06-04 P4.1B-R4 Real Follow-up
+
+- 先核验远端与本地状态，确认 `main` 最新远端指针可查。
+- 发现 HyperFrames Studio 之前加载的是旧的 `p4_1b_r4_followup_visual_rules_preview`，根因是 preview server 仍挂在旧 project path。
+- 通过 `npx hyperframes preview --kill-all` 清理旧 server，再用 `outputs/p4_1b_r4_real_followup_visual_layout_preview/hyperframes_timeline` 重启 `http://localhost:3002`，现在能看到正确 project 目录。
+- 在 `publish_templates.py` 与 `studio_native_project_builder.py` 中补入通用布局容器与统一 caption foundation：`vf-visual-stage`、`vf-skeleton-main`、`vf-visual-center-band`、`vf-support-layer`、`vf-caption-zone`、`vf-glass-anchor-card`。
+- 重新生成 smoke preview 到 `outputs/p4_1b_r4_real_followup_visual_layout_preview/`，未 render MP4，未提交 outputs/renders/contact-sheet。
+- 本轮仍然保留历史/实验未跟踪文件隔离，不做分类清理，不进入 P4.2。

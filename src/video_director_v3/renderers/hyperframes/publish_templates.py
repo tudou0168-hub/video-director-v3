@@ -350,7 +350,7 @@ def _render_strategy_hero_metric_skeleton(
     number_class = "amber" if any(ch in number for ch in ("%", "万", "亿", "倍")) else "white" if len(number_value) > 4 else "green"
     right_title = _contract_headline(scene, slots, "visual_emphasis", "memory_anchor", "display_headline")
     return f"""
-    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+    <div data-motion-target="scene-bg" class="vf-visual-stage hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
       <div class="bg-grid" style="opacity:.16"></div>
       <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,{acc}30 0%,transparent 70%);"></div>
       <div class="bg-glow bg-glow-2" style="background:radial-gradient(circle,rgba(255,200,61,0.20) 0%,transparent 70%);"></div>
@@ -359,8 +359,8 @@ def _render_strategy_hero_metric_skeleton(
       <div class="hf-glow-divider"></div>
       <div class="hf-status-stamp hf-status-live" style="display:inline-flex;color:{acc};border-color:{acc};background:rgba(6,8,16,0.68);">HERO METRIC</div>
     </div>
-    <div style="position:absolute;top:260px;left:72px;right:72px;display:grid;grid-template-columns:1.18fr 0.82fr;gap:24px;align-items:start;">
-      <div style="position:relative;min-height:860px;">
+    <div class="vf-skeleton-main vf-visual-center-band" style="position:absolute;top:var(--vf-main-top,286px);left:72px;right:72px;bottom:var(--vf-main-bottom,280px);display:grid;grid-template-columns:1.08fr 0.92fr;gap:var(--vf-center-gap,24px);align-items:center;">
+      <div class="vf-visual-center-band" style="position:relative;min-height:860px;">
         <div style="display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;max-width:760px;">
           <div class="hf-big-number {number_class} hf-animate-number" style="font-size:240px;line-height:.9;letter-spacing:-.06em;">{escape(number_value)}</div>
           {f'<div class="hf-status-stamp hf-status-pass" style="display:inline-flex;align-items:center;justify-content:center;min-height:74px;padding:16px 22px;font-size:28px;color:{acc};border-color:{acc};background:rgba(6,8,16,0.68);">{escape(number_unit)}</div>' if number_unit else ''}
@@ -372,8 +372,8 @@ def _render_strategy_hero_metric_skeleton(
           <div style="font-size:24px;line-height:1.4;color:rgba(248,250,252,0.76);max-width:420px;">{save_reason}</div>
         </div>
       </div>
-      <div style="display:grid;gap:18px;align-content:start;">
-        <div class="hf-metric-card hf-glass-cyan">
+      <div class="vf-support-layer" style="align-content:start;">
+        <div class="hf-metric-card hf-glass-cyan vf-glass-anchor-card">
           <div class="hf-metric-label">VISUAL ANCHOR</div>
           <div class="hf-metric-value" style="font-size:40px;line-height:1.04;margin-top:6px;">{escape(right_title)}</div>
           <div class="hf-metric-delta" style="margin-top:14px;color:#fff;">{escape(save_reason or '保存这个结构，下一次可以直接复用。')}</div>
@@ -381,7 +381,7 @@ def _render_strategy_hero_metric_skeleton(
             <div class="hf-progress-fill"></div>
           </div>
         </div>
-        <div class="hf-result-card hf-page-anchor" style="text-align:left;border-color:rgba(255,200,61,0.35);background:rgba(255,200,61,0.08);padding:22px 26px;">
+        <div class="hf-result-card hf-page-anchor vf-glass-anchor-card" style="text-align:left;border-color:rgba(255,200,61,0.35);background:rgba(255,200,61,0.08);padding:22px 26px;">
           <div class="hf-status-stamp hf-status-viral" style="display:inline-flex;margin-bottom:12px;">MEMORY / ANCHOR</div>
           <div style="font-size:28px;font-weight:800;line-height:1.25;color:#fff;margin-bottom:12px;">{escape(scene.get("memory_anchor") or right_title)}</div>
           <div style="font-size:22px;line-height:1.45;color:rgba(248,250,252,0.78);">{escape(scene.get("visual_object") or metric_label or 'hero_metric')}</div>
@@ -424,7 +424,7 @@ def _render_strategy_tool_pipeline_skeleton(
             """
         )
     return f"""
-    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+    <div data-motion-target="scene-bg" class="vf-visual-stage hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
       <div class="bg-grid" style="opacity:.16"></div>
       <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,{acc}24 0%,transparent 70%);"></div>
     </div>
@@ -432,12 +432,12 @@ def _render_strategy_tool_pipeline_skeleton(
       <div class="hf-glow-divider"></div>
       <div class="hf-status-stamp hf-status-live" style="display:inline-flex;color:{acc};border-color:{acc};background:rgba(6,8,16,0.68);">TOOL PIPELINE</div>
     </div>
-    <div style="position:absolute;top:240px;left:72px;right:72px;display:grid;grid-template-columns:1fr 0.78fr;gap:28px;align-items:start;">
-      <div style="position:relative;min-height:940px;padding-top:22px;">
+    <div class="vf-skeleton-main vf-visual-center-band" style="position:absolute;top:var(--vf-main-top,292px);left:72px;right:72px;bottom:var(--vf-main-bottom,262px);display:grid;grid-template-columns:1fr 0.86fr;gap:var(--vf-center-gap,24px);align-items:start;">
+      <div class="vf-visual-center-band" style="position:relative;min-height:940px;padding-top:22px;">
         {''.join(nodes)}
       </div>
-      <div style="display:grid;gap:18px;">
-        <div class="hf-result-card hf-page-anchor" style="text-align:left;border-color:rgba(56,225,255,0.35);background:rgba(56,225,255,0.08);padding:24px 26px;">
+      <div class="vf-support-layer" style="align-content:start;">
+        <div class="hf-result-card hf-page-anchor vf-glass-anchor-card" style="text-align:left;border-color:rgba(56,225,255,0.35);background:rgba(56,225,255,0.08);padding:24px 26px;">
           <div class="hf-status-stamp hf-status-ready" style="display:inline-flex;margin-bottom:12px;color:{acc};border-color:{acc};">WORKFLOW RESULT</div>
           <div style="font-size:30px;font-weight:900;line-height:1.18;color:#fff;margin-bottom:12px;">{escape(result)}</div>
           <div style="font-size:20px;line-height:1.45;color:rgba(248,250,252,0.78);">{escape(scene.get('save_reason') or scene.get('memory_anchor') or title)}</div>
@@ -445,7 +445,7 @@ def _render_strategy_tool_pipeline_skeleton(
             <div class="hf-progress-fill"></div>
           </div>
         </div>
-        <div class="hf-result-card" style="border-color:rgba(255,200,61,0.28);background:rgba(255,200,61,0.08);text-align:left;">
+        <div class="hf-result-card vf-glass-anchor-card" style="border-color:rgba(255,200,61,0.28);background:rgba(255,200,61,0.08);text-align:left;">
           <div class="hf-step-number amber" style="font-size:96px;margin-bottom:8px;">3</div>
           <div style="font-size:18px;letter-spacing:.16em;color:rgba(248,250,252,0.6);margin-bottom:10px;">CAPTURED FLOW</div>
           <div style="font-size:22px;line-height:1.4;color:#fff;">{escape(scene.get('visual_object') or 'tool_pipeline')}</div>
@@ -469,7 +469,7 @@ def _render_strategy_config_panel_skeleton(
     reason = _contract_headline(scene, slots, "workflow_result", "final_result", "save_reason")
     top_item = items[0] if items else "CONFIG"
     return f"""
-    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+    <div data-motion-target="scene-bg" class="vf-visual-stage hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
       <div class="bg-grid" style="opacity:.15"></div>
     </div>
     <div class="hf-page-anchor" style="top:108px;bottom:auto;left:96px;right:96px;">
@@ -544,7 +544,7 @@ def _render_strategy_file_tree_skeleton(
             """
         )
     return f"""
-    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+    <div data-motion-target="scene-bg" class="vf-visual-stage hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
       <div class="bg-grid" style="opacity:.16"></div>
     </div>
     <div class="hf-page-anchor" style="top:108px;bottom:auto;left:96px;right:96px;">
@@ -602,27 +602,27 @@ def _render_strategy_framework_skeleton(
                 """
             )
         return f"""
-        <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+        <div data-motion-target="scene-bg" class="vf-visual-stage hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
           <div class="bg-grid" style="opacity:.15"></div>
         </div>
         <div class="hf-page-anchor" style="top:106px;bottom:auto;left:96px;right:96px;">
           <div class="hf-glow-divider"></div>
           <div class="hf-status-stamp hf-status-live" style="display:inline-flex;color:{acc};border-color:{acc};background:rgba(6,8,16,0.68);">PROOF MATRIX</div>
         </div>
-        <div style="position:absolute;top:245px;left:72px;right:72px;display:grid;grid-template-columns:1.12fr 0.88fr;gap:24px;align-items:start;">
-          <div style="min-height:900px;">
-            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;position:relative;">
+        <div class="vf-skeleton-main vf-visual-center-band" style="position:absolute;top:var(--vf-main-top,288px);left:72px;right:72px;bottom:var(--vf-main-bottom,290px);display:grid;grid-template-columns:1.12fr 0.88fr;gap:var(--vf-center-gap,24px);align-items:start;">
+          <div class="vf-visual-center-band" style="min-height:900px;">
+            <div class="vf-visual-center-band" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;position:relative;">
               <div class="hf-flow-line" style="left:50%;top:178px;height:280px;opacity:.5;"></div>
               {''.join(cards)}
             </div>
           </div>
-          <div style="display:grid;gap:18px;">
-            <div class="hf-result-card hf-page-anchor" style="text-align:left;border-color:rgba(255,200,61,0.35);background:rgba(255,200,61,0.08);padding:22px 24px;">
+          <div class="vf-support-layer" style="align-content:start;">
+            <div class="hf-result-card hf-page-anchor vf-glass-anchor-card" style="text-align:left;border-color:rgba(255,200,61,0.35);background:rgba(255,200,61,0.08);padding:22px 24px;">
               <div class="hf-status-stamp hf-status-pass" style="display:inline-flex;margin-bottom:12px;color:{acc};border-color:{acc};">CENTER CLAIM</div>
               <div style="font-size:36px;font-weight:900;line-height:1.15;color:#fff;margin-bottom:12px;">{escape(_contract_headline(scene, slots, 'center_claim', 'memory_anchor', 'save_reason', 'insight'))}</div>
               <div style="font-size:22px;line-height:1.45;color:rgba(248,250,252,0.78);">{escape(_contract_headline(scene, slots, 'usage_note', 'credibility_note', 'save_reason'))}</div>
             </div>
-            <div class="hf-metric-card hf-glass-amber">
+            <div class="hf-metric-card hf-glass-amber vf-glass-anchor-card">
               <div class="hf-metric-label">VISUAL OBJECT</div>
               <div class="hf-metric-value" style="font-size:34px;line-height:1.08;margin-top:6px;">{escape(scene.get('visual_object') or 'proof_matrix')}</div>
               <div class="hf-metric-delta" style="margin-top:14px;color:#fff;">{escape(scene.get('memory_anchor') or title)}</div>
@@ -662,20 +662,20 @@ def _render_strategy_framework_skeleton(
       <div class="hf-glow-divider"></div>
       <div class="hf-status-stamp hf-status-live" style="display:inline-flex;color:{acc};border-color:{acc};background:rgba(6,8,16,0.68);">{'PROOF MATRIX' if layout_family == 'proof_matrix' else 'FRAMEWORK MAP'}</div>
     </div>
-    <div style="position:absolute;top:245px;left:72px;right:72px;display:grid;grid-template-columns:1.02fr 0.98fr;gap:26px;align-items:start;">
-      <div style="position:relative;min-height:930px;">
-        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 20px;position:relative;">
+    <div class="vf-skeleton-main vf-visual-center-band" style="position:absolute;top:var(--vf-main-top,288px);left:72px;right:72px;bottom:var(--vf-main-bottom,290px);display:grid;grid-template-columns:1.02fr 0.98fr;gap:var(--vf-center-gap,24px);align-items:start;">
+      <div class="vf-visual-center-band" style="position:relative;min-height:930px;">
+        <div class="vf-visual-center-band" style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 20px;position:relative;">
           <div class="hf-flow-line" style="left:50%;top:180px;height:300px;opacity:.48;"></div>
           {''.join(framework_nodes)}
         </div>
       </div>
-      <div style="display:grid;gap:18px;">
-        <div class="hf-result-card hf-page-anchor" style="text-align:left;border-color:rgba(56,225,255,0.35);background:rgba(56,225,255,0.08);padding:24px 26px;">
+      <div class="vf-support-layer" style="align-content:start;">
+        <div class="hf-result-card hf-page-anchor vf-glass-anchor-card" style="text-align:left;border-color:rgba(56,225,255,0.35);background:rgba(56,225,255,0.08);padding:24px 26px;">
           <div class="hf-status-stamp hf-status-ready" style="display:inline-flex;margin-bottom:12px;color:{acc};border-color:{acc};">INSIGHT</div>
           <div style="font-size:32px;font-weight:900;line-height:1.15;color:#fff;margin-bottom:12px;">{escape(_contract_headline(scene, slots, 'insight', 'center_claim', 'usage_note', 'save_reason'))}</div>
           <div style="font-size:20px;line-height:1.45;color:rgba(248,250,252,0.78);">{escape(scene.get('memory_anchor') or scene.get('visual_object') or title)}</div>
         </div>
-        <div class="hf-metric-card hf-glass-purple">
+        <div class="hf-metric-card hf-glass-purple vf-glass-anchor-card">
           <div class="hf-metric-label">STRUCTURE</div>
           <div class="hf-metric-value" style="font-size:30px;line-height:1.08;margin-top:6px;">{escape(scene.get('visual_object') or layout_family)}</div>
           <div class="hf-metric-delta" style="margin-top:14px;color:#fff;">{escape(scene.get('save_reason') or '把结构从列表升成骨架。')}</div>
@@ -754,23 +754,23 @@ def _render_strategy_close_skeleton(
       <div class="hf-glow-divider"></div>
       <div class="hf-status-stamp hf-status-viral" style="display:inline-flex;color:{acc};border-color:{acc};background:rgba(6,8,16,0.68);">{label}</div>
     </div>
-    <div style="position:absolute;top:250px;left:72px;right:72px;display:grid;grid-template-columns:1fr 0.8fr;gap:24px;align-items:start;">
-      <div style="display:grid;gap:18px;min-height:860px;">
-        <div class="hf-result-card hf-page-anchor" style="text-align:left;border-color:{acc}55;background:rgba(6,8,16,0.72);padding:28px 30px;">
+    <div class="vf-skeleton-main vf-visual-center-band" style="position:absolute;top:var(--vf-main-top,292px);left:72px;right:72px;bottom:var(--vf-main-bottom,276px);display:grid;grid-template-columns:1fr 0.8fr;gap:var(--vf-center-gap,24px);align-items:start;">
+      <div class="vf-visual-center-band" style="display:grid;gap:18px;min-height:860px;">
+        <div class="hf-result-card hf-page-anchor vf-glass-anchor-card" style="text-align:left;border-color:{acc}55;background:rgba(6,8,16,0.72);padding:28px 30px;">
           <div class="hf-status-stamp hf-status-pass" style="display:inline-flex;margin-bottom:12px;color:{acc};border-color:{acc};">{hero_badge}</div>
           <div style="font-size:58px;font-weight:900;line-height:1.08;color:#fff;max-width:760px;">{escape(headline)}</div>
           <div style="margin-top:18px;font-size:30px;line-height:1.42;color:rgba(248,250,252,0.82);max-width:700px;">{escape(next_step)}</div>
           <div style="margin-top:18px;font-size:24px;line-height:1.45;color:rgba(248,250,252,0.62);max-width:680px;">{escape(scene.get('save_reason') or hero_sub)}</div>
         </div>
-        <div style="position:relative;padding-left:40px;">
+        <div class="vf-support-layer" style="position:relative;padding-left:40px;">
           <div class="hf-flow-line" style="left:14px;top:0;height:240px;opacity:.55;"></div>
           <div style="display:grid;gap:14px;">
             {''.join(item_cards)}
           </div>
         </div>
       </div>
-      <div style="display:grid;gap:18px;align-content:start;">
-        <div class="hf-metric-card hf-glass-green">
+      <div class="vf-support-layer" style="align-content:start;">
+        <div class="hf-metric-card hf-glass-green vf-glass-anchor-card">
           <div class="hf-metric-label">CTA</div>
           <div class="hf-metric-value" style="font-size:34px;line-height:1.08;margin-top:6px;">{escape(cta_text)}</div>
           <div class="hf-metric-delta" style="margin-top:14px;color:#fff;">{escape(scene.get('memory_anchor') or scene.get('visual_object') or '把这一页保存成行动卡。')}</div>
@@ -778,7 +778,7 @@ def _render_strategy_close_skeleton(
         <div class="hf-progress" style="--hf-target:84%;height:14px;border-radius:7px;">
           <div class="hf-progress-fill"></div>
         </div>
-        <div class="hf-result-card" style="border-color:rgba(255,200,61,0.28);background:rgba(255,200,61,0.08);">
+        <div class="hf-result-card vf-glass-anchor-card" style="border-color:rgba(255,200,61,0.28);background:rgba(255,200,61,0.08);">
           <div class="hf-status-stamp hf-status-live" style="display:inline-flex;margin-bottom:10px;color:{acc};border-color:{acc};">SAVE REASON</div>
           <div style="font-size:28px;line-height:1.45;color:#fff;">{escape(scene.get('save_reason') or next_step)}</div>
         </div>

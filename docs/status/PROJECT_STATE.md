@@ -34,10 +34,10 @@
 
 完整路线图：`docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md`
 
-当前阶段：`P4.1B-R4 Visual Composition Polish + Collision Cleanup`
-当前候选片：`p4_1b_r4_followup_visual_rules_preview`
-下一任务：`继续留在 P4.1B-R4 范围内，根据 contact sheet 人工结果决定是否还要做一次 R4 follow-up fix；不要进入 P4.2`
-当前工作：`只修通用构图规则：close 页禁旧 FINAL SCORE / COMPLETE、caption 降权、tool_pipeline 防碰撞、framework_map 可读化、hero_metric 成熟层级；这不是对单条 smoke 的特判`
+当前阶段：`P4.1B-R4 Real Follow-up: Preview Load Fix + Unified Visual Layout Rules`
+当前候选片：`p4_1b_r4_real_followup_visual_layout_preview`
+下一任务：`继续留在 P4.1B-R4 范围内，根据真实 contact sheet 判断是否还需要一次 follow-up fix；不要进入 R5 / P4.2`
+当前工作：`修复 preview 加载到正确项目目录的根因；把 vf-visual-stage / vf-skeleton-main / vf-visual-center-band / vf-support-layer / vf-caption-zone / vf-glass-anchor-card 落到通用布局；统一字幕 foundation；让主体下移并占住中部；玻璃卡改成语义承托层`
 
 ## 项目目标
 
