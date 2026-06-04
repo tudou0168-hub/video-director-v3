@@ -133,6 +133,21 @@ def _contract_headline(scene: dict[str, Any], slots: dict[str, Any], *keys: str)
     return "这一帧需要补充语义内容"
 
 
+def _split_metric_text(raw: str) -> tuple[str, str]:
+    text = str(raw or "").strip()
+    if not text:
+        return "0", ""
+    match = re.search(r"\d+(?:\.\d+)?", text)
+    if not match:
+        return text, ""
+    number = match.group(0)
+    suffix = text[match.end():].strip()
+    prefix = text[:match.start()].strip()
+    unit = suffix or prefix
+    unit = unit.lstrip("·:：/\\-—").strip()
+    return number, unit
+
+
 def _wrap_strategy_scene(sid: str, role: str, scene: dict[str, Any], body: str) -> str:
     layout_family = str(scene.get("layout_family") or "hero_statement").strip() or "hero_statement"
     caption_mode = str(scene.get("caption_mode") or "standard_caption").strip() or "standard_caption"
@@ -331,7 +346,8 @@ def _render_strategy_hero_metric_skeleton(
     metric_label = _contract_headline(scene, slots, "status_badge", "visual_emphasis", "memory_anchor")
     save_reason = _contract_headline(scene, slots, "save_reason", "memory_anchor")
     number = _extract_primary_number(scene, slots)
-    number_class = "amber" if any(ch in number for ch in ("%", "万", "亿", "倍")) else "white" if len(number) > 4 else "green"
+    number_value, number_unit = _split_metric_text(number)
+    number_class = "amber" if any(ch in number for ch in ("%", "万", "亿", "倍")) else "white" if len(number_value) > 4 else "green"
     right_title = _contract_headline(scene, slots, "visual_emphasis", "memory_anchor", "display_headline")
     return f"""
     <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
@@ -345,7 +361,10 @@ def _render_strategy_hero_metric_skeleton(
     </div>
     <div style="position:absolute;top:260px;left:72px;right:72px;display:grid;grid-template-columns:1.18fr 0.82fr;gap:24px;align-items:start;">
       <div style="position:relative;min-height:860px;">
-        <div class="hf-big-number {number_class} hf-animate-number" style="font-size:280px;line-height:.9;letter-spacing:-.06em;">{escape(number)}</div>
+        <div style="display:flex;align-items:flex-end;gap:18px;flex-wrap:wrap;max-width:760px;">
+          <div class="hf-big-number {number_class} hf-animate-number" style="font-size:240px;line-height:.9;letter-spacing:-.06em;">{escape(number_value)}</div>
+          {f'<div class="hf-status-stamp hf-status-pass" style="display:inline-flex;align-items:center;justify-content:center;min-height:74px;padding:16px 22px;font-size:28px;color:{acc};border-color:{acc};background:rgba(6,8,16,0.68);">{escape(number_unit)}</div>' if number_unit else ''}
+        </div>
         <div class="hf-big-title hf-animate-title" style="margin-top:14px;max-width:640px;font-size:72px;">{headline}</div>
         <div class="hf-sub-title" style="max-width:640px;">{sub}</div>
         <div style="margin-top:32px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;max-width:640px;">
@@ -393,13 +412,13 @@ def _render_strategy_tool_pipeline_skeleton(
         node_y = 0 if idx == 0 else 1
         nodes.append(
             f"""
-            <div style="position:relative;margin-bottom:{28 if idx < 2 else 0}px;padding-left:56px;">
-              <div class="hf-flow-line" style="left:17px;top:{-10 if idx == 0 else -44}px;height:{110 if idx < 2 else 0}px;"></div>
+            <div style="position:relative;margin-bottom:{40 if idx < 2 else 0}px;padding-left:48px;">
+              <div class="hf-flow-line" style="left:17px;top:{-8 if idx == 0 else -48}px;height:{124 if idx < 2 else 0}px;"></div>
               <div class="hf-status-stamp hf-status-{['live','pass','viral'][idx]}" style="display:inline-flex;margin-bottom:12px;color:{colors[idx]};border-color:{colors[idx]};">{role_text}</div>
-              <div class="hf-glass-panel hf-glass-cyan" style="padding:22px 24px;border-radius:20px;min-height:112px;">
+              <div class="hf-glass-panel hf-glass-cyan" style="padding:22px 24px;border-radius:20px;min-height:128px;">
                 <div style="font-size:18px;font-weight:800;letter-spacing:.14em;color:{colors[idx]};margin-bottom:8px;">NODE {idx + 1}</div>
-                <div style="font-size:34px;font-weight:900;line-height:1.12;color:#fff;margin-bottom:8px;">{escape(tool)}</div>
-                <div style="font-size:22px;line-height:1.4;color:rgba(248,250,252,0.78);">{escape(_slot_items(slots, 'tool_roles', fallback=['输入','处理','输出'])[idx] if idx < len(_slot_items(slots, 'tool_roles', fallback=['输入','处理','输出'])) else role_text)}</div>
+                <div style="font-size:30px;font-weight:900;line-height:1.12;color:#fff;margin-bottom:8px;">{escape(tool)}</div>
+                <div style="font-size:20px;line-height:1.42;color:rgba(248,250,252,0.78);">{escape(_slot_items(slots, 'tool_roles', fallback=['输入','处理','输出'])[idx] if idx < len(_slot_items(slots, 'tool_roles', fallback=['输入','处理','输出'])) else role_text)}</div>
               </div>
             </div>
             """
@@ -413,23 +432,23 @@ def _render_strategy_tool_pipeline_skeleton(
       <div class="hf-glow-divider"></div>
       <div class="hf-status-stamp hf-status-live" style="display:inline-flex;color:{acc};border-color:{acc};background:rgba(6,8,16,0.68);">TOOL PIPELINE</div>
     </div>
-    <div style="position:absolute;top:240px;left:72px;right:72px;display:grid;grid-template-columns:1fr 0.78fr;gap:24px;align-items:start;">
-      <div style="position:relative;min-height:900px;padding-top:18px;">
+    <div style="position:absolute;top:240px;left:72px;right:72px;display:grid;grid-template-columns:1fr 0.78fr;gap:28px;align-items:start;">
+      <div style="position:relative;min-height:940px;padding-top:22px;">
         {''.join(nodes)}
       </div>
       <div style="display:grid;gap:18px;">
         <div class="hf-result-card hf-page-anchor" style="text-align:left;border-color:rgba(56,225,255,0.35);background:rgba(56,225,255,0.08);padding:24px 26px;">
           <div class="hf-status-stamp hf-status-ready" style="display:inline-flex;margin-bottom:12px;color:{acc};border-color:{acc};">WORKFLOW RESULT</div>
-          <div style="font-size:34px;font-weight:900;line-height:1.18;color:#fff;margin-bottom:12px;">{escape(result)}</div>
-          <div style="font-size:22px;line-height:1.45;color:rgba(248,250,252,0.78);">{escape(scene.get('save_reason') or scene.get('memory_anchor') or title)}</div>
+          <div style="font-size:30px;font-weight:900;line-height:1.18;color:#fff;margin-bottom:12px;">{escape(result)}</div>
+          <div style="font-size:20px;line-height:1.45;color:rgba(248,250,252,0.78);">{escape(scene.get('save_reason') or scene.get('memory_anchor') or title)}</div>
           <div class="hf-progress" style="margin-top:20px;--hf-target:88%;height:12px;border-radius:6px;">
             <div class="hf-progress-fill"></div>
           </div>
         </div>
         <div class="hf-result-card" style="border-color:rgba(255,200,61,0.28);background:rgba(255,200,61,0.08);text-align:left;">
-          <div class="hf-step-number amber" style="font-size:120px;margin-bottom:8px;">3</div>
+          <div class="hf-step-number amber" style="font-size:96px;margin-bottom:8px;">3</div>
           <div style="font-size:18px;letter-spacing:.16em;color:rgba(248,250,252,0.6);margin-bottom:10px;">CAPTURED FLOW</div>
-          <div style="font-size:26px;line-height:1.4;color:#fff;">{escape(scene.get('visual_object') or 'tool_pipeline')}</div>
+          <div style="font-size:22px;line-height:1.4;color:#fff;">{escape(scene.get('visual_object') or 'tool_pipeline')}</div>
         </div>
       </div>
     </div>
@@ -629,9 +648,9 @@ def _render_strategy_framework_skeleton(
         framework_nodes.append(
             f"""
             <div class="hf-glass-panel" style="position:relative;padding:20px 22px;border-radius:18px;min-height:120px;border-color:{[acc, '#FF5577', '#FFC83D', '#A855F7'][idx % 4]}66;background:rgba(2,4,12,0.68);">
-              <div class="hf-step-number {'amber' if idx % 4 == 1 else 'green' if idx % 4 == 2 else 'purple' if idx % 4 == 3 else ''}" style="font-size:80px;margin-bottom:6px;color:{[acc, '#FF5577', '#FFC83D', '#A855F7'][idx % 4]};">{idx + 1}</div>
-              <div style="font-size:16px;letter-spacing:.14em;color:{[acc, '#FF5577', '#FFC83D', '#A855F7'][idx % 4]};margin-bottom:8px;">{escape(node_id)}</div>
-              <div style="font-size:24px;font-weight:800;line-height:1.34;color:#fff;">{escape(label)}</div>
+        <div class="hf-step-number {'amber' if idx % 4 == 1 else 'green' if idx % 4 == 2 else 'purple' if idx % 4 == 3 else ''}" style="font-size:74px;margin-bottom:6px;color:{[acc, '#FF5577', '#FFC83D', '#A855F7'][idx % 4]};">{idx + 1}</div>
+        <div style="font-size:15px;letter-spacing:.14em;color:{[acc, '#FF5577', '#FFC83D', '#A855F7'][idx % 4]};margin-bottom:8px;">{escape(node_id)}</div>
+        <div style="font-size:22px;font-weight:800;line-height:1.34;color:#fff;">{escape(label)}</div>
             </div>
             """
         )
@@ -643,22 +662,22 @@ def _render_strategy_framework_skeleton(
       <div class="hf-glow-divider"></div>
       <div class="hf-status-stamp hf-status-live" style="display:inline-flex;color:{acc};border-color:{acc};background:rgba(6,8,16,0.68);">{'PROOF MATRIX' if layout_family == 'proof_matrix' else 'FRAMEWORK MAP'}</div>
     </div>
-    <div style="position:absolute;top:245px;left:72px;right:72px;display:grid;grid-template-columns:1fr 0.84fr;gap:24px;align-items:start;">
-      <div style="position:relative;min-height:900px;">
-        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;position:relative;">
-          <div class="hf-flow-line" style="left:50%;top:172px;height:280px;opacity:.45;"></div>
+    <div style="position:absolute;top:245px;left:72px;right:72px;display:grid;grid-template-columns:1.02fr 0.98fr;gap:26px;align-items:start;">
+      <div style="position:relative;min-height:930px;">
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px 20px;position:relative;">
+          <div class="hf-flow-line" style="left:50%;top:180px;height:300px;opacity:.48;"></div>
           {''.join(framework_nodes)}
         </div>
       </div>
       <div style="display:grid;gap:18px;">
         <div class="hf-result-card hf-page-anchor" style="text-align:left;border-color:rgba(56,225,255,0.35);background:rgba(56,225,255,0.08);padding:24px 26px;">
           <div class="hf-status-stamp hf-status-ready" style="display:inline-flex;margin-bottom:12px;color:{acc};border-color:{acc};">INSIGHT</div>
-          <div style="font-size:36px;font-weight:900;line-height:1.15;color:#fff;margin-bottom:12px;">{escape(_contract_headline(scene, slots, 'insight', 'center_claim', 'usage_note', 'save_reason'))}</div>
-          <div style="font-size:22px;line-height:1.45;color:rgba(248,250,252,0.78);">{escape(scene.get('memory_anchor') or scene.get('visual_object') or title)}</div>
+          <div style="font-size:32px;font-weight:900;line-height:1.15;color:#fff;margin-bottom:12px;">{escape(_contract_headline(scene, slots, 'insight', 'center_claim', 'usage_note', 'save_reason'))}</div>
+          <div style="font-size:20px;line-height:1.45;color:rgba(248,250,252,0.78);">{escape(scene.get('memory_anchor') or scene.get('visual_object') or title)}</div>
         </div>
         <div class="hf-metric-card hf-glass-purple">
           <div class="hf-metric-label">STRUCTURE</div>
-          <div class="hf-metric-value" style="font-size:34px;line-height:1.08;margin-top:6px;">{escape(scene.get('visual_object') or layout_family)}</div>
+          <div class="hf-metric-value" style="font-size:30px;line-height:1.08;margin-top:6px;">{escape(scene.get('visual_object') or layout_family)}</div>
           <div class="hf-metric-delta" style="margin-top:14px;color:#fff;">{escape(scene.get('save_reason') or '把结构从列表升成骨架。')}</div>
           <div class="hf-progress" style="margin-top:20px;--hf-target:72%;height:12px;border-radius:6px;">
             <div class="hf-progress-fill"></div>
@@ -900,7 +919,7 @@ def _render_contract_final_cta(sid: str, role: str, scene: dict[str, Any]) -> st
       <div class="bg-grid" style="opacity:.25"></div>
     </div>
     <div class="hf-safe-zone" style="position:absolute;top:260px;left:72px;right:72px;text-align:center;">
-      <div class="hf-status-stamp hf-status-viral" style="display:inline-flex;font-size:20px;letter-spacing:.18em;color:{acc};margin-bottom:18px;">CHAPTER CLOSE</div>
+      <div class="hf-status-stamp hf-status-viral" style="display:inline-flex;font-size:20px;letter-spacing:.18em;color:{acc};margin-bottom:18px;">ACTION CLOSE</div>
       <div style="font-size:64px;font-weight:900;line-height:1.08;color:#fff;max-width:900px;margin:0 auto;">{claim}</div>
       <div style="margin:28px auto 0;max-width:760px;font-size:32px;line-height:1.42;color:rgba(248,250,252,0.82);">{next_step}</div>
       <div class="hf-glass-panel hf-glass-cyan" style="margin:48px auto 0;max-width:620px;padding:28px 32px;border-radius:26px;">
@@ -2307,8 +2326,7 @@ def _render_cta_button_banner(sid: str, role: str, scene: dict[str, Any], acc: s
 
 
 def _render_cta_end_score_goodbye(sid: str, role: str, scene: dict[str, Any], acc: str) -> str:
-    """V3-P3.9R1 — Final Score Board grammar: GIANT 100 + DONE / COMPLETE
-    stamp + bright green glow halo + prominent NEXT PREVIEW bar."""
+    """Generic close board grammar: clear action close with no legacy score language."""
     score = scene.get("score", scene.get("score_value", "100"))
     score_label = scene.get("score_label", "本章掌握度")
     headline = scene.get("headline", scene.get("narration", "这一章就到这里")[:30] or "这一章就到这里")
@@ -2323,18 +2341,18 @@ def _render_cta_end_score_goodbye(sid: str, role: str, scene: dict[str, Any], ac
     </div>
     <div class="hf-safe-zone" style="position:absolute;top:180px;left:0;right:0;text-align:center;">
       <div style="display:flex;justify-content:center;gap:14px;margin-bottom:18px;">
-        <div class="hf-status-stamp hf-status-pass hf-animate-stamp" style="font-size:18px;padding:10px 22px;border-width:2px;">DONE</div>
-        <div class="hf-status-stamp hf-status-viral hf-animate-stamp" style="font-size:18px;padding:10px 22px;border-width:2px;color:{amber};">COMPLETE</div>
+        <div class="hf-status-stamp hf-status-pass hf-animate-stamp" style="font-size:18px;padding:10px 22px;border-width:2px;">READY</div>
+        <div class="hf-status-stamp hf-animate-stamp" style="font-size:18px;padding:10px 22px;border-width:2px;color:{amber};">NEXT</div>
       </div>
       <div class="hf-animate-number" style="font-size:380px;font-weight:900;line-height:0.92;color:{green};text-shadow:0 0 72px {green}cc;letter-spacing:-12px;">{score}</div>
-      <div style="font:800 48px/1 &quot;SF Mono&quot;,monospace;color:#FFFFFF;margin-top:10px;letter-spacing:.18em;text-shadow:0 0 14px rgba(255,255,255,0.4);">/ 100 · CHAPTER CLOSE</div>
+      <div style="font:800 48px/1 &quot;SF Mono&quot;,monospace;color:#FFFFFF;margin-top:10px;letter-spacing:.18em;text-shadow:0 0 14px rgba(255,255,255,0.4);">/ 100 · ACTION CLOSE</div>
       <div style="font:700 18px/1 &quot;SF Mono&quot;,monospace;letter-spacing:.22em;color:{green};margin-top:14px;text-transform:uppercase;">{score_label}</div>
     </div>
     <div class="hf-glass-panel hf-glass-green hf-pulse" style="position:absolute;top:760px;left:80px;right:80px;padding:36px 40px;min-height:120px;background:linear-gradient(180deg,rgba(46,232,116,0.22),rgba(2,4,12,0.7) 80%);">
       <div style="font-size:48px;font-weight:800;color:#FFFFFF;line-height:1.18;text-align:center;letter-spacing:-.01em;">{headline}</div>
     </div>
     <div style="position:absolute;top:950px;left:0;right:0;text-align:center;">
-      <div style="font:800 18px/1 &quot;SF Mono&quot;,monospace;letter-spacing:.32em;color:{green};margin-bottom:14px;">NEXT / PREVIEW</div>
+      <div style="font:800 18px/1 &quot;SF Mono&quot;,monospace;letter-spacing:.32em;color:{green};margin-bottom:14px;">NEXT / STEP</div>
       <div class="hf-animate-stamp" style="display:inline-flex;padding:20px 40px;border-radius:18px;background:rgba(46,232,116,0.22);border:2.5px solid {green};font:800 32px/1 &quot;PingFang SC&quot;,sans-serif;color:#FFFFFF;box-shadow:0 0 32px {green}77;letter-spacing:.04em;">{next_teaser}</div>
     </div>
     <div style="position:absolute;top:1090px;left:140px;right:140px;padding:20px 24px;border-radius:18px;background:rgba(255,255,255,0.06);text-align:center;font-size:26px;color:rgba(248,250,252,0.82);line-height:1.4;letter-spacing:.02em;">{final_msg}</div>

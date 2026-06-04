@@ -247,7 +247,7 @@ def test_last_scene_cta_defaults_to_end_score_goodbye(tmp_path: Path):
     assert cta.get("score")
     # HTML must also carry the finish-board marker.
     html = (tmp_path / "hyperframes_timeline" / "index.html").read_text(encoding="utf-8")
-    assert "CHAPTER CLOSE" in html, "rendered HTML missing the end_score_goodbye marker"
+    assert "ACTION CLOSE" in html, "rendered HTML missing the end_score_goodbye marker"
 
     # Keyword-routed CTA must NOT be overridden.
     tmp_path_kw = tmp_path / "kw"
@@ -961,7 +961,9 @@ def test_cta_renders_distinct_html_for_each_variant():
     end_scene = {**base_scene, "score": "98", "score_label": "本章掌握度", "next_teaser": "下期再见"}
     end_html = _render_cta_end_score_goodbye("S01", role, end_scene, acc)
     assert "98" in end_html
-    assert "CHAPTER CLOSE" in end_html
+    assert "ACTION CLOSE" in end_html
+    assert "READY" in end_html
+    assert "NEXT" in end_html
     assert "下期再见" in end_html
 
     score_scene = {**base_scene, "scorecard_metrics": [
@@ -986,7 +988,7 @@ def test_template_checklist_cta_dispatches_by_layout_variant():
     # Each variant produces visually different output
     assert "check-item" in html_default
     assert "▶" in html_banner
-    assert "CHAPTER CLOSE" in html_end
+    assert "ACTION CLOSE" in html_end
     assert "SCORECARD" in html_score
     # Variants should be distinguishable from each other
     assert html_default != html_banner

@@ -475,33 +475,34 @@ html,body{{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--
   backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);
   box-shadow:0 0 42px rgba(56,225,255,0.22), inset 0 1px 0 rgba(255,255,255,0.10);
-  font-size:var(--vf-caption-size,48px);line-height:1.28;font-weight:850;text-align:center;
+  max-width:min(1120px, calc(100% - 140px));
+  font-size:var(--vf-caption-size,38px);line-height:1.22;font-weight:850;text-align:center;
   color:#FFFFFF;
   z-index:6;
 }}
-.caption.caption--minimal_caption{{font-size:var(--vf-caption-size,38px);letter-spacing:-.02em;opacity:.98;}}
-.caption.caption--emphasis_caption{{font-size:var(--vf-caption-size,58px);border-width:2px;box-shadow:0 0 54px rgba(255,107,53,0.30), inset 0 1px 0 rgba(255,255,255,0.14);letter-spacing:-.02em;font-weight:900;}}
-.caption.caption--quote_caption{{font-size:var(--vf-caption-size,42px);font-style:italic;letter-spacing:-.01em;}}
-.caption.caption--action_caption{{font-size:var(--vf-caption-size,46px);text-transform:none;letter-spacing:.01em;font-weight:900;}}
+.caption.caption--minimal_caption{{font-size:var(--vf-caption-size,34px);letter-spacing:-.02em;opacity:.94;}}
+.caption.caption--emphasis_caption{{font-size:var(--vf-caption-size,40px);border-width:2px;box-shadow:0 0 54px rgba(255,107,53,0.30), inset 0 1px 0 rgba(255,255,255,0.14);letter-spacing:-.02em;font-weight:900;}}
+.caption.caption--quote_caption{{font-size:var(--vf-caption-size,36px);font-style:italic;letter-spacing:-.01em;}}
+.caption.caption--action_caption{{font-size:var(--vf-caption-size,38px);text-transform:none;letter-spacing:.01em;font-weight:900;}}
 .caption.caption--minimal_caption{{
-  --vf-caption-left:96px;--vf-caption-right:96px;--vf-caption-bottom:96px;
-  --vf-caption-padding:16px 22px;--vf-caption-size:38px;
+  --vf-caption-left:96px;--vf-caption-right:96px;--vf-caption-bottom:56px;
+  --vf-caption-padding:16px 22px;--vf-caption-size:30px;
   --vf-caption-bg:rgba(2,4,12,0.78);--vf-caption-border:rgba(255,255,255,0.20);
 }}
 .caption.caption--emphasis_caption{{
-  --vf-caption-left:72px;--vf-caption-right:72px;--vf-caption-bottom:122px;
-  --vf-caption-padding:26px 34px;--vf-caption-size:58px;
+  --vf-caption-left:72px;--vf-caption-right:72px;--vf-caption-bottom:60px;
+  --vf-caption-padding:18px 26px;--vf-caption-size:34px;
   --vf-caption-bg:rgba(255,107,53,0.14);--vf-caption-border:rgba(255,107,53,0.80);
 }}
 .caption.caption--quote_caption{{
-  --vf-caption-left:110px;--vf-caption-right:110px;--vf-caption-bottom:128px;
-  --vf-caption-padding:22px 30px;--vf-caption-size:42px;
+  --vf-caption-left:110px;--vf-caption-right:110px;--vf-caption-bottom:58px;
+  --vf-caption-padding:18px 24px;--vf-caption-size:32px;
   --vf-caption-bg:rgba(56,225,255,0.10);--vf-caption-border:rgba(56,225,255,0.66);
   text-align:left;border-left:6px solid var(--hf-cyan);padding-left:28px;
 }}
 .caption.caption--action_caption{{
-  --vf-caption-left:88px;--vf-caption-right:88px;--vf-caption-bottom:92px;
-  --vf-caption-padding:20px 28px;--vf-caption-size:46px;
+  --vf-caption-left:88px;--vf-caption-right:88px;--vf-caption-bottom:52px;
+  --vf-caption-padding:18px 24px;--vf-caption-size:32px;
   --vf-caption-bg:rgba(46,232,116,0.12);--vf-caption-border:rgba(46,232,116,0.72);
   text-align:center;
 }}
@@ -780,7 +781,7 @@ HF_HUD_LABELS: dict[str, tuple[str, str]] = {
     "knowledge_graph":      ("GRAPH / NETWORK",             "知识图谱 · 节点与连接"),
     "tool_chain_three_cols":("STEP 1/3 · 流程",             "输入、链接、检索 · 闭环"),
     "step_ladder":          ("STEP 1/4 · 步骤",             "起步、串联、调用、输出"),
-    "checklist_cta":        ("FINAL SCORE · COMPLETE",      "本集掌握度 · 下期预告"),
+    "checklist_cta":        ("ACTION CLOSE · NEXT STEP",    "收束 · 下一步"),
     # V3-P3.11A — 6 unpolished templates now get short labels
     "tool_stack":           ("TOOL STACK · 3 LAYERS",      "三层工具栈"),
     "broken_chain":         ("CHAIN / BROKEN",             "断裂链路"),
@@ -813,7 +814,7 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
             "--vf-safe-top": "180px",
             "--vf-safe-left": "72px",
             "--vf-safe-right": "72px",
-            "--vf-safe-bottom": "310px",
+            "--vf-safe-bottom": "360px",
             "--vf-meta-top": "130px",
             "--vf-meta-left": "72px",
             "--vf-meta-width": "320px",
@@ -833,7 +834,7 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
             "--vf-safe-top": "146px",
             "--vf-safe-left": "52px",
             "--vf-safe-right": "52px",
-            "--vf-safe-bottom": "326px",
+            "--vf-safe-bottom": "372px",
             "--vf-meta-top": "108px",
             "--vf-meta-left": "72px",
             "--vf-meta-width": "300px",
@@ -873,7 +874,7 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
             "--vf-safe-top": "174px",
             "--vf-safe-left": "64px",
             "--vf-safe-right": "64px",
-            "--vf-safe-bottom": "314px",
+            "--vf-safe-bottom": "356px",
             "--vf-meta-top": "122px",
             "--vf-meta-left": "72px",
             "--vf-meta-width": "300px",
@@ -883,7 +884,7 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
             "--vf-safe-top": "160px",
             "--vf-safe-left": "64px",
             "--vf-safe-right": "64px",
-            "--vf-safe-bottom": "320px",
+            "--vf-safe-bottom": "360px",
             "--vf-meta-top": "112px",
             "--vf-meta-right": "72px",
             "--vf-meta-width": "280px",
@@ -913,7 +914,7 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
             "--vf-safe-top": "168px",
             "--vf-safe-left": "72px",
             "--vf-safe-right": "72px",
-            "--vf-safe-bottom": "296px",
+            "--vf-safe-bottom": "356px",
             "--vf-meta-top": "116px",
             "--vf-meta-right": "72px",
             "--vf-meta-width": "270px",
@@ -923,7 +924,7 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
             "--vf-safe-top": "168px",
             "--vf-safe-left": "72px",
             "--vf-safe-right": "72px",
-            "--vf-safe-bottom": "296px",
+            "--vf-safe-bottom": "356px",
             "--vf-meta-top": "116px",
             "--vf-meta-left": "72px",
             "--vf-meta-width": "270px",
@@ -933,7 +934,7 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
             "--vf-safe-top": "166px",
             "--vf-safe-left": "72px",
             "--vf-safe-right": "72px",
-            "--vf-safe-bottom": "300px",
+            "--vf-safe-bottom": "356px",
             "--vf-meta-top": "112px",
             "--vf-meta-right": "72px",
             "--vf-meta-width": "290px",
@@ -943,7 +944,7 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
             "--vf-safe-top": "168px",
             "--vf-safe-left": "72px",
             "--vf-safe-right": "72px",
-            "--vf-safe-bottom": "296px",
+            "--vf-safe-bottom": "356px",
             "--vf-meta-top": "112px",
             "--vf-meta-right": "72px",
             "--vf-meta-width": "300px",
@@ -954,45 +955,45 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
         "standard_caption": {
             "--vf-caption-left": "54px",
             "--vf-caption-right": "54px",
-            "--vf-caption-bottom": "120px",
-            "--vf-caption-padding": "22px 32px",
-            "--vf-caption-size": "48px",
+            "--vf-caption-bottom": "52px",
+            "--vf-caption-padding": "18px 26px",
+            "--vf-caption-size": "34px",
             "--vf-caption-bg": "rgba(2,4,12,0.82)",
             "--vf-caption-border": "rgba(56,225,255,0.55)",
         },
         "minimal_caption": {
             "--vf-caption-left": "72px",
             "--vf-caption-right": "72px",
-            "--vf-caption-bottom": "124px",
-            "--vf-caption-padding": "18px 24px",
-            "--vf-caption-size": "40px",
+            "--vf-caption-bottom": "56px",
+            "--vf-caption-padding": "16px 22px",
+            "--vf-caption-size": "30px",
             "--vf-caption-bg": "rgba(2,4,12,0.74)",
             "--vf-caption-border": "rgba(56,225,255,0.38)",
         },
         "emphasis_caption": {
             "--vf-caption-left": "48px",
             "--vf-caption-right": "48px",
-            "--vf-caption-bottom": "112px",
-            "--vf-caption-padding": "24px 34px",
-            "--vf-caption-size": "52px",
+            "--vf-caption-bottom": "60px",
+            "--vf-caption-padding": "18px 26px",
+            "--vf-caption-size": "34px",
             "--vf-caption-bg": "rgba(16,24,48,0.86)",
             "--vf-caption-border": "rgba(255,107,53,0.72)",
         },
         "quote_caption": {
             "--vf-caption-left": "66px",
             "--vf-caption-right": "66px",
-            "--vf-caption-bottom": "118px",
-            "--vf-caption-padding": "20px 30px",
-            "--vf-caption-size": "44px",
+            "--vf-caption-bottom": "58px",
+            "--vf-caption-padding": "18px 24px",
+            "--vf-caption-size": "32px",
             "--vf-caption-bg": "rgba(10,16,32,0.86)",
             "--vf-caption-border": "rgba(199,125,255,0.62)",
         },
         "action_caption": {
             "--vf-caption-left": "60px",
             "--vf-caption-right": "60px",
-            "--vf-caption-bottom": "110px",
-            "--vf-caption-padding": "20px 28px",
-            "--vf-caption-size": "42px",
+            "--vf-caption-bottom": "52px",
+            "--vf-caption-padding": "18px 24px",
+            "--vf-caption-size": "32px",
             "--vf-caption-bg": "rgba(12,32,24,0.88)",
             "--vf-caption-border": "rgba(46,232,116,0.74)",
         },

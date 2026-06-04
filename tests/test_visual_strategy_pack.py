@@ -20,6 +20,7 @@ from video_director_v3.director.visual_strategy import (
 from video_director_v3.qa.semantic_quality_gate import build_semantic_quality_report
 from video_director_v3.renderers.hyperframes.studio_native_project_builder import build_studio_native_project
 from video_director_v3.renderers.hyperframes.publish_templates import get_scene_body
+from video_director_v3.renderers.hyperframes.publish_templates import _split_metric_text
 
 
 def _storyboard(scene_specs: list[tuple[str, str, str]]) -> dict:
@@ -454,6 +455,30 @@ def test_contract_renderer_binds_layout_skeleton_to_family():
     assert "ACTION CLOSE" in close_body
     assert "CHECKLIST CLOSE" not in close_body
     assert "INSIGHT CLOSE" not in close_body
+
+
+def test_contract_renderer_close_variants_do_not_use_legacy_score_language():
+    close_scene = {
+        "id": "S04",
+        "role": "cta",
+        "template_type": "checklist_cta",
+        "visual_template": "checklist_cta",
+        "layout_variant": "end_score_goodbye",
+        "headline": "现在开始行动",
+        "narration": "现在开始行动",
+    }
+
+    body = get_scene_body("S04", "cta", close_scene)
+
+    assert "FINAL SCORE" not in body
+    assert "COMPLETE" not in body
+    assert "READY" in body
+    assert "NEXT" in body
+
+
+def test_split_metric_text_extracts_generic_number_and_unit():
+    assert _split_metric_text("10分钟") == ("10", "分钟")
+    assert _split_metric_text("75.64s") == ("75.64", "s")
 
 
 def test_legacy_scene_body_is_wrapped_by_layout_skeleton():
