@@ -37,7 +37,7 @@
 当前阶段：`P4.1B-R3 Follow-up Fix`
 当前候选片：`p4_1b_r3_layout_skeleton_smoke_preview`
 下一任务：`继续留在 P4.1B-R3 范围内，确认新的 contact sheet 与 director_timeline/index.html 是否一致，再决定是否收口到下一轮多脚本验证`
-当前工作：`把 visual_strategy 的 layout_family 从 scene_pack 透传到 director_timeline/index.html，修复 contact sheet 仍停留在旧模板的问题；不要进入 P4.2`
+当前工作：`把 visual_strategy 的 layout_family 作为通用规则透传到 director_timeline/index.html，让 skeleton 不再停留在旧模板；这不是对单条 smoke 的特判，不要进入 P4.2`
 
 ## 项目目标
 

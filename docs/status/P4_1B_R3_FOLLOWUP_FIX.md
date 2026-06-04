@@ -31,6 +31,25 @@
 - `tests/test_visual_strategy_pack.py`
   - 增加 layout skeleton 透传回归测试
 
+## 系统级规则
+
+这轮实现的是通用规则，不针对某条脚本或某个 project_id：
+
+- `layout_family=hero_metric` 时，从 `memory_anchor / visual_headline / slots` 提取数字、单位和标题，生成大数字骨架
+- `layout_family=tool_pipeline` 时，从 `visual_object / slots.tools / slots.steps / display_headline` 提取节点，生成工具管线骨架
+- `layout_family=framework_map / proof_matrix` 时，从 `slots.nodes / slots.quadrants / proof_items / steps` 生成结构图骨架
+- `layout_family=action_close / checklist_close / insight_close` 时，根据 `ending_variant / save_reason / next_step / cta_text` 生成收束页
+- 所有 skeleton 都必须遵守统一安全区、字幕避让、中文可读、close 页禁用旧 `FINAL SCORE` 的规则
+
+## 这次 smoke 的观察结果
+
+以下内容只是本次 `p4_batch_ai_toolflow.md` smoke 的观察样本，不是特判逻辑：
+
+- 左上角 scene 进入了大数字主视觉
+- 中间两页显示出节点式工具管线
+- 下方 scene 显示出矩阵 / 图谱结构
+- 结尾页从旧 `FINAL SCORE` 风格转向收束板
+
 ## 重新生成后看到的事实
 
 - `director_timeline.json`
@@ -58,4 +77,3 @@
 - 还没有进入 P4.2
 - 不要把这次修复当成新的视觉系统设计
 - 不要 render MP4
-

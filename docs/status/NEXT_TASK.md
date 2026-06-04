@@ -2,7 +2,7 @@
 
 ## 当前任务
 
-**P4.1B-R3 Follow-up Fix** — 当前已把 `layout_family` 从 `scene_pack` 透传到 `director_timeline/index.html`，现在要重新看 contact sheet 与 HTML 是否一致，确认这次不是旧模板缓存。
+**P4.1B-R3 Follow-up Fix** — 当前已把 `layout_family` 作为通用规则从 `scene_pack` 透传到 `director_timeline/index.html`，现在要重新看 contact sheet 与 HTML 是否一致，确认这次不是旧模板缓存或单次样本特判。
 
 当前重点：
 
