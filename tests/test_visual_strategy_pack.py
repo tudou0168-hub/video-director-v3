@@ -10,11 +10,15 @@ from video_director_v3.director.semantic_planner import build_scene_pack
 from video_director_v3.director.scene_pack_schema import validate_scene_pack
 from video_director_v3.director.visual_strategy import (
     build_visual_strategy_pack,
+    build_visual_headline,
     detect_video_type,
     headline_compact,
+    choose_layout_family,
+    choose_visual_object,
     title_caption_similarity,
 )
 from video_director_v3.qa.semantic_quality_gate import build_semantic_quality_report
+from video_director_v3.renderers.hyperframes.publish_templates import get_scene_body
 
 
 def _storyboard(scene_specs: list[tuple[str, str, str]]) -> dict:
@@ -49,6 +53,19 @@ def test_visual_strategy_detects_three_content_types():
     assert knowledge_pack["ending_variant"] == "insight_close"
     assert toolflow_pack["ending_variant"] == "checklist_close"
     assert sales_pack["ending_variant"] == "offer_close"
+    assert knowledge_pack["layout_families"]
+    assert toolflow_pack["visual_objects"]
+    assert sales_pack["memory_anchor"]
+    assert "save_reason" in knowledge_pack
+    assert knowledge_pack["memory_anchor_policy"]
+    assert toolflow_pack["visual_object_policy"]
+    assert sales_pack["save_reason_policy"]
+
+
+def test_sales_strategy_uses_concrete_memory_anchor_fallback():
+    pack = build_visual_strategy_pack(text="", title="成交系统")
+    assert pack["video_type"] == "sales_offer"
+    assert pack["memory_anchor"] == "先跑一版最小成交"
 
 
 def test_scene_pack_exposes_visual_strategy_and_refs(tmp_path: Path):
@@ -90,12 +107,19 @@ def test_scene_pack_exposes_visual_strategy_and_refs(tmp_path: Path):
     assert first_scene["visual_role"].startswith("ai_toolflow:")
     assert first_scene["sequence_slot"] == "opening"
     assert first_scene["headline_compact"]
+    assert first_scene["visual_headline"]
+    assert first_scene["layout_family"]
+    assert first_scene["visual_object"]
+    assert first_scene["memory_anchor"]
+    assert first_scene["save_reason"]
     assert 0.0 <= first_scene["title_caption_similarity"] <= 1.0
     assert 0.0 <= first_scene["readability_risk"] <= 1.0
     assert last_scene["cta_stage"] == "final"
     assert last_scene["cta_policy_ref"]
     assert last_scene["offer_profile_ref"]
     assert last_scene["cta_strength"] == "strong"
+    assert last_scene["ending_variant"] in {"checklist_close", "action_close", "offer_close", "insight_close", "homework_close"}
+    assert last_scene["layout_family"]
 
 
 def test_visual_strategy_quality_metrics_exist_and_track_readability(tmp_path: Path):
@@ -161,6 +185,10 @@ def test_visual_strategy_quality_metrics_exist_and_track_readability(tmp_path: P
     assert "repeated_opening_risk" in report["visual_strategy"]
     assert "repeated_ending_risk" in report["visual_strategy"]
     assert "template_repetition_risk" in report["visual_strategy"]
+    assert "same_video_risk" in report["visual_strategy"]
+    assert "memory_anchor_missing_count" in report["visual_strategy"]
+    assert "visual_object_missing_count" in report["visual_strategy"]
+    assert "save_reason_missing_count" in report["visual_strategy"]
     assert report["contact_sheet_exists"] is True
 
 
@@ -177,3 +205,59 @@ def test_headline_compaction_and_overlap_de_duplication():
     assert len(headline) <= 16
     assert 0.0 <= similarity <= 1.0
     assert similarity < 1.0
+
+
+def test_visual_headline_avoids_fragment_prefixes():
+    headline = build_visual_headline(
+        "我把 10 分钟定选题，先把工具链接起来再输出",
+        video_type="ai_toolflow",
+        role="hook",
+        template_type="hook",
+        memory_anchor="10分钟定选题",
+    )
+    assert not headline.startswith(("我把", "10", "以前的流程是"))
+    assert len(headline) <= 16
+
+
+def test_layout_family_and_visual_object_differ_by_content_type():
+    knowledge_layout = choose_layout_family("knowledge_method", "hook", "hook", 0, 6, title="知识工作流", text="先看再做")
+    toolflow_layout = choose_layout_family("ai_toolflow", "hook", "hook", 0, 6, title="工具工作流", text="输入整理调用输出")
+    sales_layout = choose_layout_family("sales_offer", "hook", "hook", 0, 6, title="成交系统", text="数字增长")
+
+    assert knowledge_layout != toolflow_layout != sales_layout
+    assert choose_visual_object("knowledge_method", "proof", "case_study_card", text="知识图谱 文件树") in {"framework_map", "knowledge_graph", "file_tree"}
+    assert choose_visual_object("ai_toolflow", "method", "tool_stack", text="settings.json Obsidian") in {"tool_pipeline", "config_panel", "file_tree"}
+    assert choose_visual_object("sales_offer", "proof", "proof", text="300% 转化率") in {"proof_matrix", "metric_dashboard", "opportunity_map"}
+
+
+def test_contract_renderer_wraps_strategy_classes():
+    scene = {
+        "id": "S01",
+        "role": "hook",
+        "template_type": "hook",
+        "contract_template_id": "hook",
+        "display_headline": "10 分钟定选题",
+        "display_subtitle": "先把入口统一，再开始输出",
+        "visual_headline": "10分钟定选题",
+        "caption_mode": "emphasis_caption",
+        "layout_family": "hero_metric",
+        "visual_object": "metric_dashboard",
+        "memory_anchor": "10分钟定选题",
+        "save_reason": "收藏后下次直接复用",
+        "ending_variant": "insight_close",
+        "is_final_scene": True,
+        "slots": {
+            "main_claim": "10分钟定选题",
+            "pain_point": "别让入口太散",
+            "status_badge": "QUESTION",
+            "visual_emphasis": "选题",
+        },
+    }
+
+    body = get_scene_body("S01", "hook", scene)
+
+    assert "vf-strategy-shell" in body
+    assert "vf-layout-hero_metric" in body
+    assert "vf-strategy-meta" in body
+    assert "vf-ending-board" in body
+    assert "metric_dashboard" in body or "LAYOUT FAMILY" in body

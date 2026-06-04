@@ -130,6 +130,35 @@ def build_semantic_quality_report(
     cta_policy_info = _analyze_cta_policy(scene_pack.get("scenes", []))
     visual_strategy_info = _analyze_visual_strategy_pack(scene_pack, merged_scenes, repetition_info)
     chinese_dominance_score = round(_chinese_dominance_score(merged_scenes), 3)
+    layout_families = [str(scene.get("layout_family") or "").strip() for scene in merged_scenes]
+    visual_objects = [str(scene.get("visual_object") or "").strip() for scene in merged_scenes]
+    memory_anchors = [str(scene.get("memory_anchor") or "").strip() for scene in merged_scenes]
+    ending_variants = [str(scene.get("ending_variant") or "").strip() for scene in merged_scenes]
+    visual_strategy_enabled = bool(scene_pack.get("visual_strategy_id")) or any(
+        any(str(scene.get(field) or "").strip() for field in ("layout_family", "visual_object", "memory_anchor", "save_reason"))
+        for scene in merged_scenes
+    )
+    visual_strategy_scoring = visual_strategy_info
+    if not visual_strategy_enabled:
+        visual_strategy_scoring = {
+            **visual_strategy_info,
+            "visual_strategy_risk": "low",
+            "same_video_risk": "low",
+            "template_sequence_similarity_risk": "low",
+            "ending_similarity_risk": "low",
+            "caption_style_repetition_risk": "low",
+            "differentiation_score": max(visual_strategy_info.get("differentiation_score", 100.0), 100.0),
+            "layout_readability_score": max(visual_strategy_info.get("layout_readability_score", 100.0), 100.0),
+            "repeated_opening_ids": [],
+            "repeated_ending_ids": [],
+            "caption_conflict_ids": [],
+            "top_heavy_ids": [],
+            "dense_readability_ids": [],
+            "visual_object_missing_ids": [],
+            "memory_anchor_missing_ids": [],
+            "save_reason_missing_ids": [],
+            "headline_fragment_ids": [],
+        }
 
     per_scene_scores = []
     for index, scene in enumerate(merged_scenes):
@@ -145,7 +174,7 @@ def build_semantic_quality_report(
             offer_info=offer_info,
             proof_asset_info=proof_asset_info,
             cta_policy_info=cta_policy_info,
-            visual_strategy_info=visual_strategy_info,
+            visual_strategy_info=visual_strategy_scoring,
         )
         per_scene_scores.append(
             {
@@ -163,6 +192,7 @@ def build_semantic_quality_report(
     total_scenes = len(merged_scenes)
     fallback_ratio = fallback_count / total_scenes if total_scenes else 1.0
     worst_scene_score = worst_3_scenes[0]["score"] if worst_3_scenes else 0.0
+    unique_layout_families = len({item for item in layout_families if item}) or 1
 
     hard_fail_reasons: list[str] = []
     if placeholder_count > 0:
@@ -181,6 +211,17 @@ def build_semantic_quality_report(
         hard_fail_reasons.append("Chinese dominance too low")
     if role_template_mismatch_count > 0:
         hard_fail_reasons.append("role/template contract mismatch")
+    if visual_strategy_enabled and visual_strategy_info["visual_object_missing_count"] > 0:
+        hard_fail_reasons.append("visual_object_missing_count > 0")
+    if visual_strategy_enabled and visual_strategy_info["memory_anchor_missing_count"] > 0:
+        hard_fail_reasons.append("memory_anchor_missing_count > 0")
+    if visual_strategy_enabled and visual_strategy_info["save_reason_missing_count"] > 0:
+        hard_fail_reasons.append("save_reason_missing_count > 0")
+    if visual_strategy_enabled and visual_strategy_info["headline_fragment_risk_count"] > 0:
+        hard_fail_reasons.append("headline_fragment_risk_count > 0")
+    if visual_strategy_enabled and visual_strategy_info["same_video_risk"] == "high":
+        if visual_strategy_info["differentiation_score"] < 25 or unique_layout_families <= 3:
+            hard_fail_reasons.append("same_video_risk = high")
     hard_fail_reasons.extend(offer_info["hard_fail_reasons"])
     hard_fail_reasons.extend(proof_asset_info["hard_fail_reasons"])
     hard_fail_reasons.extend(cta_policy_info["hard_fail_reasons"])
@@ -205,9 +246,9 @@ def build_semantic_quality_report(
         offer_profile_risk=offer_info["offer_profile_risk"],
         proof_asset_risk=proof_asset_info["proof_asset_risk"],
         cta_policy_risk=cta_policy_info["cta_policy_risk"],
-        visual_strategy_risk=visual_strategy_info["visual_strategy_risk"],
-        layout_readability_score=visual_strategy_info["layout_readability_score"],
-        differentiation_score=visual_strategy_info["differentiation_score"],
+        visual_strategy_risk=visual_strategy_scoring["visual_strategy_risk"],
+        layout_readability_score=visual_strategy_scoring["layout_readability_score"],
+        differentiation_score=visual_strategy_scoring["differentiation_score"],
     )
 
     gate_status = "FAIL" if hard_fail_reasons else "PASS"
@@ -217,7 +258,7 @@ def build_semantic_quality_report(
         semantic_quality_score=semantic_quality_score,
         cta_distribution_risk=cta_info["cta_distribution_risk"],
         proof_strength_risk=proof_info["proof_strength_risk"],
-        differentiation_score=visual_strategy_info["differentiation_score"],
+        differentiation_score=visual_strategy_scoring["differentiation_score"],
         worst_scene_score=worst_scene_score,
         fallback_count=fallback_count,
         raw_text_dependency_count=raw_text_dependency_count,
@@ -625,8 +666,13 @@ def _analyze_visual_strategy_pack(
     template_sequence_signature = str(scene_pack.get("template_sequence_signature") or "").strip()
     template_sequence = [str(scene.get("template_type") or "").strip() for scene in scenes if scene.get("template_type")]
     caption_modes = [str(scene.get("caption_mode") or "standard_caption").strip() for scene in scenes]
+    layout_families = [str(scene.get("layout_family") or "").strip() for scene in scenes]
+    visual_objects = [str(scene.get("visual_object") or "").strip() for scene in scenes]
+    memory_anchors = [str(scene.get("memory_anchor") or "").strip() for scene in scenes]
+    save_reasons = [str(scene.get("save_reason") or "").strip() for scene in scenes]
+    ending_variants = [str(scene.get("ending_variant") or "").strip() for scene in scenes]
     layout_bands = [str(scene.get("layout_band") or "middle").strip() for scene in scenes]
-    headlines = [str(scene.get("headline_compact") or _scene_headline(scene)).strip() for scene in scenes]
+    headlines = [str(scene.get("visual_headline") or scene.get("headline_compact") or _scene_headline(scene)).strip() for scene in scenes]
     subtitle_similarities = [float(scene.get("title_caption_similarity") or 0.0) for scene in scenes]
     readability_risks = [float(scene.get("readability_risk") or 0.0) for scene in scenes]
 
@@ -689,17 +735,31 @@ def _analyze_visual_strategy_pack(
         scene.get("id")
         for scene in scenes
         if scene.get("id")
-        and len(str(scene.get("headline_compact") or _scene_headline(scene))) > 18
+        and len(str(scene.get("visual_headline") or scene.get("headline_compact") or _scene_headline(scene))) > 18
     ]
+    fragment_headline_ids = [
+        scene.get("id")
+        for scene in scenes
+        if scene.get("id")
+        and _is_fragment_headline(str(scene.get("visual_headline") or scene.get("headline_compact") or _scene_headline(scene)))
+    ]
+    visual_object_missing_ids = [scene.get("id") for scene in scenes if scene.get("id") and not str(scene.get("visual_object") or "").strip()]
+    memory_anchor_missing_ids = [scene.get("id") for scene in scenes if scene.get("id") and not str(scene.get("memory_anchor") or "").strip()]
+    save_reason_missing_ids = [scene.get("id") for scene in scenes if scene.get("id") and not str(scene.get("save_reason") or "").strip()]
     repeated_opening_ids = list(dict.fromkeys(repeated_opening_ids))
     repeated_ending_ids = list(dict.fromkeys(repeated_ending_ids))
     caption_conflict_ids = list(dict.fromkeys(caption_conflict_ids))
     top_heavy_ids = list(dict.fromkeys(top_heavy_ids))
     dense_readability_ids = list(dict.fromkeys(dense_readability_ids))
     long_headline_ids = list(dict.fromkeys(long_headline_ids))
+    fragment_headline_ids = list(dict.fromkeys(fragment_headline_ids))
+    visual_object_missing_ids = list(dict.fromkeys(visual_object_missing_ids))
+    memory_anchor_missing_ids = list(dict.fromkeys(memory_anchor_missing_ids))
+    save_reason_missing_ids = list(dict.fromkeys(save_reason_missing_ids))
 
     unique_caption_modes = len(set(caption_modes)) or 1
     unique_templates = len(set(template_sequence)) or 1
+    unique_layout_families = len({item for item in layout_families if item}) or 1
     caption_conflict_count = len(caption_conflict_ids)
     title_caption_overlap_risk = "high" if sum(1 for value in subtitle_similarities if value > 0.68) >= max(2, len(scenes) // 3) else "medium" if any(value > 0.68 for value in subtitle_similarities) else "low"
     repeated_opening_risk = "high" if len(set(opening_templates)) <= 1 and len(opening_templates) >= 2 else "medium" if len(set(opening_templates)) <= 2 else "low"
@@ -713,6 +773,10 @@ def _analyze_visual_strategy_pack(
     dense_scene_readability_risk = "high" if len(dense_readability_ids) >= max(3, len(scenes) // 2) else "medium" if dense_readability_ids else "low"
     differentiation_score = _differentiation_score(
         template_sequence=template_sequence,
+        layout_families=layout_families,
+        visual_objects=visual_objects,
+        memory_anchors=memory_anchors,
+        ending_variants=ending_variants,
         dominant_template_count=dominant_template_count,
         caption_mode_repetition_risk=caption_mode_repetition_risk,
         repeated_opening_risk=repeated_opening_risk,
@@ -723,6 +787,17 @@ def _analyze_visual_strategy_pack(
         dense_readability_ids=dense_readability_ids,
         repetition_info=repetition_info,
     )
+    template_sequence_similarity_risk = "high" if (unique_templates <= 3 and dominant_template_count >= max(3, len(scenes) // 2)) or repetition_info.get("repeated_template_runs", 0) >= 2 else "medium" if unique_templates <= 4 else "low"
+    ending_similarity_risk = repeated_ending_risk
+    caption_style_repetition_risk = caption_mode_repetition_risk
+    headline_fragment_risk_count = len(fragment_headline_ids)
+    same_video_risk = "high" if (
+        differentiation_score < 70
+        or template_sequence_similarity_risk == "high"
+        or ending_similarity_risk == "high"
+        or caption_style_repetition_risk == "high"
+        or len(visual_object_missing_ids) > 0
+    ) else "medium" if differentiation_score < 82 or unique_layout_families <= 3 else "low"
     layout_readability_score = _layout_readability_score(readability_risks, subtitle_similarities, dense_readability_ids, caption_conflict_ids)
 
     return {
@@ -732,6 +807,10 @@ def _analyze_visual_strategy_pack(
         "ending_variant": ending_variant,
         "template_sequence_signature": template_sequence_signature,
         "template_sequence": template_sequence,
+        "layout_families": layout_families,
+        "visual_objects": visual_objects,
+        "memory_anchors": memory_anchors,
+        "save_reasons": save_reasons,
         "dominant_template_count": dominant_template_count,
         "dominant_template_ids": dominant_template_ids,
         "repeated_opening_risk": repeated_opening_risk,
@@ -742,6 +821,7 @@ def _analyze_visual_strategy_pack(
         "repeated_ending_ids": repeated_ending_ids,
         "template_repetition_risk": template_repetition_risk,
         "caption_mode_repetition_risk": caption_mode_repetition_risk,
+        "caption_style_repetition_risk": caption_style_repetition_risk,
         "differentiation_score": differentiation_score,
         "top_heavy_risk": top_heavy_risk,
         "top_heavy_count": len(top_heavy_ids),
@@ -750,15 +830,29 @@ def _analyze_visual_strategy_pack(
         "title_caption_overlap_count": sum(1 for value in subtitle_similarities if value > 0.68),
         "long_headline_count": len(long_headline_ids),
         "long_headline_ids": long_headline_ids,
+        "headline_fragment_risk_count": headline_fragment_risk_count,
+        "headline_fragment_ids": fragment_headline_ids,
         "dense_scene_readability_risk": dense_scene_readability_risk,
         "dense_scene_readability_count": len(dense_readability_ids),
         "dense_readability_ids": dense_readability_ids,
         "caption_conflict_count": caption_conflict_count,
         "caption_conflict_ids": caption_conflict_ids,
         "layout_readability_score": layout_readability_score,
+        "same_video_risk": same_video_risk,
+        "template_sequence_similarity_risk": template_sequence_similarity_risk,
+        "ending_similarity_risk": ending_similarity_risk,
+        "visual_object_missing_count": len(visual_object_missing_ids),
+        "visual_object_missing_ids": visual_object_missing_ids,
+        "memory_anchor_missing_count": len(memory_anchor_missing_ids),
+        "memory_anchor_missing_ids": memory_anchor_missing_ids,
+        "save_reason_missing_count": len(save_reason_missing_ids),
+        "save_reason_missing_ids": save_reason_missing_ids,
         "visual_strategy_risk": max_risk(
-            max_risk(template_repetition_risk, caption_mode_repetition_risk),
-            max_risk(top_heavy_risk, dense_scene_readability_risk),
+            max_risk(
+                max_risk(template_repetition_risk, caption_mode_repetition_risk),
+                max_risk(top_heavy_risk, dense_scene_readability_risk),
+            ),
+            same_video_risk,
         ),
     }
 
@@ -873,6 +967,22 @@ def _scene_quality_score(
         issues.append("dense_readability")
         structural_risks.append("dense_readability")
         score -= 0.05
+    if scene_id in visual_strategy_info.get("visual_object_missing_ids", []):
+        issues.append("missing_visual_object")
+        structural_risks.append("missing_visual_object")
+        score -= 0.05
+    if scene_id in visual_strategy_info.get("memory_anchor_missing_ids", []):
+        issues.append("missing_memory_anchor")
+        structural_risks.append("missing_memory_anchor")
+        score -= 0.05
+    if scene_id in visual_strategy_info.get("save_reason_missing_ids", []):
+        issues.append("missing_save_reason")
+        structural_risks.append("missing_save_reason")
+        score -= 0.04
+    if scene_id in visual_strategy_info.get("headline_fragment_ids", []):
+        issues.append("headline_fragment")
+        structural_risks.append("headline_fragment")
+        score -= 0.06
     if director_scene and director_scene.get("template_contract_fallback_used"):
         issues.append("fallback_used")
         structural_risks.append("fallback_used")
@@ -985,6 +1095,10 @@ def _risk_penalty(risk: str, *, low: float, medium: float, high: float) -> float
 def _differentiation_score(
     *,
     template_sequence: list[str],
+    layout_families: list[str],
+    visual_objects: list[str],
+    memory_anchors: list[str],
+    ending_variants: list[str],
     dominant_template_count: int,
     caption_mode_repetition_risk: str,
     repeated_opening_risk: str,
@@ -996,6 +1110,10 @@ def _differentiation_score(
     repetition_info: dict[str, Any],
 ) -> float:
     unique_templates = len(set(template_sequence)) or 1
+    unique_layout_families = len({item for item in layout_families if item}) or 1
+    unique_visual_objects = len({item for item in visual_objects if item}) or 1
+    unique_memory_anchors = len({item for item in memory_anchors if item}) or 1
+    unique_ending_variants = len({item for item in ending_variants if item}) or 1
     score = 100.0
     score -= max(0, dominant_template_count - 2) * 8.0
     score -= max(0, len(template_sequence) - unique_templates) * 3.0
@@ -1008,6 +1126,10 @@ def _differentiation_score(
     score -= len(dense_readability_ids) * 2.0
     score -= repetition_info.get("repeated_template_runs", 0) * 2.5
     score -= repetition_info.get("repeated_role_runs", 0) * 1.5
+    score += min(24.0, unique_layout_families * 4.0)
+    score += min(18.0, unique_visual_objects * 2.5)
+    score += min(10.0, unique_memory_anchors * 0.8)
+    score += min(8.0, unique_ending_variants * 2.0)
     return round(max(0.0, min(100.0, score)), 2)
 
 
@@ -1084,6 +1206,19 @@ def _scene_headline(scene: dict[str, Any] | None) -> str:
         if isinstance(value, str) and value.strip():
             return value.strip()
     return ""
+
+
+def _is_fragment_headline(text: str) -> bool:
+    normalized = re.sub(r"\s+", "", str(text or "")).strip()
+    if not normalized:
+        return True
+    if normalized in {"10", "我把", "以前的流程是", "以前", "之前", "然后", "再", "先"}:
+        return True
+    if normalized.isdigit() or len(normalized) <= 2:
+        return True
+    if normalized.startswith(("我把", "以前的流程是", "以前", "之前", "然后", "再")):
+        return True
+    return False
 
 
 def _normalized_role(scene: dict[str, Any] | None) -> str:

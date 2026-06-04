@@ -39,9 +39,9 @@ def _get_contract_scene_body(sid: str, role: str, scene: dict[str, Any]) -> str:
         fallback = "simple_card"
         if contract is not None:
             fallback = contract.fallback_template
-        return _render_contract_fallback(sid, role, scene, fallback, errors)
+        return _wrap_strategy_scene(sid, role, scene, _render_contract_fallback(sid, role, scene, fallback, errors))
     fn = _CONTRACT_TEMPLATES.get(contract_id, _render_contract_simple_card)
-    return fn(sid, role, scene)
+    return _wrap_strategy_scene(sid, role, scene, fn(sid, role, scene))
 
 
 def _render_contract_fallback(
@@ -70,10 +70,124 @@ def _contract_headline(scene: dict[str, Any], slots: dict[str, Any], *keys: str)
         value = slots.get(key)
         if isinstance(value, str) and value.strip():
             return value.strip()
+    visual_headline = str(scene.get("visual_headline", "")).strip()
+    if visual_headline:
+        return visual_headline
     headline = str(scene.get("display_headline", "")).strip()
     if headline:
         return headline
     return "这一帧需要补充语义内容"
+
+
+def _wrap_strategy_scene(sid: str, role: str, scene: dict[str, Any], body: str) -> str:
+    layout_family = str(scene.get("layout_family") or "hero_statement").strip() or "hero_statement"
+    caption_mode = str(scene.get("caption_mode") or "standard_caption").strip() or "standard_caption"
+    ending_variant = str(scene.get("ending_variant") or "").strip()
+    visual_object = str(scene.get("visual_object") or layout_family).strip() or layout_family
+    memory_anchor = str(scene.get("memory_anchor") or scene.get("display_headline") or "").strip()
+    save_reason = str(scene.get("save_reason") or "").strip()
+    last_scene = bool(scene.get("is_final_scene"))
+    ending_html = ""
+    if ending_variant and last_scene:
+        ending_html = _render_strategy_ending(scene, ending_variant)
+    meta_html = _render_strategy_meta(layout_family, caption_mode, visual_object, memory_anchor, save_reason)
+    return (
+        f'<div class="vf-strategy-shell vf-layout-{layout_family} vf-caption-{caption_mode} '
+        f'vf-ending-{ending_variant or "none"}" data-layout-family="{layout_family}" data-caption-mode="{caption_mode}" '
+        f'data-ending-variant="{ending_variant}">'
+        f"{body}"
+        f"{meta_html}"
+        f"{ending_html}"
+        "</div>"
+    )
+
+
+def _render_strategy_meta(
+    layout_family: str,
+    caption_mode: str,
+    visual_object: str,
+    memory_anchor: str,
+    save_reason: str,
+) -> str:
+    return f"""
+    <div class="vf-strategy-meta vf-strategy-meta--{layout_family}">
+      <div class="vf-strategy-tag">LAYOUT FAMILY</div>
+      <div class="vf-strategy-family">{layout_family}</div>
+      <div class="vf-strategy-object">{visual_object}</div>
+      <div class="vf-strategy-anchor">{memory_anchor}</div>
+      <div class="vf-strategy-save">{save_reason}</div>
+      <div class="vf-strategy-caption">CAPTION / {caption_mode}</div>
+    </div>
+    """
+
+
+def _render_strategy_ending(scene: dict[str, Any], ending_variant: str) -> str:
+    slots = _scene_slots(scene)
+    headline = str(scene.get("display_headline") or scene.get("visual_headline") or "").strip()
+    subtitle = str(scene.get("display_subtitle") or "").strip()
+    next_step = str(slots.get("next_step") or scene.get("save_reason") or "").strip()
+    cta_text = str(slots.get("cta_text") or next_step or "现在开始").strip()
+    key_results = slots.get("key_results", [])
+    if ending_variant == "homework_close":
+        items = _items_to_bullets(key_results, fallback=[headline, next_step or "做一次复盘", "再跑一遍"])
+        return f"""
+        <div class="vf-ending-board vf-ending-homework">
+          <div class="vf-ending-label">HOMEWORK</div>
+          <div class="vf-ending-title">{headline or "把这一段先做一遍"}</div>
+          <div class="vf-ending-list">{"".join(f"<div class='vf-ending-item'>{item}</div>" for item in items)}</div>
+        </div>
+        """
+    if ending_variant == "checklist_close":
+        items = _items_to_bullets(key_results, fallback=[headline or "先统一入口", next_step or "先跑一遍", save_reason_or_default(scene)])
+        return f"""
+        <div class="vf-ending-board vf-ending-checklist">
+          <div class="vf-ending-label">CHECKLIST</div>
+          <div class="vf-ending-title">{headline or "收束这次执行"}</div>
+          <div class="vf-ending-list">{"".join(f"<div class='vf-ending-item'>☑ {item}</div>" for item in items)}</div>
+        </div>
+        """
+    if ending_variant == "action_close":
+        return f"""
+        <div class="vf-ending-board vf-ending-action">
+          <div class="vf-ending-label">ACTION</div>
+          <div class="vf-ending-title">{headline or "现在开始行动"}</div>
+          <div class="vf-ending-cta">{cta_text or next_step or "先跑一遍"}</div>
+          <div class="vf-ending-sub">{subtitle or save_reason_or_default(scene)}</div>
+        </div>
+        """
+    if ending_variant == "offer_close":
+        return f"""
+        <div class="vf-ending-board vf-ending-offer">
+          <div class="vf-ending-label">OFFER</div>
+          <div class="vf-ending-title">{headline or "把这个结构带走"}</div>
+          <div class="vf-ending-cta">{cta_text or next_step or "先确认 offer / proof / CTA"}</div>
+          <div class="vf-ending-sub">{subtitle or save_reason_or_default(scene)}</div>
+        </div>
+        """
+    return f"""
+    <div class="vf-ending-board vf-ending-insight">
+      <div class="vf-ending-label">INSIGHT</div>
+      <div class="vf-ending-title">{headline or "记住这个判断"}</div>
+      <div class="vf-ending-sub">{subtitle or next_step or save_reason_or_default(scene)}</div>
+    </div>
+    """
+
+
+def save_reason_or_default(scene: dict[str, Any]) -> str:
+    return str(scene.get("save_reason") or scene.get("memory_anchor") or "先保存这个结构").strip()
+
+
+def _items_to_bullets(values: Any, fallback: list[str] | None = None) -> list[str]:
+    items = []
+    if isinstance(values, list):
+        for value in values:
+            text = str(value).strip()
+            if text:
+                items.append(text)
+    fallback = fallback or ["先跑一遍", "再复盘", "继续升级"]
+    while len(items) < 3 and fallback:
+        items.append(fallback[len(items) % len(fallback)])
+    return items[:3]
 
 
 def _contract_badge(label: str, value: str, color: str) -> str:

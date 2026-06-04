@@ -43,6 +43,11 @@ OPTIONAL_SCENE_EXTENSIONS = {
     "cta_stage",
     "cta_strength",
     "caption_mode",
+    "layout_family",
+    "visual_object",
+    "visual_headline",
+    "memory_anchor",
+    "save_reason",
     "visual_role",
     "sequence_slot",
     "visual_strategy_reason",
@@ -134,6 +139,52 @@ def validate_scene(scene: dict[str, Any], index: int = 0) -> list[str]:
         value = scene.get("caption_mode")
         if not isinstance(value, str) or not value.strip():
             errors.append(f"{prefix}.caption_mode must be a non-empty string when present")
+        elif value not in {"standard_caption", "emphasis_caption", "minimal_caption", "quote_caption", "action_caption"}:
+            errors.append(f"{prefix}.caption_mode {value!r} is not supported")
+    if "layout_family" in scene:
+        value = scene.get("layout_family")
+        if not isinstance(value, str) or not value.strip():
+            errors.append(f"{prefix}.layout_family must be a non-empty string when present")
+        elif value not in {
+            "hero_statement",
+            "hero_metric",
+            "process_ladder",
+            "tool_pipeline",
+            "config_panel",
+            "file_tree",
+            "comparison_board",
+            "proof_matrix",
+            "framework_map",
+            "decision_fork",
+            "opportunity_map",
+            "action_close",
+            "insight_close",
+            "checklist_close",
+            "offer_close",
+        }:
+            errors.append(f"{prefix}.layout_family {value!r} is not supported")
+    if "ending_variant" in scene:
+        value = scene.get("ending_variant")
+        if not isinstance(value, str):
+            errors.append(f"{prefix}.ending_variant must be a string when present")
+        elif value not in {"insight_close", "homework_close", "action_close", "checklist_close", "offer_close", ""}:
+            errors.append(f"{prefix}.ending_variant {value!r} is not supported")
+    if "visual_object" in scene:
+        value = scene.get("visual_object")
+        if not isinstance(value, str) or not value.strip():
+            errors.append(f"{prefix}.visual_object must be a non-empty string when present")
+    if "visual_headline" in scene:
+        value = scene.get("visual_headline")
+        if not isinstance(value, str) or not value.strip():
+            errors.append(f"{prefix}.visual_headline must be a non-empty string when present")
+    if "memory_anchor" in scene:
+        value = scene.get("memory_anchor")
+        if not isinstance(value, str) or not value.strip():
+            errors.append(f"{prefix}.memory_anchor must be a non-empty string when present")
+    if "save_reason" in scene:
+        value = scene.get("save_reason")
+        if not isinstance(value, str) or not value.strip():
+            errors.append(f"{prefix}.save_reason must be a non-empty string when present")
     if "visual_role" in scene:
         value = scene.get("visual_role")
         if not isinstance(value, str) or not value.strip():
@@ -176,7 +227,7 @@ def validate_scene_pack_extensions(scene_pack: dict[str, Any]) -> list[str]:
         errors.append(f"video_type {scene_pack.get('video_type')!r} is not supported")
     if "opening_variant" in scene_pack and scene_pack.get("opening_variant") not in {"pain_hook", "result_hook", "mistake_hook", "contrast_hook", "process_hook"}:
         errors.append(f"opening_variant {scene_pack.get('opening_variant')!r} is not supported")
-    if "ending_variant" in scene_pack and scene_pack.get("ending_variant") not in {"insight_close", "action_close", "checklist_close", "offer_close"}:
+    if "ending_variant" in scene_pack and scene_pack.get("ending_variant") not in {"insight_close", "homework_close", "action_close", "checklist_close", "offer_close"}:
         errors.append(f"ending_variant {scene_pack.get('ending_variant')!r} is not supported")
     if "visual_strategy" in scene_pack and not isinstance(scene_pack.get("visual_strategy"), dict):
         errors.append("visual_strategy must be an object when present")

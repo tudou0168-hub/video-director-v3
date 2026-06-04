@@ -195,6 +195,9 @@ def build_studio_native_project(
             hud_scene.setdefault("next_teaser", "下期讲：把检索真正接进 AI 流程")
         prev_template = hud_scene.get("visual_template", "")
         prev_variant = hud_scene.get("layout_variant", "")
+        layout_family = str(hud_scene.get("layout_family") or "hero_statement").strip() or "hero_statement"
+        caption_mode = str(hud_scene.get("caption_mode") or "standard_caption").strip() or "standard_caption"
+        ending_variant = str(hud_scene.get("ending_variant") or "").strip()
         director_scenes.append({
             **hud_scene, "id": sid, "start_time": start,
             "end_time": round(start + float(scene.get("duration", 0)), 3),
@@ -202,7 +205,7 @@ def build_studio_native_project(
         # V3-P3.10A — composition class auto-pick by scene index % 3
         composition_class = _COMPOSITIONS_BY_INDEX[len(director_scenes) % 3]
         scene_html.append(f"""
-<section id="scene-{escape(sid.lower())}" class="scene clip role-{escape(role)} tpl-{escape(prev_template)} hf-bg-cinematic hf-bg-{escape(role)} {composition_class}" data-start="{start}" data-duration="{round(scene_duration, 3)}" data-track-index="1" data-visual-template="{escape(prev_template)}" data-role="{escape(role)}">
+<section id="scene-{escape(sid.lower())}" class="scene clip role-{escape(role)} tpl-{escape(prev_template)} hf-bg-cinematic hf-bg-{escape(role)} {composition_class} vf-layout-{escape(layout_family)} vf-caption-{escape(caption_mode)} vf-ending-{escape(ending_variant or 'none')}" style="{escape(_scene_strategy_style(hud_scene))}" data-start="{start}" data-duration="{round(scene_duration, 3)}" data-track-index="1" data-visual-template="{escape(prev_template)}" data-role="{escape(role)}" data-layout-family="{escape(layout_family)}" data-caption-mode="{escape(caption_mode)}" data-ending-variant="{escape(ending_variant)}">
   {get_scene_body(sid, role, hud_scene)}
   <div class="hf-vignette"></div>
   <div class="hf-scan-beam"></div>
@@ -214,13 +217,22 @@ def build_studio_native_project(
     for item in captions:
         start = float(item.get("start", item.get("start_time", 0)))
         item_duration = float(item.get("duration", 0))
+        scene_for_caption = next(
+            (
+                scene
+                for scene in director_scenes
+                if float(scene.get("start_time", 0)) <= start < float(scene.get("end_time", 0))
+            ),
+            director_scenes[0] if director_scenes else {},
+        )
+        caption_mode = str(scene_for_caption.get("caption_mode") or item.get("caption_mode") or "standard_caption").strip() or "standard_caption"
         normalized_captions.append({
             **item, "start_time": start, "end_time": round(start + item_duration, 3),
         })
         caption_html.append(
-            f'<div id="caption-{escape(item.get("caption_id", "beat").lower())}" class="caption clip" data-start="{start}" '
+            f'<div id="caption-{escape(item.get("caption_id", "beat").lower())}" class="caption clip caption--{escape(caption_mode)}" data-start="{start}" '
             f'data-duration="{round(max(item_duration - 0.02, 0), 3)}" '
-            f'data-track-index="2">{escape(item.get("text", ""))}</div>'
+            f'data-track-index="2" data-caption-mode="{escape(caption_mode)}" data-scene-id="{escape(str(scene_for_caption.get("id") or ""))}">{escape(item.get("text", ""))}</div>'
         )
 
     html = f"""<!doctype html>
@@ -453,20 +465,24 @@ html,body{{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--
 .hud-top{{top:52px}}.hud-bottom{{bottom:318px}}.hud-bottom i{{font-style:normal;color:rgba(255,255,255,.55)}}
 .scan-sweep{{position:absolute;left:0;right:0;height:3px;top:-4%;background:linear-gradient(90deg,transparent,rgba(37,216,255,.7),transparent);box-shadow:0 0 22px rgba(37,216,255,.7);animation:scan 4.5s linear infinite;pointer-events:none}}
 
-/* Caption — bottom safe zone with blur + glow, never occluded */
+/* Caption — mode-aware, not one flat bottom strip for every scene */
 .caption{{
-  position:absolute;left:54px;right:54px;bottom:120px;
-  padding:22px 32px;
-  border:1.5px solid rgba(56,225,255,0.55);
+  position:absolute;left:var(--vf-caption-left,54px);right:var(--vf-caption-right,54px);bottom:var(--vf-caption-bottom,120px);
+  padding:var(--vf-caption-padding,22px 32px);
+  border:1.5px solid var(--vf-caption-border,rgba(56,225,255,0.55));
   border-radius:22px;
-  background:rgba(2,4,12,0.82);
+  background:var(--vf-caption-bg,rgba(2,4,12,0.82));
   backdrop-filter:blur(16px);
   -webkit-backdrop-filter:blur(16px);
   box-shadow:0 0 42px rgba(56,225,255,0.22), inset 0 1px 0 rgba(255,255,255,0.10);
-  font-size:48px;line-height:1.28;font-weight:850;text-align:center;
+  font-size:var(--vf-caption-size,48px);line-height:1.28;font-weight:850;text-align:center;
   color:#FFFFFF;
   z-index:6;
 }}
+.caption.caption--minimal_caption{{font-size:38px;letter-spacing:-.02em;}}
+.caption.caption--emphasis_caption{{font-size:52px;border-width:2px;box-shadow:0 0 54px rgba(255,107,53,0.30), inset 0 1px 0 rgba(255,255,255,0.14);}}
+.caption.caption--quote_caption{{font-style:italic;letter-spacing:-.01em;}}
+.caption.caption--action_caption{{text-transform:none;letter-spacing:.01em;}}
 /* V3-P3.11B — faint gradient backing anchors subtitle area without being visible */
 .caption::before{{
   content:"";position:absolute;left:-24px;right:-24px;bottom:-24px;height:160px;
@@ -475,7 +491,31 @@ html,body{{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--
 }}
 
 /* Scene bottom safe-zone — reserves 300px so cards never occlude captions (V3-P3.11A: expanded from 280) */
-.hf-safe-zone{{padding-bottom:300px;}}
+.scene .hf-safe-zone{{top:var(--vf-safe-top,190px) !important;left:var(--vf-safe-left,72px) !important;right:var(--vf-safe-right,72px) !important;bottom:auto !important;padding-bottom:var(--vf-safe-bottom,300px) !important;}}
+.vf-strategy-shell{{position:absolute;inset:0;pointer-events:none;}}
+.vf-strategy-meta{{
+  position:absolute;top:var(--vf-meta-top,120px);right:var(--vf-meta-right,72px);left:var(--vf-meta-left,auto);width:var(--vf-meta-width,280px);
+  padding:18px 20px;border-radius:24px;background:rgba(2,4,12,0.72);border:1px solid rgba(56,225,255,0.24);backdrop-filter:blur(12px);
+  color:#fff;z-index:4;box-shadow:0 0 24px rgba(56,225,255,0.10);
+}}
+.vf-strategy-tag{{font:800 16px/1.1 monospace;letter-spacing:.18em;color:rgba(248,250,252,0.55);margin-bottom:10px;}}
+.vf-strategy-family{{font-size:28px;font-weight:900;line-height:1.12;color:#fff;margin-bottom:8px;}}
+.vf-strategy-object{{font-size:22px;font-weight:800;color:var(--hf-cyan);margin-bottom:8px;}}
+.vf-strategy-anchor{{font-size:26px;font-weight:900;color:var(--hf-amber);line-height:1.12;margin-bottom:6px;}}
+.vf-strategy-save{{font-size:18px;line-height:1.42;color:rgba(248,250,252,0.74);}}
+.vf-strategy-caption{{margin-top:12px;font:800 16px/1.1 monospace;letter-spacing:.16em;color:rgba(248,250,252,0.50);}}
+.vf-ending-board{{position:absolute;left:var(--vf-ending-left,72px);right:var(--vf-ending-right,72px);bottom:var(--vf-ending-bottom,140px);padding:22px 24px;border-radius:26px;background:rgba(2,4,12,0.78);border:1px solid rgba(255,255,255,0.12);backdrop-filter:blur(14px);z-index:5;box-shadow:0 0 28px rgba(56,225,255,0.12);}}
+.vf-ending-label{{font:800 18px/1 monospace;letter-spacing:.18em;color:var(--hf-amber);margin-bottom:10px;}}
+.vf-ending-title{{font-size:48px;font-weight:900;line-height:1.08;color:#fff;margin-bottom:10px;}}
+.vf-ending-sub{{font-size:24px;line-height:1.42;color:rgba(248,250,252,0.76);}}
+.vf-ending-cta{{font-size:38px;font-weight:900;line-height:1.12;color:var(--hf-cyan);margin-bottom:10px;}}
+.vf-ending-list{{display:grid;gap:10px;margin-top:12px;}}
+.vf-ending-item{{padding:12px 16px;border-radius:14px;background:rgba(255,255,255,0.06);font-size:22px;line-height:1.36;color:#fff;}}
+.vf-ending-homework .vf-ending-label{{color:var(--hf-purple);}}
+.vf-ending-checklist .vf-ending-label{{color:var(--hf-cyan);}}
+.vf-ending-action .vf-ending-cta{{color:var(--hf-green);}}
+.vf-ending-offer .vf-ending-cta{{color:var(--hf-amber);}}
+.vf-ending-insight .vf-ending-title{{color:var(--hf-cyan);}}
 
 @keyframes glow{{0%,100%{{opacity:.58;transform:scale(1)}}50%{{opacity:.92;transform:scale(1.12)}}}}
 @keyframes scan{{0%{{top:-4%}}100%{{top:104%}}}}
@@ -703,6 +743,219 @@ HF_HUD_LABELS: dict[str, tuple[str, str]] = {
     "before_after_compare":  ("BEFORE / AFTER",             "前后对比"),
     "pain_card_stack":      ("PAIN / CARD STACK",          "痛点 · 问题堆叠"),
 }
+
+
+def _scene_strategy_style(scene: dict[str, Any]) -> str:
+    layout_family = str(scene.get("layout_family") or "hero_statement").strip() or "hero_statement"
+    caption_mode = str(scene.get("caption_mode") or "standard_caption").strip() or "standard_caption"
+    ending_variant = str(scene.get("ending_variant") or "").strip() or "none"
+    layout_presets = {
+        "hero_statement": {
+            "--vf-safe-top": "150px",
+            "--vf-safe-left": "72px",
+            "--vf-safe-right": "72px",
+            "--vf-safe-bottom": "310px",
+            "--vf-meta-top": "124px",
+            "--vf-meta-right": "72px",
+            "--vf-meta-width": "280px",
+            "--vf-ending-bottom": "180px",
+            "--vf-ending-left": "72px",
+            "--vf-ending-right": "72px",
+        },
+        "hero_metric": {
+            "--vf-safe-top": "180px",
+            "--vf-safe-left": "72px",
+            "--vf-safe-right": "72px",
+            "--vf-safe-bottom": "310px",
+            "--vf-meta-top": "130px",
+            "--vf-meta-left": "72px",
+            "--vf-meta-width": "320px",
+            "--vf-ending-bottom": "170px",
+        },
+        "process_ladder": {
+            "--vf-safe-top": "148px",
+            "--vf-safe-left": "56px",
+            "--vf-safe-right": "56px",
+            "--vf-safe-bottom": "322px",
+            "--vf-meta-top": "112px",
+            "--vf-meta-right": "72px",
+            "--vf-meta-width": "260px",
+            "--vf-ending-bottom": "164px",
+        },
+        "tool_pipeline": {
+            "--vf-safe-top": "146px",
+            "--vf-safe-left": "52px",
+            "--vf-safe-right": "52px",
+            "--vf-safe-bottom": "326px",
+            "--vf-meta-top": "108px",
+            "--vf-meta-left": "72px",
+            "--vf-meta-width": "300px",
+            "--vf-ending-bottom": "164px",
+        },
+        "config_panel": {
+            "--vf-safe-top": "142px",
+            "--vf-safe-left": "56px",
+            "--vf-safe-right": "56px",
+            "--vf-safe-bottom": "326px",
+            "--vf-meta-top": "116px",
+            "--vf-meta-right": "72px",
+            "--vf-meta-width": "280px",
+            "--vf-ending-bottom": "164px",
+        },
+        "file_tree": {
+            "--vf-safe-top": "142px",
+            "--vf-safe-left": "56px",
+            "--vf-safe-right": "56px",
+            "--vf-safe-bottom": "320px",
+            "--vf-meta-top": "116px",
+            "--vf-meta-left": "72px",
+            "--vf-meta-width": "280px",
+            "--vf-ending-bottom": "166px",
+        },
+        "comparison_board": {
+            "--vf-safe-top": "174px",
+            "--vf-safe-left": "64px",
+            "--vf-safe-right": "64px",
+            "--vf-safe-bottom": "314px",
+            "--vf-meta-top": "122px",
+            "--vf-meta-right": "72px",
+            "--vf-meta-width": "286px",
+            "--vf-ending-bottom": "174px",
+        },
+        "proof_matrix": {
+            "--vf-safe-top": "174px",
+            "--vf-safe-left": "64px",
+            "--vf-safe-right": "64px",
+            "--vf-safe-bottom": "314px",
+            "--vf-meta-top": "122px",
+            "--vf-meta-left": "72px",
+            "--vf-meta-width": "300px",
+            "--vf-ending-bottom": "174px",
+        },
+        "framework_map": {
+            "--vf-safe-top": "160px",
+            "--vf-safe-left": "64px",
+            "--vf-safe-right": "64px",
+            "--vf-safe-bottom": "320px",
+            "--vf-meta-top": "112px",
+            "--vf-meta-right": "72px",
+            "--vf-meta-width": "280px",
+            "--vf-ending-bottom": "170px",
+        },
+        "decision_fork": {
+            "--vf-safe-top": "160px",
+            "--vf-safe-left": "64px",
+            "--vf-safe-right": "64px",
+            "--vf-safe-bottom": "316px",
+            "--vf-meta-top": "112px",
+            "--vf-meta-left": "72px",
+            "--vf-meta-width": "280px",
+            "--vf-ending-bottom": "170px",
+        },
+        "opportunity_map": {
+            "--vf-safe-top": "160px",
+            "--vf-safe-left": "64px",
+            "--vf-safe-right": "64px",
+            "--vf-safe-bottom": "316px",
+            "--vf-meta-top": "112px",
+            "--vf-meta-right": "72px",
+            "--vf-meta-width": "280px",
+            "--vf-ending-bottom": "170px",
+        },
+        "action_close": {
+            "--vf-safe-top": "168px",
+            "--vf-safe-left": "72px",
+            "--vf-safe-right": "72px",
+            "--vf-safe-bottom": "296px",
+            "--vf-meta-top": "116px",
+            "--vf-meta-right": "72px",
+            "--vf-meta-width": "270px",
+            "--vf-ending-bottom": "136px",
+        },
+        "insight_close": {
+            "--vf-safe-top": "168px",
+            "--vf-safe-left": "72px",
+            "--vf-safe-right": "72px",
+            "--vf-safe-bottom": "296px",
+            "--vf-meta-top": "116px",
+            "--vf-meta-left": "72px",
+            "--vf-meta-width": "270px",
+            "--vf-ending-bottom": "136px",
+        },
+        "checklist_close": {
+            "--vf-safe-top": "166px",
+            "--vf-safe-left": "72px",
+            "--vf-safe-right": "72px",
+            "--vf-safe-bottom": "300px",
+            "--vf-meta-top": "112px",
+            "--vf-meta-right": "72px",
+            "--vf-meta-width": "290px",
+            "--vf-ending-bottom": "142px",
+        },
+        "offer_close": {
+            "--vf-safe-top": "168px",
+            "--vf-safe-left": "72px",
+            "--vf-safe-right": "72px",
+            "--vf-safe-bottom": "296px",
+            "--vf-meta-top": "112px",
+            "--vf-meta-right": "72px",
+            "--vf-meta-width": "300px",
+            "--vf-ending-bottom": "138px",
+        },
+    }
+    caption_presets = {
+        "standard_caption": {
+            "--vf-caption-left": "54px",
+            "--vf-caption-right": "54px",
+            "--vf-caption-bottom": "120px",
+            "--vf-caption-padding": "22px 32px",
+            "--vf-caption-size": "48px",
+            "--vf-caption-bg": "rgba(2,4,12,0.82)",
+            "--vf-caption-border": "rgba(56,225,255,0.55)",
+        },
+        "minimal_caption": {
+            "--vf-caption-left": "72px",
+            "--vf-caption-right": "72px",
+            "--vf-caption-bottom": "124px",
+            "--vf-caption-padding": "18px 24px",
+            "--vf-caption-size": "40px",
+            "--vf-caption-bg": "rgba(2,4,12,0.74)",
+            "--vf-caption-border": "rgba(56,225,255,0.38)",
+        },
+        "emphasis_caption": {
+            "--vf-caption-left": "48px",
+            "--vf-caption-right": "48px",
+            "--vf-caption-bottom": "112px",
+            "--vf-caption-padding": "24px 34px",
+            "--vf-caption-size": "52px",
+            "--vf-caption-bg": "rgba(16,24,48,0.86)",
+            "--vf-caption-border": "rgba(255,107,53,0.72)",
+        },
+        "quote_caption": {
+            "--vf-caption-left": "66px",
+            "--vf-caption-right": "66px",
+            "--vf-caption-bottom": "118px",
+            "--vf-caption-padding": "20px 30px",
+            "--vf-caption-size": "44px",
+            "--vf-caption-bg": "rgba(10,16,32,0.86)",
+            "--vf-caption-border": "rgba(199,125,255,0.62)",
+        },
+        "action_caption": {
+            "--vf-caption-left": "60px",
+            "--vf-caption-right": "60px",
+            "--vf-caption-bottom": "110px",
+            "--vf-caption-padding": "20px 28px",
+            "--vf-caption-size": "42px",
+            "--vf-caption-bg": "rgba(12,32,24,0.88)",
+            "--vf-caption-border": "rgba(46,232,116,0.74)",
+        },
+    }
+    style = {
+        **layout_presets.get(layout_family, layout_presets["hero_statement"]),
+        **caption_presets.get(caption_mode, caption_presets["standard_caption"]),
+        "--vf-ending-variant": ending_variant,
+    }
+    return "; ".join(f"{key}:{value}" for key, value in style.items())
 
 
 def _hud_scene_config(scene: dict[str, Any], index: int, narration: str) -> dict[str, Any]:

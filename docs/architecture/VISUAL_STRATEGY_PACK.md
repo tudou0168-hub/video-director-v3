@@ -2,6 +2,13 @@
 
 `visual_strategy` 是 V3 在 `scene_pack` 之上的视觉分化层，用来把同一条文案明确收敛成不同的视频骨架，而不是让模板继续靠原始全文猜内容。
 
+P4.1B-R1 之后，这一层已经进入 render-effective 阶段：
+
+- `layout_family` 真正影响 HyperFrames Native HTML 预览的布局类名
+- `caption_mode` 真正影响字幕 class 和字幕区域视觉强度
+- `ending_variant` 真正影响结尾板形态
+- `memory_anchor` / `visual_object` / `save_reason` 真正进入 scene 和 QA 报告
+
 ## 作用
 
 - 识别脚本更像 `knowledge_method`、`ai_toolflow` 还是 `sales_offer`
@@ -35,6 +42,10 @@
 - `ending_variant`
 - `template_sequence_signature`
 - `visual_strategy`
+- `memory_anchor`
+- `save_reason`
+- `visual_object`
+- `layout_family_sequence`
 
 ### scene_pack scene 字段
 
@@ -46,6 +57,11 @@
 - `headline_compact`
 - `title_caption_similarity`
 - `readability_risk`
+- `layout_family`
+- `visual_object`
+- `visual_headline`
+- `memory_anchor`
+- `save_reason`
 
 ### QA 字段
 
@@ -62,6 +78,11 @@
 - `dense_scene_readability_risk`
 - `caption_conflict_count`
 - `layout_readability_score`
+- `same_video_risk`
+- `headline_fragment_risk_count`
+- `visual_object_missing_count`
+- `memory_anchor_missing_count`
+- `save_reason_missing_count`
 
 ## 设计原则
 
@@ -80,5 +101,7 @@
 - 是否顶部信息太重
 - 是否标题和字幕过于相似
 - 是否真的把三类内容做出了不同的视觉骨架
+- 是否真的把 `layout_family` / `caption_mode` / `ending_variant` 消费到渲染层
+- 是否真的让 `memory_anchor` / `visual_object` / `save_reason` 成为可读、可记、可复用的视觉锚点
 
 这层的目标不是让分数更高，而是让预览更像三条不同的视频，而不是同一个骨架换内容。

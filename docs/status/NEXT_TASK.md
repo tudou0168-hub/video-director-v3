@@ -2,23 +2,25 @@
 
 ## 当前任务
 
-**P4.1B Visual Differentiation + Readability Director** — 已完成三条真实脚本的视觉骨架分化验证，当前进入结果收口与人工视觉审查阶段。
+**P4.1B-R1 Render-Effective Visual Strategy** — 已完成三条真实脚本的 render-effective 视觉策略验证，当前进入收口与下一阶段多脚本复用准备。
 
 当前重点：
 
-- `outputs/p4_1b_knowledge_visual_strategy_preview/`
-- `outputs/p4_1b_ai_toolflow_visual_strategy_preview/`
-- `outputs/p4_1b_sales_visual_strategy_preview/`
-- `docs/status/P4_1B_VISUAL_DIFFERENTIATION_AND_READABILITY.md`
+- `outputs/p4_1b_r1_knowledge_render_strategy_preview/`
+- `outputs/p4_1b_r1_ai_toolflow_render_strategy_preview/`
+- `outputs/p4_1b_r1_sales_render_strategy_preview/`
+- `docs/status/P4_1B_R1_RENDER_EFFECTIVE_VISUAL_STRATEGY.md`
 
 ## 本轮改动
 
-### P4.1B
+### P4.1B-R1
 
-- 用 `visual_strategy` pack 将 knowledge / toolflow / sales 三类内容的骨架分开
-- 三条 preview 全部 `gate_status=PASS`、`approval READY`
-- knowledge / toolflow / sales 的 `video_type` 与 `template_sequence_signature` 已显式写入 `scene_pack`
-- `semantic_quality_report` 新增视觉差异化与可读性指标，且未破坏现有 contract / QA 主线
+- `visual_strategy` 不再只是 scene_pack 的数据字段，而是真正进入 render layer
+- `layout_family` 通过 HTML class 和 CSS 真实改变布局轮廓
+- `caption_mode` 通过字幕 class 真实改变字幕样式
+- `ending_variant` 通过结尾板真实分流
+- `memory_anchor` / `visual_object` / `save_reason` 进入 preview 与 QA 报告
+- 三条 preview 都已生成，并保留 `gate_status=PASS`、`approval READY`
 
 ## 验证
 
@@ -27,13 +29,13 @@
 - `PYTHONPATH=src .venv/bin/python3 -m pytest tests/test_visual_strategy_pack.py tests/test_semantic_quality_gate.py tests/test_scene_pack_contracts.py tests/test_preview_pipeline.py tests/test_tts_contract.py tests/test_render_gate.py tests/test_offer_proof_cta_contracts.py -q`
 - `PYTHONPATH=src .venv/bin/python3 -m compileall src tests`
 - `git diff --check`
-- `hyperframes_preview` on `p4_1b_knowledge_visual_strategy_preview`
-- `hyperframes_preview` on `p4_1b_ai_toolflow_visual_strategy_preview`
-- `hyperframes_preview` on `p4_1b_sales_visual_strategy_preview`
+- `hyperframes_preview` on `p4_1b_r1_knowledge_render_strategy_preview`
+- `hyperframes_preview` on `p4_1b_r1_ai_toolflow_render_strategy_preview`
+- `hyperframes_preview` on `p4_1b_r1_sales_render_strategy_preview`
 
 ## 交付物
 
-- `docs/status/P4_1B_VISUAL_DIFFERENTIATION_AND_READABILITY.md`
+- `docs/status/P4_1B_R1_RENDER_EFFECTIVE_VISUAL_STRATEGY.md`
 
 ## 注意
 

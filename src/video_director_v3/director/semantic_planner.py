@@ -10,9 +10,14 @@ from video_director_v3.director.cta_policy import load_default_cta_policy
 from video_director_v3.director.offer_profile import load_default_offer_profile
 from video_director_v3.director.visual_strategy import (
     build_visual_strategy_pack,
+    build_memory_anchor,
+    build_save_reason,
+    build_visual_headline,
     caption_mode_for_scene,
     choose_ending_variant,
     choose_opening_variant,
+    choose_layout_family,
+    choose_visual_object,
     headline_compact,
     layout_band_for_scene,
     sequence_slot_for_scene,
@@ -64,7 +69,7 @@ def build_scene_pack(
     )
     video_type = str(visual_strategy.get("video_type") or "knowledge_method")
     opening_variant = str(visual_strategy.get("opening_variant") or choose_opening_variant(video_type, str(narration_plan.get("title") or project_id), source_text or ""))
-    ending_variant = str(visual_strategy.get("ending_variant") or choose_ending_variant(video_type))
+    ending_variant = str(visual_strategy.get("ending_variant") or choose_ending_variant(video_type, title=str(narration_plan.get("title") or project_id), text=source_text or "", role="cta"))
     scenes = []
     all_scenes = storyboard.get("scenes", [])
     for index, scene in enumerate(all_scenes):
@@ -87,7 +92,34 @@ def build_scene_pack(
             opening_variant=opening_variant,
             ending_variant=ending_variant,
         )
-        headline = _headline_from_voiceover(voiceover, role, template_type, video_type)
+        layout_family = choose_layout_family(
+            video_type,
+            role,
+            template_type,
+            index,
+            len(all_scenes),
+            opening_variant=opening_variant,
+            ending_variant=ending_variant,
+            title=str(narration_plan.get("title") or project_id),
+            text=voiceover,
+        )
+        visual_object = choose_visual_object(
+            video_type,
+            role,
+            template_type,
+            title=str(narration_plan.get("title") or project_id),
+            text=voiceover,
+            index=index,
+            total=len(all_scenes),
+        )
+        memory_anchor = build_memory_anchor(voiceover, video_type=video_type, role=role, template_type=template_type)
+        headline = build_visual_headline(
+            voiceover,
+            video_type=video_type,
+            role=role,
+            template_type=template_type,
+            memory_anchor=memory_anchor,
+        )
         subtitle = _subtitle_from_voiceover(voiceover, headline, video_type=video_type)
         display_conclusion = _display_conclusion(voiceover, subtitle)
         contract_context = _contract_context_for_scene(
@@ -99,6 +131,13 @@ def build_scene_pack(
             proof_asset=proof_asset.as_dict(),
             cta_policy=cta_policy.as_dict(),
             video_type=video_type,
+        )
+        save_reason = build_save_reason(
+            video_type=video_type,
+            role=role,
+            template_type=template_type,
+            memory_anchor=memory_anchor,
+            visual_object=visual_object,
         )
         slot_context = {
             **contract_context,
@@ -116,7 +155,15 @@ def build_scene_pack(
             contract_context=slot_context,
         )
         title_caption_overlap = title_caption_similarity(headline, subtitle or voiceover)
-        caption_mode = caption_mode_for_scene(video_type, role, template_type, index, len(all_scenes))
+        caption_mode = caption_mode_for_scene(
+            video_type,
+            role,
+            template_type,
+            index,
+            len(all_scenes),
+            layout_family=layout_family,
+            ending_variant=ending_variant,
+        )
         scenes.append({
             "id": scene.get("scene_id") or f"S{index + 1:02d}",
             "role": role,
@@ -125,17 +172,24 @@ def build_scene_pack(
             "voiceover": voiceover,
             "display_headline": headline,
             "display_subtitle": subtitle,
+            "visual_headline": headline,
+            "memory_anchor": memory_anchor,
+            "save_reason": save_reason,
+            "layout_family": layout_family,
+            "visual_object": visual_object,
             "headline_compact": headline,
             "title_caption_similarity": round(title_caption_overlap, 3),
             "caption_mode": caption_mode,
             "visual_role": _visual_role_for_scene(role, template_type, video_type),
             "sequence_slot": sequence_slot_for_scene(index, len(all_scenes)),
-            "visual_strategy_reason": _visual_strategy_reason(video_type, role, template_type, index, len(all_scenes)),
+            "visual_strategy_reason": _visual_strategy_reason(video_type, role, template_type, index, len(all_scenes), layout_family=layout_family, visual_object=visual_object),
             "layout_band": layout_band_for_scene(video_type, role, template_type, index, len(all_scenes)),
             "readability_risk": round(_scene_readability_risk(headline, subtitle, slots, title_caption_overlap), 3),
             "display_conclusion": display_conclusion,
             "template_type": template_type,
             "slots": slots,
+            "is_final_scene": index == len(all_scenes) - 1,
+            "ending_variant": ending_variant if index == len(all_scenes) - 1 else "",
             **contract_context,
             "qa_rules": {
                 "headline_max_chars": 32,
@@ -665,10 +719,13 @@ def _headline_from_voiceover(voiceover: str, role: str, template_type: str, vide
             "proof": "结果要能被看见",
             "cta": "现在跑一遍",
         }.get(role, "这一段的重点")
-    if should_compact_headline(cleaned) or len(cleaned) > 20:
-        cleaned = headline_compact(cleaned, video_type=video_type, role=role, template_type=template_type)
-    limit = 16 if role == "hook" else 18
-    return _clip(cleaned, limit)
+    return build_visual_headline(
+        cleaned,
+        video_type=video_type,
+        role=role,
+        template_type=template_type,
+        memory_anchor=_memory_anchor(cleaned),
+    )
 
 
 def should_compact_headline(text: str) -> bool:
@@ -688,6 +745,28 @@ def _trim_fillers(text: str) -> str:
         compact = compact.replace(filler, "")
     compact = compact.strip(" ，。；;:：")
     return compact or str(text).strip()
+
+
+def _remove_leading_fragments(text: str) -> str:
+    compact = re.sub(r"\s+", "", str(text)).strip()
+    for prefix in ("我把", "以前的流程是", "以前", "之前", "然后", "再", "先", "一个", "一种", "10", "十"):
+        if compact.startswith(prefix) and len(compact) > len(prefix) + 1:
+            compact = compact[len(prefix):].lstrip(" ，。；;:：")
+    compact = re.sub(r"^(我把|以前的流程是|以前|之前|然后|再|先)\s*", "", compact)
+    return compact.strip()
+
+
+def _is_fragment_headline(text: str) -> bool:
+    compact = re.sub(r"\s+", "", str(text)).strip()
+    if not compact:
+        return True
+    if compact in {"10", "我把", "以前的流程是", "以前", "之前", "然后", "再", "先"}:
+        return True
+    if compact.isdigit() or len(compact) <= 2:
+        return True
+    if compact.startswith(("我把", "以前的流程是", "以前", "之前", "然后", "再")):
+        return True
+    return False
 
 
 def _subtitle_from_voiceover(voiceover: str, headline: str, *, video_type: str) -> str:
@@ -772,9 +851,20 @@ def _visual_role_for_scene(role: str, template_type: str, video_type: str) -> st
     return f"{video_type}:{role}"
 
 
-def _visual_strategy_reason(video_type: str, role: str, template_type: str, index: int, total: int) -> str:
+def _visual_strategy_reason(
+    video_type: str,
+    role: str,
+    template_type: str,
+    index: int,
+    total: int,
+    *,
+    layout_family: str = "",
+    visual_object: str = "",
+) -> str:
     slot = sequence_slot_for_scene(index, total)
-    return f"{video_type}:{slot}:{role}->{template_type}"
+    extras = [part for part in (layout_family, visual_object) if part]
+    suffix = f"[{':'.join(extras)}]" if extras else ""
+    return f"{video_type}:{slot}:{role}->{template_type}{suffix}"
 
 
 def _scene_readability_risk(headline: str, subtitle: str, slots: dict[str, Any], title_caption_similarity_value: float) -> float:
@@ -891,11 +981,25 @@ def _contrast_line(text: str) -> str:
 
 
 def _memory_anchor(text: str) -> str:
-    if "先" in text:
+    compact = re.sub(r"\s+", "", str(text or ""))
+    for pattern in (
+        r"\d+\s*(?:分钟|秒|小时|天|周|本|条|个|种|倍|%)\s*[\u4e00-\u9fffA-Za-z0-9]{0,8}",
+        r"settings\.json",
+        r"bypassPermissions",
+        r"Obsidian\+Codex\+Hermes",
+        r"输入[-→>]?整理[-→>]?调用[-→>]?输出",
+        r"看[-→>]?筛[-→>]?建",
+        r"[\u4e00-\u9fff]{2,8}(?:条|个|种|步|层|页|卡|板)",
+    ):
+        match = re.search(pattern, compact)
+        if match:
+            anchor = match.group(0).replace("→", "-").replace(">", "-")
+            return anchor[:16]
+    if "先" in compact:
         return "先跑一遍"
-    if "直接" in text:
+    if "直接" in compact:
         return "直接调用"
-    return "记住这一句"
+    return "看筛建"
 
 
 def _myth_truth(text: str) -> tuple[str, str]:

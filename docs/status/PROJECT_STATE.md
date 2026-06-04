@@ -34,10 +34,10 @@
 
 完整路线图：`docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md`
 
-当前阶段：`P4.1B Visual Differentiation + Readability Director`
-当前候选片：`p4_1b_sales_visual_strategy_preview`
-下一任务：`进入 P4.1C，对三条 preview 做人工视觉审查与候选片收口`
-当前工作：`用 visual_strategy pack 将 knowledge / toolflow / sales 三类内容骨架分开，并验证 scene_pack / semantic_quality / approval gate 的稳定性`
+当前阶段：`P4.1B-R1 Render-Effective Visual Strategy（PASS）`
+当前候选片：`p4_1b_sales_render_strategy_preview`
+下一任务：`进入 P4.2，多脚本验证 render-effective visual strategy 是否稳定可复用`
+当前工作：`把 visual_strategy 从 data-only 推进到 render-effective，让 layout_family / caption_mode / ending_variant 真正进入 HTML/CSS/结尾渲染，并保持三类内容骨架分开`
 
 ## 项目目标
 
