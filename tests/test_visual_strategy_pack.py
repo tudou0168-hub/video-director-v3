@@ -18,6 +18,7 @@ from video_director_v3.director.visual_strategy import (
     title_caption_similarity,
 )
 from video_director_v3.qa.semantic_quality_gate import build_semantic_quality_report
+from video_director_v3.renderers.hyperframes.studio_native_project_builder import build_studio_native_project
 from video_director_v3.renderers.hyperframes.publish_templates import get_scene_body
 
 
@@ -453,3 +454,64 @@ def test_contract_renderer_binds_layout_skeleton_to_family():
     assert "ACTION CLOSE" in close_body
     assert "CHECKLIST CLOSE" not in close_body
     assert "INSIGHT CLOSE" not in close_body
+
+
+def test_legacy_scene_body_is_wrapped_by_layout_skeleton():
+    scene = {
+        "id": "S09",
+        "role": "method",
+        "visual_template": "tool_stack",
+        "layout_family": "tool_pipeline",
+        "caption_mode": "minimal_caption",
+        "visual_object": "tool_pipeline",
+        "display_headline": "输入-整理-调用-输出",
+        "display_subtitle": "让动作像管线一样流动",
+        "memory_anchor": "输入-整理-调用-输出",
+        "save_reason": "流程本身就能被复用",
+        "slots": {},
+    }
+
+    body = get_scene_body("S09", "method", scene)
+
+    assert "vf-strategy-shell" in body
+    assert "vf-layout-tool_pipeline" in body
+    assert "hf-flow-line" in body
+    assert "NODE 1" in body
+
+
+def test_director_timeline_preserves_scene_pack_layout_family(tmp_path: Path):
+    audio_path = tmp_path / "voiceover.mp3"
+    audio_path.write_bytes(b"fake-audio")
+    storyboard = _storyboard(
+        [
+            ("S01", "hook", "先记住这个点：10分钟定一个能写"),
+            ("S02", "method", "晚上打开电脑别再刷热点，先把工具栈接起来"),
+        ]
+    )
+    scene_pack = build_scene_pack(
+        project_id="p41b_layout_bridge",
+        narration_plan={"title": "工具换来换去", "sentence_list": []},
+        storyboard=storyboard,
+        audio_timeline={"sentence_timings": []},
+        source_text="工具换来换去，累的还是你",
+    )
+
+    build_studio_native_project(
+        project_dir=tmp_path,
+        storyboard=storyboard,
+        narration_plan={"title": "工具换来换去"},
+        tts_result={"audio_path": str(audio_path), "real_duration": 8.0},
+        caption_beats={"caption_beats": []},
+        visual_beats={},
+        transitions={"transition_count": 0, "transitions": []},
+        scene_pack=scene_pack,
+    )
+
+    timeline = json.loads(
+        (tmp_path / "hyperframes_timeline" / "data" / "director_timeline.json").read_text(encoding="utf-8")
+    )
+    first = timeline["scenes"][0]
+    assert first["layout_family"] == scene_pack["scenes"][0]["layout_family"]
+    assert first["caption_mode"] == scene_pack["scenes"][0]["caption_mode"]
+    html = (tmp_path / "hyperframes_timeline" / "index.html").read_text(encoding="utf-8")
+    assert "vf-layout-" in html

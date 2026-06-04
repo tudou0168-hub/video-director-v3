@@ -34,10 +34,10 @@
 
 完整路线图：`docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md`
 
-当前阶段：`P4.1B-R3 Layout Skeleton Deepening / Strategy-to-Skeleton Binding（smoke-ready）`
+当前阶段：`P4.1B-R3 Follow-up Fix`
 当前候选片：`p4_1b_r3_layout_skeleton_smoke_preview`
-下一任务：`进入 P4.2 前，确认 debug cleanup / caption differentiation / mature HUD component reuse 是否足够稳定可复用`
-当前工作：`把 visual_strategy 从“调试清理”推进到“布局骨架绑定”：让 layout_family 真正决定 hero_metric / tool_pipeline / framework_map / action_close 等骨架，并用 smoke contact sheet 验证结构差异是否足够可读`
+下一任务：`继续留在 P4.1B-R3 范围内，确认新的 contact sheet 与 director_timeline/index.html 是否一致，再决定是否收口到下一轮多脚本验证`
+当前工作：`把 visual_strategy 的 layout_family 从 scene_pack 透传到 director_timeline/index.html，修复 contact sheet 仍停留在旧模板的问题；不要进入 P4.2`
 
 ## 项目目标
 

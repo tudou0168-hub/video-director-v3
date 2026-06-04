@@ -186,6 +186,8 @@ def build_studio_native_project(
                 is_last_scene=len(director_scenes) == len(scenes) - 1,
             )
         else:
+            if contract_scene:
+                scene["scene_pack_scene"] = contract_scene
             hud_scene = _hud_scene_config(scene, len(director_scenes), narration)
         # V3-P3.8 P2-1: the last scene's CTA defaults to a finish-board
         # layout (end_score_goodbye) for a strong closing feel, unless the
@@ -728,6 +730,9 @@ def _contract_hud_scene_config(
     template_type = str(contract_scene.get("template_type") or "")
     visual_template, layout_variant = _contract_template_visual(template_type)
     label_en, label_zh = HF_HUD_LABELS.get(visual_template, ("", ""))
+    layout_family = str(contract_scene.get("layout_family") or "").strip()
+    caption_mode = str(contract_scene.get("caption_mode") or "").strip()
+    ending_variant = str(contract_scene.get("ending_variant") or "").strip()
     config = {
         **scene,
         "id": contract_scene.get("id") or scene.get("scene_id"),
@@ -736,6 +741,9 @@ def _contract_hud_scene_config(
         "contract_source": "slots_only",
         "visual_template": visual_template,
         "layout_variant": "end_score_goodbye" if template_type == "final_cta" and is_last_scene else layout_variant,
+        "layout_family": layout_family or scene.get("layout_family") or layout_variant,
+        "caption_mode": caption_mode or scene.get("caption_mode") or "standard_caption",
+        "ending_variant": ending_variant or scene.get("ending_variant") or "",
         "headline": contract_scene.get("display_headline", ""),
         "subheadline": contract_scene.get("display_subtitle", ""),
         "display_conclusion": contract_scene.get("display_conclusion", ""),
@@ -1009,6 +1017,24 @@ def _hud_scene_config(scene: dict[str, Any], index: int, narration: str) -> dict
         brief = narration.split("。")[0].split("，")[0].split("？")[0]
         headline = brief[:18] if len(brief) > 18 else brief
     config = {**scene, "visual_template": template, "headline": headline}
+    contract_scene = scene.get("scene_pack_scene")
+    if isinstance(contract_scene, dict):
+        for key in (
+            "layout_family",
+            "caption_mode",
+            "ending_variant",
+            "visual_object",
+            "memory_anchor",
+            "save_reason",
+            "offer_profile_ref",
+            "proof_asset_ref",
+            "cta_policy_ref",
+            "cta_stage",
+            "cta_strength",
+        ):
+            value = contract_scene.get(key)
+            if value not in (None, ""):
+                config[key] = value
     # V3-P3.9 — inject role-aware HUD label from HF_HUD_LABELS catalog.
     # V3-P3.10A-R2 — unmatched templates get empty zh label (no fallback "OBSIDIAN SECOND BRAIN").
     label_en, label_zh = HF_HUD_LABELS.get(template, (None, None))

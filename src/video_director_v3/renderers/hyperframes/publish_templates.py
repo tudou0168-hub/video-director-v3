@@ -15,7 +15,15 @@ def get_scene_body(sid: str, role: str, scene: dict[str, Any]) -> str:
         return _get_contract_scene_body(sid, role, scene)
     template = scene.get("visual_template", _default_template(role))
     fn = _TEMPLATES.get(template, _template_hook_big_claim)
-    return fn(sid, role, scene)
+    body = fn(sid, role, scene)
+    if str(scene.get("layout_family") or "").strip():
+        return _wrap_strategy_scene(
+            sid,
+            role,
+            scene,
+            _render_strategy_skeleton(sid, role, scene, body),
+        )
+    return body
 
 
 def get_scene_css(sid: str, role: str, scene: dict[str, Any]) -> str:

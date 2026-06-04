@@ -2,7 +2,7 @@
 
 ## 当前任务
 
-**P4.1B-R3 Layout Skeleton Deepening / Strategy-to-Skeleton Binding** — 当前已完成 smoke 预览跑通，接下来要看 contact sheet 里 `hero_metric / tool_pipeline / framework_map / action_close` 是否真的形成不同骨架，再决定是否继续扩展。
+**P4.1B-R3 Follow-up Fix** — 当前已把 `layout_family` 从 `scene_pack` 透传到 `director_timeline/index.html`，现在要重新看 contact sheet 与 HTML 是否一致，确认这次不是旧模板缓存。
 
 当前重点：
 
@@ -14,10 +14,10 @@
 
 ### P4.1B-R3
 
-- 让 `layout_family` 真正决定画面骨架，而不是只挂类名
-- 关注 `hero_metric / tool_pipeline / framework_map / action_close` 的结构差异是否足够明显
-- smoke 只跑 `p4_batch_ai_toolflow.md`，输出到 `outputs/p4_1b_r3_layout_skeleton_smoke_preview/`
-- 不要把这轮当成发布候选选择；先看 contact sheet 再决定后续是否扩展
+- `scene_pack` 的 `layout_family` 已经进入 `director_timeline.json`
+- `publish_templates.py` 已对非 contract scene 与 contract scene 统一套 skeleton
+- 重新生成的 `contact-sheet.jpg` 需要用人工眼睛确认是否已经摆脱旧模板骨架
+- 先留在 R3 范围内，不进入 P4.2
 
 ## 验证
 
@@ -26,12 +26,13 @@
 - `PYTHONPATH=src .venv/bin/python3 -m pytest tests/test_visual_strategy_pack.py tests/test_semantic_quality_gate.py tests/test_scene_pack_contracts.py tests/test_preview_pipeline.py tests/test_tts_contract.py tests/test_render_gate.py tests/test_offer_proof_cta_contracts.py -q`
 - `PYTHONPATH=src .venv/bin/python3 -m compileall src tests`
 - `git diff --check`
-- `hyperframes_preview` on `p4_1b_r3_layout_skeleton_smoke_preview`
+- `hyperframes_preview` on `p4_1b_r3_layout_skeleton_smoke_preview`（已重新生成）
 
 ## 交付物
 
 - `docs/status/P4_1B_R3_LAYOUT_SKELETON_DEEPENING.md`
 - `docs/status/P4_1B_R3_STRATEGY_TO_SKELETON_AUDIT.md`
+- `docs/status/P4_1B_R3_FOLLOWUP_FIX.md`
 
 ## 注意
 
