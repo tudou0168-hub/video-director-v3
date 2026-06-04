@@ -17,6 +17,15 @@ def _write_json(path: Path, data: Any) -> None:
     path.write_text(json.dumps(data, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
 
+def _scene_flag(scene: dict[str, Any], key: str) -> bool:
+    value = scene.get(key)
+    if isinstance(value, bool):
+        return value
+    if isinstance(value, str):
+        return value.strip().lower() in {"1", "true", "yes", "on"}
+    return False
+
+
 def scale_storyboard_to_audio(storyboard: dict[str, Any], audio_duration: float) -> dict[str, Any]:
     scenes = storyboard.get("scenes", [])
     if not scenes:
@@ -204,11 +213,11 @@ def build_studio_native_project(
         })
         # V3-P3.10A — composition class auto-pick by scene index % 3
         composition_class = _COMPOSITIONS_BY_INDEX[len(director_scenes) % 3]
+        debug_visual_strategy = _scene_flag(hud_scene, "debug_visual_strategy")
         scene_html.append(f"""
-<section id="scene-{escape(sid.lower())}" class="scene clip role-{escape(role)} tpl-{escape(prev_template)} hf-bg-cinematic hf-bg-{escape(role)} {composition_class} vf-layout-{escape(layout_family)} vf-caption-{escape(caption_mode)} vf-ending-{escape(ending_variant or 'none')}" style="{escape(_scene_strategy_style(hud_scene))}" data-start="{start}" data-duration="{round(scene_duration, 3)}" data-track-index="1" data-visual-template="{escape(prev_template)}" data-role="{escape(role)}" data-layout-family="{escape(layout_family)}" data-caption-mode="{escape(caption_mode)}" data-ending-variant="{escape(ending_variant)}">
+<section id="scene-{escape(sid.lower())}" class="scene clip role-{escape(role)} tpl-{escape(prev_template)} hf-bg-cinematic hf-bg-{escape(role)} {composition_class} vf-layout-{escape(layout_family)} vf-caption-{escape(caption_mode)} vf-ending-{escape(ending_variant or 'none')}" style="{escape(_scene_strategy_style(hud_scene))}" data-start="{start}" data-duration="{round(scene_duration, 3)}" data-track-index="1" data-visual-template="{escape(prev_template)}" data-role="{escape(role)}" data-layout-family="{escape(layout_family)}" data-caption-mode="{escape(caption_mode)}" data-ending-variant="{escape(ending_variant)}" data-debug-visual-strategy="{str(debug_visual_strategy).lower()}">
   {get_scene_body(sid, role, hud_scene)}
   <div class="hf-vignette"></div>
-  <div class="hf-scan-beam"></div>
   <div class="hf-hud-header"><span class="hf-hud-bar"></span><span class="hf-hud-en">{escape((hud_scene.get("hud_label_en") or role.upper() + " / HUD SYSTEM").strip())}</span><b class="hf-hud-sid">{escape(sid)}</b>{('<i class="hf-hud-zh">' + escape(hud_scene.get("hud_label_zh", "").strip()) + '</i>') if hud_scene.get("hud_label_zh", "").strip() else ""}</div>
 </section>""")
 
@@ -303,15 +312,6 @@ html,body{{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--
   position:absolute;inset:0;pointer-events:none;
   background:radial-gradient(ellipse 120% 100% at 50% 50%, transparent 55%, rgba(0,0,0,0.32) 100%);
   z-index:1;
-}}
-
-/* Ambient scan beam — slow top-to-bottom */
-.hf-scan-beam{{
-  position:absolute;left:0;right:0;height:3px;top:-4%;
-  background:linear-gradient(90deg,transparent,rgba(37,216,255,0.65),transparent);
-  box-shadow:0 0 22px rgba(37,216,255,0.6);
-  animation:hf-beam 5.5s linear infinite;
-  pointer-events:none;z-index:2;
 }}
 
 /* V3-P3.11B — HUD header compact: smaller font, inline zh, tighter gap */
@@ -443,7 +443,6 @@ html,body{{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--
 }}
 
 /* Animations */
-@keyframes hf-beam{{0%{{top:-4%}}100%{{top:104%}}}}
 @keyframes hf-scale-in{{0%{{transform:scale(.85);opacity:0}}100%{{transform:scale(1);opacity:1}}}}
 @keyframes hf-count-up{{0%{{transform:scale(.6);opacity:0}}60%{{transform:scale(1.08);opacity:1}}100%{{transform:scale(1);opacity:1}}}}
 @keyframes hf-stagger-in{{0%{{transform:translateY(20px);opacity:0}}100%{{transform:translateY(0);opacity:1}}}}
@@ -463,7 +462,6 @@ html,body{{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--
 .hud-frame{{position:absolute;inset:28px;border:1px solid rgba(37,216,255,.32);clip-path:polygon(0 0,100% 0,100% 94%,94% 100%,0 100%);pointer-events:none}}
 .hud-top,.hud-bottom{{position:absolute;left:52px;right:52px;display:flex;justify-content:space-between;color:#25d8ff;font:800 18px/1 monospace;letter-spacing:.16em}}
 .hud-top{{top:52px}}.hud-bottom{{bottom:318px}}.hud-bottom i{{font-style:normal;color:rgba(255,255,255,.55)}}
-.scan-sweep{{position:absolute;left:0;right:0;height:3px;top:-4%;background:linear-gradient(90deg,transparent,rgba(37,216,255,.7),transparent);box-shadow:0 0 22px rgba(37,216,255,.7);animation:scan 4.5s linear infinite;pointer-events:none}}
 
 /* Caption — mode-aware, not one flat bottom strip for every scene */
 .caption{{
@@ -479,10 +477,32 @@ html,body{{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--
   color:#FFFFFF;
   z-index:6;
 }}
-.caption.caption--minimal_caption{{font-size:38px;letter-spacing:-.02em;}}
-.caption.caption--emphasis_caption{{font-size:52px;border-width:2px;box-shadow:0 0 54px rgba(255,107,53,0.30), inset 0 1px 0 rgba(255,255,255,0.14);}}
-.caption.caption--quote_caption{{font-style:italic;letter-spacing:-.01em;}}
-.caption.caption--action_caption{{text-transform:none;letter-spacing:.01em;}}
+.caption.caption--minimal_caption{{font-size:var(--vf-caption-size,38px);letter-spacing:-.02em;opacity:.98;}}
+.caption.caption--emphasis_caption{{font-size:var(--vf-caption-size,58px);border-width:2px;box-shadow:0 0 54px rgba(255,107,53,0.30), inset 0 1px 0 rgba(255,255,255,0.14);letter-spacing:-.02em;font-weight:900;}}
+.caption.caption--quote_caption{{font-size:var(--vf-caption-size,42px);font-style:italic;letter-spacing:-.01em;}}
+.caption.caption--action_caption{{font-size:var(--vf-caption-size,46px);text-transform:none;letter-spacing:.01em;font-weight:900;}}
+.caption.caption--minimal_caption{{
+  --vf-caption-left:96px;--vf-caption-right:96px;--vf-caption-bottom:96px;
+  --vf-caption-padding:16px 22px;--vf-caption-size:38px;
+  --vf-caption-bg:rgba(2,4,12,0.78);--vf-caption-border:rgba(255,255,255,0.20);
+}}
+.caption.caption--emphasis_caption{{
+  --vf-caption-left:72px;--vf-caption-right:72px;--vf-caption-bottom:122px;
+  --vf-caption-padding:26px 34px;--vf-caption-size:58px;
+  --vf-caption-bg:rgba(255,107,53,0.14);--vf-caption-border:rgba(255,107,53,0.80);
+}}
+.caption.caption--quote_caption{{
+  --vf-caption-left:110px;--vf-caption-right:110px;--vf-caption-bottom:128px;
+  --vf-caption-padding:22px 30px;--vf-caption-size:42px;
+  --vf-caption-bg:rgba(56,225,255,0.10);--vf-caption-border:rgba(56,225,255,0.66);
+  text-align:left;border-left:6px solid var(--hf-cyan);padding-left:28px;
+}}
+.caption.caption--action_caption{{
+  --vf-caption-left:88px;--vf-caption-right:88px;--vf-caption-bottom:92px;
+  --vf-caption-padding:20px 28px;--vf-caption-size:46px;
+  --vf-caption-bg:rgba(46,232,116,0.12);--vf-caption-border:rgba(46,232,116,0.72);
+  text-align:center;
+}}
 /* V3-P3.11B — faint gradient backing anchors subtitle area without being visible */
 .caption::before{{
   content:"";position:absolute;left:-24px;right:-24px;bottom:-24px;height:160px;
@@ -493,7 +513,12 @@ html,body{{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--
 /* Scene bottom safe-zone — reserves 300px so cards never occlude captions (V3-P3.11A: expanded from 280) */
 .scene .hf-safe-zone{{top:var(--vf-safe-top,190px) !important;left:var(--vf-safe-left,72px) !important;right:var(--vf-safe-right,72px) !important;bottom:auto !important;padding-bottom:var(--vf-safe-bottom,300px) !important;}}
 .vf-strategy-shell{{position:absolute;inset:0;pointer-events:none;}}
+.vf-content-region{{
+  position:absolute;inset:0;pointer-events:none;z-index:3;
+}}
+.scene[data-debug-visual-strategy="true"] .vf-strategy-meta{{display:block;}}
 .vf-strategy-meta{{
+  display:none;
   position:absolute;top:var(--vf-meta-top,120px);right:var(--vf-meta-right,72px);left:var(--vf-meta-left,auto);width:var(--vf-meta-width,280px);
   padding:18px 20px;border-radius:24px;background:rgba(2,4,12,0.72);border:1px solid rgba(56,225,255,0.24);backdrop-filter:blur(12px);
   color:#fff;z-index:4;box-shadow:0 0 24px rgba(56,225,255,0.10);
@@ -504,6 +529,21 @@ html,body{{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--
 .vf-strategy-anchor{{font-size:26px;font-weight:900;color:var(--hf-amber);line-height:1.12;margin-bottom:6px;}}
 .vf-strategy-save{{font-size:18px;line-height:1.42;color:rgba(248,250,252,0.74);}}
 .vf-strategy-caption{{margin-top:12px;font:800 16px/1.1 monospace;letter-spacing:.16em;color:rgba(248,250,252,0.50);}}
+.vf-hook-region .hf-status-stamp,
+.vf-problem-region .hf-status-stamp,
+.vf-proof-region .hf-status-stamp,
+.vf-cta-region .hf-status-stamp{{
+  box-shadow:0 0 28px rgba(56,225,255,0.12);
+}}
+.vf-hook-region .hf-glass-panel,
+.vf-problem-region .hf-glass-panel,
+.vf-proof-region .hf-glass-panel,
+.vf-cta-region .hf-glass-panel{{
+  backdrop-filter:blur(18px);
+}}
+.vf-proof-region .hf-metric-card{{
+  min-width:280px;
+}}
 .vf-ending-board{{position:absolute;left:var(--vf-ending-left,72px);right:var(--vf-ending-right,72px);bottom:var(--vf-ending-bottom,140px);padding:22px 24px;border-radius:26px;background:rgba(2,4,12,0.78);border:1px solid rgba(255,255,255,0.12);backdrop-filter:blur(14px);z-index:5;box-shadow:0 0 28px rgba(56,225,255,0.12);}}
 .vf-ending-label{{font:800 18px/1 monospace;letter-spacing:.18em;color:var(--hf-amber);margin-bottom:10px;}}
 .vf-ending-title{{font-size:48px;font-weight:900;line-height:1.08;color:#fff;margin-bottom:10px;}}
@@ -518,7 +558,6 @@ html,body{{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--
 .vf-ending-insight .vf-ending-title{{color:var(--hf-cyan);}}
 
 @keyframes glow{{0%,100%{{opacity:.58;transform:scale(1)}}50%{{opacity:.92;transform:scale(1.12)}}}}
-@keyframes scan{{0%{{top:-4%}}100%{{top:104%}}}}
 
 /* V3-P3.10A — Smooth scene transition compatible with native opacity toggle */
 .scene {{

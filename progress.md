@@ -336,3 +336,23 @@
 - 真实 preview（`demo_v3_preview`）：`READY`，viral_quality_report.json 自动生成
 - 真实 5s smoke render：`PASS`，`duration=5.00s`
 - `sync_report.json`：`max_drift=0.0s`
+
+### 2026-06-04 P4.1B-R2 预审与规划
+
+- 读取用户新请求全文，确认目标是先做规划，再做 debug cleanup + 成熟组件复用 smoke。
+- 已更新 `task_plan.md`，新增 `P4.1B-R2 Debug Cleanup + Mature Visual Component Reuse Smoke` 阶段。
+- 当前工作区检查结果：
+  - `git status --short` 仅显示当前正式改动 + 既有历史/实验未跟踪项；
+  - `patches/p4_1b_r2_debug_patch.diff` 在仓库中不存在，`git apply --check` 失败原因是 patch file missing。
+- 当前代码审计发现仍残留：
+  - `publish_templates.py` 的 strategy debug meta 可见；
+  - `studio_native_project_builder.py` 内存在 `hf-beam` / `scan-sweep` 横线动画；
+  - `caption_mode` 仍需要进一步拉开视觉差异；
+  - 旧 HUD 成熟组件还没有在 smoke preview 里被明确复用。
+- 下一步执行顺序已经明确：
+  1. 手动等价实现 patch 意图；
+  2. 去掉 debug meta 和扫描线；
+  3. 强化 caption mode 差异；
+  4. 让 2-3 个旧 HUD 组件在 `p4_batch_ai_toolflow.md` smoke preview 中真实复用；
+  5. 生成 `P4_1B_R2_DEBUG_CLEANUP_AND_COMPONENT_REUSE_SMOKE.md` 报告；
+  6. 跑测试、compileall、git diff --check，并准备提交。

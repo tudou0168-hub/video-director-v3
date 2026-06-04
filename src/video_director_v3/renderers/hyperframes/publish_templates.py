@@ -65,6 +65,38 @@ def _scene_slots(scene: dict[str, Any]) -> dict[str, Any]:
     return slots if isinstance(slots, dict) else {}
 
 
+def _strategy_debug_enabled(scene: dict[str, Any]) -> bool:
+    for key in ("debug_visual_strategy", "visual_strategy_debug", "show_visual_strategy_debug"):
+        value = scene.get(key)
+        if isinstance(value, bool):
+            return value
+        if isinstance(value, str):
+            lowered = value.strip().lower()
+            if lowered in {"1", "true", "yes", "on"}:
+                return True
+            if lowered in {"0", "false", "no", "off"}:
+                return False
+    return False
+
+
+def _strategy_region_class(role: str) -> str:
+    normalized = (role or "content").strip().lower()
+    region = {
+        "hook": "hook",
+        "problem": "problem",
+        "conflict": "problem",
+        "method": "method",
+        "proof": "proof",
+        "offer": "offer",
+        "cta": "cta",
+        "verdict": "verdict",
+    }.get(normalized, "content")
+    classes = ["vf-content-region", f"vf-{region}-region"]
+    if normalized not in {"content", region}:
+        classes.append(f"vf-{normalized}-region")
+    return " ".join(dict.fromkeys(classes))
+
+
 def _contract_headline(scene: dict[str, Any], slots: dict[str, Any], *keys: str) -> str:
     for key in keys:
         value = slots.get(key)
@@ -87,15 +119,18 @@ def _wrap_strategy_scene(sid: str, role: str, scene: dict[str, Any], body: str) 
     memory_anchor = str(scene.get("memory_anchor") or scene.get("display_headline") or "").strip()
     save_reason = str(scene.get("save_reason") or "").strip()
     last_scene = bool(scene.get("is_final_scene"))
+    debug_enabled = _strategy_debug_enabled(scene)
     ending_html = ""
     if ending_variant and last_scene:
         ending_html = _render_strategy_ending(scene, ending_variant)
-    meta_html = _render_strategy_meta(layout_family, caption_mode, visual_object, memory_anchor, save_reason)
+    meta_html = _render_strategy_meta(layout_family, caption_mode, visual_object, memory_anchor, save_reason) if debug_enabled else ""
     return (
         f'<div class="vf-strategy-shell vf-layout-{layout_family} vf-caption-{caption_mode} '
         f'vf-ending-{ending_variant or "none"}" data-layout-family="{layout_family}" data-caption-mode="{caption_mode}" '
-        f'data-ending-variant="{ending_variant}">'
+        f'data-ending-variant="{ending_variant}" data-debug-visual-strategy="{str(debug_enabled).lower()}">'
+        f'<div class="{_strategy_region_class(role)}" data-vf-role="{role}" data-vf-layout-family="{layout_family}">'
         f"{body}"
+        f"</div>"
         f"{meta_html}"
         f"{ending_html}"
         "</div>"
@@ -190,11 +225,10 @@ def _items_to_bullets(values: Any, fallback: list[str] | None = None) -> list[st
     return items[:3]
 
 
-def _contract_badge(label: str, value: str, color: str) -> str:
+def _contract_badge(label: str, value: str, color: str, *, tone_class: str = "hf-status-live") -> str:
     return (
-        "<div style=\"display:inline-flex;align-items:center;gap:12px;padding:10px 18px;"
-        f"border-radius:999px;background:{color}1a;border:1px solid {color}66;color:{color};"
-        "font-size:18px;font-weight:700;letter-spacing:.14em;text-transform:uppercase;\">"
+        f"<div class=\"hf-status-stamp {tone_class}\" style=\"display:inline-flex;align-items:center;gap:12px;padding:10px 18px;"
+        f"color:{color};border-color:{color};background:rgba(6,8,16,0.72);box-shadow:0 0 24px {color}22;\">"
         f"<span style=\"opacity:.72;\">{label}</span><span>{value}</span></div>"
     )
 
@@ -212,7 +246,7 @@ def _render_contract_hook(sid: str, role: str, scene: dict[str, Any]) -> str:
       <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,{acc}28 0%,transparent 70%);"></div>
     </div>
     <div class="hf-safe-zone" style="position:absolute;top:260px;left:72px;right:72px;">
-      {_contract_badge("HOOK", status_badge, acc)}
+      {_contract_badge("HOOK", status_badge, acc, tone_class="hf-status-live")}
       <div style="margin-top:28px;font-size:72px;font-weight:900;line-height:1.08;color:#fff;max-width:900px;">{main_claim}</div>
       <div style="margin-top:26px;max-width:720px;font-size:32px;line-height:1.45;color:rgba(248,250,252,0.82);">{pain_point}</div>
       <div style="margin-top:38px;display:inline-flex;padding:16px 24px;border-radius:20px;background:rgba(255,255,255,0.05);border:1px solid {acc}55;">
@@ -241,7 +275,7 @@ def _render_contract_problem_conflict(sid: str, role: str, scene: dict[str, Any]
       <div class="bg-grid" style="opacity:.25"></div>
     </div>
     <div class="hf-safe-zone" style="position:absolute;top:220px;left:72px;right:72px;">
-      {_contract_badge("ALERT", warning, "#FF5577")}
+      {_contract_badge("ALERT", warning, "#FF5577", tone_class="hf-status-risk")}
       <div style="margin-top:26px;font-size:54px;font-weight:800;line-height:1.15;color:#fff;max-width:900px;">{headline}</div>
       <div style="position:absolute;top:220px;left:0;width:580px;">{items_html}</div>
       <div class="hf-glass-panel hf-glass-cyan" style="position:absolute;top:240px;right:0;width:320px;padding:28px 24px;border-radius:24px;">
@@ -305,12 +339,13 @@ def _render_contract_proof(sid: str, role: str, scene: dict[str, Any]) -> str:
       <div class="bg-grid" style="opacity:.25"></div>
     </div>
     <div class="hf-safe-zone" style="position:absolute;top:210px;left:72px;right:72px;">
-      {_contract_badge("PROOF", metric, acc)}
+      {_contract_badge("PROOF", metric, acc, tone_class="hf-status-pass")}
       <div style="margin-top:24px;font-size:52px;font-weight:800;line-height:1.18;color:#fff;max-width:860px;">{title}</div>
       <div style="position:absolute;top:220px;left:0;width:620px;">{items_html}</div>
-      <div class="hf-glass-panel hf-glass-amber" style="position:absolute;top:250px;right:0;width:280px;padding:24px;border-radius:22px;">
-        <div style="font-size:18px;letter-spacing:.14em;color:rgba(248,250,252,0.62);margin-bottom:12px;">CREDIBILITY</div>
-        <div style="font-size:30px;font-weight:700;line-height:1.35;color:#fff;">{note}</div>
+      <div class="hf-metric-card hf-glass-amber" style="position:absolute;top:250px;right:0;width:280px;min-height:240px;padding:24px;border-radius:22px;">
+        <div class="hf-metric-label">CREDIBILITY</div>
+        <div class="hf-metric-value" style="font-size:38px;line-height:1.02;margin-top:4px;">{metric}</div>
+        <div class="hf-metric-delta" style="margin-top:16px;line-height:1.42;color:#fff;">{note}</div>
       </div>
     </div>
     <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
@@ -333,7 +368,7 @@ def _render_contract_final_cta(sid: str, role: str, scene: dict[str, Any]) -> st
       <div class="bg-grid" style="opacity:.25"></div>
     </div>
     <div class="hf-safe-zone" style="position:absolute;top:260px;left:72px;right:72px;text-align:center;">
-      <div style="font-size:20px;letter-spacing:.18em;color:{acc};margin-bottom:18px;">CHAPTER CLOSE</div>
+      <div class="hf-status-stamp hf-status-viral" style="display:inline-flex;font-size:20px;letter-spacing:.18em;color:{acc};margin-bottom:18px;">CHAPTER CLOSE</div>
       <div style="font-size:64px;font-weight:900;line-height:1.08;color:#fff;max-width:900px;margin:0 auto;">{claim}</div>
       <div style="margin:28px auto 0;max-width:760px;font-size:32px;line-height:1.42;color:rgba(248,250,252,0.82);">{next_step}</div>
       <div class="hf-glass-panel hf-glass-cyan" style="margin:48px auto 0;max-width:620px;padding:28px 32px;border-radius:26px;">

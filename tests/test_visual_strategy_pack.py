@@ -258,6 +258,93 @@ def test_contract_renderer_wraps_strategy_classes():
 
     assert "vf-strategy-shell" in body
     assert "vf-layout-hero_metric" in body
-    assert "vf-strategy-meta" in body
+    assert "vf-content-region" in body
+    assert "vf-hook-region" in body
+    assert 'data-debug-visual-strategy="false"' in body
+    assert "vf-strategy-meta" not in body
     assert "vf-ending-board" in body
-    assert "metric_dashboard" in body or "LAYOUT FAMILY" in body
+    assert "hf-status-stamp" in body
+
+
+def test_contract_renderer_shows_strategy_meta_only_when_debug_enabled():
+    scene = {
+        "id": "S01",
+        "role": "hook",
+        "template_type": "hook",
+        "contract_template_id": "hook",
+        "display_headline": "10 分钟定选题",
+        "display_subtitle": "先把入口统一，再开始输出",
+        "visual_headline": "10分钟定选题",
+        "caption_mode": "emphasis_caption",
+        "layout_family": "hero_metric",
+        "visual_object": "metric_dashboard",
+        "memory_anchor": "10分钟定选题",
+        "save_reason": "收藏后下次直接复用",
+        "ending_variant": "insight_close",
+        "is_final_scene": True,
+        "debug_visual_strategy": True,
+        "slots": {
+            "main_claim": "10分钟定选题",
+            "pain_point": "别让入口太散",
+            "status_badge": "QUESTION",
+            "visual_emphasis": "选题",
+        },
+    }
+
+    body = get_scene_body("S01", "hook", scene)
+
+    assert 'data-debug-visual-strategy="true"' in body
+    assert "vf-strategy-meta" in body
+    assert "LAYOUT FAMILY" in body
+
+
+def test_contract_renderer_reuses_mature_hud_components():
+    proof_scene = {
+        "id": "S05",
+        "role": "proof",
+        "template_type": "proof",
+        "contract_template_id": "proof",
+        "display_headline": "真实可复用的结果",
+        "display_subtitle": "把证据做成可被保存的判断",
+        "caption_mode": "action_caption",
+        "layout_family": "proof_matrix",
+        "visual_object": "proof_matrix",
+        "memory_anchor": "真实可复用的结果",
+        "save_reason": "下次直接复用证据结构",
+        "ending_variant": "",
+        "slots": {
+            "proof_title": "真实可复用的结果",
+            "proof_items": ["案例 1", "案例 2"],
+            "metric_or_evidence": "100% 可解释",
+            "credibility_note": "这组证据来自可复用流程",
+        },
+    }
+
+    cta_scene = {
+        "id": "S06",
+        "role": "cta",
+        "template_type": "final_cta",
+        "contract_template_id": "final_cta",
+        "display_headline": "现在开始执行",
+        "display_subtitle": "把入口收束起来",
+        "caption_mode": "action_caption",
+        "layout_family": "action_close",
+        "visual_object": "checklist_board",
+        "memory_anchor": "现在开始执行",
+        "save_reason": "收束到下一步",
+        "ending_variant": "action_close",
+        "slots": {
+            "final_claim": "现在开始执行",
+            "next_step": "先跑一遍预览",
+            "cta_text": "继续下一步",
+            "avoid_phrases": ["评论区打关键词领取资料"],
+        },
+    }
+
+    proof_body = get_scene_body("S05", "proof", proof_scene)
+    cta_body = get_scene_body("S06", "cta", cta_scene)
+
+    assert "hf-metric-card" in proof_body
+    assert "hf-glass-panel" in proof_body
+    assert "hf-status-stamp" in cta_body
+    assert "hf-glass-panel" in cta_body

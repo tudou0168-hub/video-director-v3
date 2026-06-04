@@ -1413,7 +1413,7 @@ def test_pipeline_runner_threads_design_variance_to_build_motion_storyboard(monk
 
 V3_P310_COMPOSITION_CLASSES = ("upper", "center", "lower")
 V3_P310_GLOBAL_WRAPPER_CLASSES = (
-    "hf-bg-cinematic", "hf-vignette", "hf-scan-beam", "hf-hud-header", "hf-safe-zone"
+    "hf-bg-cinematic", "hf-vignette", "hf-hud-header", "hf-safe-zone"
 )
 
 
@@ -1449,6 +1449,7 @@ def test_p310_section_has_global_wrapper_and_composition_class(tmp_path: Path):
     # Every <section class="scene"> has the降级 classes + exactly one composition class
     for cls in V3_P310_GLOBAL_WRAPPER_CLASSES:
         assert cls in index_html, f"global降级 class {cls!r} missing from index.html"
+    assert "hf-scan-beam" not in index_html, "scan beam must stay disabled in native preview"
     for section_idx in range(5):
         # Each section has a composition class
         assert any(f"hf-comp-{c}" in index_html for c in V3_P310_COMPOSITION_CLASSES), (
