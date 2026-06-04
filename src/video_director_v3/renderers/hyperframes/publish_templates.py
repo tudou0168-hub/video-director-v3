@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 """Publishable Visual Templates for V3-P1.2 — 6 fixed templates."""
+from html import escape
+import re
 from typing import Any
 
 from video_director_v3.director.template_contracts import require_contract_scene
@@ -39,9 +41,21 @@ def _get_contract_scene_body(sid: str, role: str, scene: dict[str, Any]) -> str:
         fallback = "simple_card"
         if contract is not None:
             fallback = contract.fallback_template
-        return _wrap_strategy_scene(sid, role, scene, _render_contract_fallback(sid, role, scene, fallback, errors))
+        fallback_body = _render_contract_fallback(sid, role, scene, fallback, errors)
+        return _wrap_strategy_scene(
+            sid,
+            role,
+            scene,
+            _render_strategy_skeleton(sid, role, scene, fallback_body),
+        )
     fn = _CONTRACT_TEMPLATES.get(contract_id, _render_contract_simple_card)
-    return _wrap_strategy_scene(sid, role, scene, fn(sid, role, scene))
+    contract_body = fn(sid, role, scene)
+    return _wrap_strategy_scene(
+        sid,
+        role,
+        scene,
+        _render_strategy_skeleton(sid, role, scene, contract_body),
+    )
 
 
 def _render_contract_fallback(
@@ -206,6 +220,516 @@ def _render_strategy_ending(scene: dict[str, Any], ending_variant: str) -> str:
       <div class="vf-ending-sub">{subtitle or next_step or save_reason_or_default(scene)}</div>
     </div>
     """
+
+
+def _render_strategy_skeleton(sid: str, role: str, scene: dict[str, Any], fallback_body: str) -> str:
+    layout_family = str(scene.get("layout_family") or "").strip()
+    slots = _scene_slots(scene)
+    if layout_family == "hero_metric":
+        return _render_strategy_hero_metric_skeleton(sid, role, scene, slots, fallback_body)
+    if layout_family == "tool_pipeline":
+        return _render_strategy_tool_pipeline_skeleton(sid, role, scene, slots, fallback_body)
+    if layout_family == "config_panel":
+        return _render_strategy_config_panel_skeleton(sid, role, scene, slots, fallback_body)
+    if layout_family == "file_tree":
+        return _render_strategy_file_tree_skeleton(sid, role, scene, slots, fallback_body)
+    if layout_family in {"proof_matrix", "framework_map"}:
+        return _render_strategy_framework_skeleton(sid, role, scene, slots, fallback_body)
+    if layout_family in {"action_close", "checklist_close", "insight_close"}:
+        return _render_strategy_close_skeleton(sid, role, scene, slots, fallback_body)
+    return fallback_body
+
+
+def _strategy_text_blob(scene: dict[str, Any], slots: dict[str, Any], *keys: str) -> str:
+    values = [
+        str(scene.get("visual_headline") or ""),
+        str(scene.get("display_headline") or ""),
+        str(scene.get("display_subtitle") or ""),
+        str(scene.get("memory_anchor") or ""),
+        str(scene.get("save_reason") or ""),
+    ]
+    for key in keys:
+        value = slots.get(key)
+        if isinstance(value, list):
+            values.extend(str(item) for item in value)
+        elif isinstance(value, dict):
+            values.extend(str(v) for v in value.values())
+        elif value is not None:
+            values.append(str(value))
+    return " ".join(item.strip() for item in values if str(item).strip())
+
+
+def _slot_items(slots: dict[str, Any], key: str, fallback: list[str] | None = None) -> list[str]:
+    items = []
+    value = slots.get(key)
+    if isinstance(value, list):
+        for item in value:
+            if isinstance(item, dict):
+                text = item.get("label") or item.get("text") or item.get("name") or item.get("value")
+            else:
+                text = item
+            text = str(text).strip()
+            if text:
+                items.append(text)
+    elif isinstance(value, str):
+        text = value.strip()
+        if text:
+            items.append(text)
+    fallback = fallback or []
+    for item in fallback:
+        text = str(item).strip()
+        if text and len(items) < 8:
+            items.append(text)
+    return items
+
+
+def _extract_primary_number(scene: dict[str, Any], slots: dict[str, Any]) -> str:
+    blob = _strategy_text_blob(
+        scene,
+        slots,
+        "main_claim",
+        "visual_emphasis",
+        "stack_title",
+        "graph_title",
+        "result_title",
+        "final_claim",
+        "workflow_result",
+        "title_caption",
+        "metric_or_evidence",
+        "proof_title",
+    )
+    patterns = [
+        r"\d+(?:\.\d+)?\s*(?:分钟|秒|小时|天|周|倍|%|条|个|种|层|页|步|次|万|亿)?",
+        r"\d{2,}",
+    ]
+    for pattern in patterns:
+        match = re.search(pattern, blob)
+        if match:
+            number = match.group(0).strip()
+            return number[:12]
+    return "01"
+
+
+def _render_strategy_hero_metric_skeleton(
+    sid: str,
+    role: str,
+    scene: dict[str, Any],
+    slots: dict[str, Any],
+    fallback_body: str,
+) -> str:
+    acc = _accent(role)
+    headline = _contract_headline(scene, slots, "main_claim", "visual_headline", "display_headline", "memory_anchor")
+    sub = _contract_headline(scene, slots, "pain_point", "display_subtitle", "save_reason")
+    metric_label = _contract_headline(scene, slots, "status_badge", "visual_emphasis", "memory_anchor")
+    save_reason = _contract_headline(scene, slots, "save_reason", "memory_anchor")
+    number = _extract_primary_number(scene, slots)
+    number_class = "amber" if any(ch in number for ch in ("%", "万", "亿", "倍")) else "white" if len(number) > 4 else "green"
+    right_title = _contract_headline(scene, slots, "visual_emphasis", "memory_anchor", "display_headline")
+    return f"""
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+      <div class="bg-grid" style="opacity:.16"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,{acc}30 0%,transparent 70%);"></div>
+      <div class="bg-glow bg-glow-2" style="background:radial-gradient(circle,rgba(255,200,61,0.20) 0%,transparent 70%);"></div>
+    </div>
+    <div class="hf-page-anchor" style="top:106px;bottom:auto;left:96px;right:96px;">
+      <div class="hf-glow-divider"></div>
+      <div class="hf-status-stamp hf-status-live" style="display:inline-flex;color:{acc};border-color:{acc};background:rgba(6,8,16,0.68);">HERO METRIC</div>
+    </div>
+    <div style="position:absolute;top:260px;left:72px;right:72px;display:grid;grid-template-columns:1.18fr 0.82fr;gap:24px;align-items:start;">
+      <div style="position:relative;min-height:860px;">
+        <div class="hf-big-number {number_class} hf-animate-number" style="font-size:280px;line-height:.9;letter-spacing:-.06em;">{escape(number)}</div>
+        <div class="hf-big-title hf-animate-title" style="margin-top:14px;max-width:640px;font-size:72px;">{headline}</div>
+        <div class="hf-sub-title" style="max-width:640px;">{sub}</div>
+        <div style="margin-top:32px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;max-width:640px;">
+          <div class="hf-status-stamp hf-status-pass" style="display:inline-flex;color:{acc};border-color:{acc};background:rgba(6,8,16,0.68);">{escape(metric_label or 'KEY METRIC')}</div>
+          <div style="font-size:24px;line-height:1.4;color:rgba(248,250,252,0.76);max-width:420px;">{save_reason}</div>
+        </div>
+      </div>
+      <div style="display:grid;gap:18px;align-content:start;">
+        <div class="hf-metric-card hf-glass-cyan">
+          <div class="hf-metric-label">VISUAL ANCHOR</div>
+          <div class="hf-metric-value" style="font-size:40px;line-height:1.04;margin-top:6px;">{escape(right_title)}</div>
+          <div class="hf-metric-delta" style="margin-top:14px;color:#fff;">{escape(save_reason or '保存这个结构，下一次可以直接复用。')}</div>
+          <div class="hf-progress" style="margin-top:22px;--hf-target:82%;height:12px;border-radius:6px;">
+            <div class="hf-progress-fill"></div>
+          </div>
+        </div>
+        <div class="hf-result-card hf-page-anchor" style="text-align:left;border-color:rgba(255,200,61,0.35);background:rgba(255,200,61,0.08);padding:22px 26px;">
+          <div class="hf-status-stamp hf-status-viral" style="display:inline-flex;margin-bottom:12px;">MEMORY / ANCHOR</div>
+          <div style="font-size:28px;font-weight:800;line-height:1.25;color:#fff;margin-bottom:12px;">{escape(scene.get("memory_anchor") or right_title)}</div>
+          <div style="font-size:22px;line-height:1.45;color:rgba(248,250,252,0.78);">{escape(scene.get("visual_object") or metric_label or 'hero_metric')}</div>
+        </div>
+      </div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _render_strategy_tool_pipeline_skeleton(
+    sid: str,
+    role: str,
+    scene: dict[str, Any],
+    slots: dict[str, Any],
+    fallback_body: str,
+) -> str:
+    acc = _accent(role)
+    title = _contract_headline(scene, slots, "stack_title", "method_title", "graph_title", "display_headline")
+    tools = _slot_items(slots, "tools", fallback=[scene.get("visual_object") or "Input", "Process", "Output"])
+    roles = _slot_items(slots, "tool_roles", fallback=["INPUT", "PROCESS", "OUTPUT"])
+    result = _contract_headline(scene, slots, "workflow_result", "final_result", "result", "insight")
+    nodes = []
+    colors = [acc, "#FFC83D", "#2ED573"]
+    for idx in range(3):
+        tool = tools[idx] if idx < len(tools) else f"STEP {idx + 1}"
+        role_text = roles[idx] if idx < len(roles) else ["READY", "PROCESS", "OUTPUT"][idx]
+        node_y = 0 if idx == 0 else 1
+        nodes.append(
+            f"""
+            <div style="position:relative;margin-bottom:{28 if idx < 2 else 0}px;padding-left:56px;">
+              <div class="hf-flow-line" style="left:17px;top:{-10 if idx == 0 else -44}px;height:{110 if idx < 2 else 0}px;"></div>
+              <div class="hf-status-stamp hf-status-{['live','pass','viral'][idx]}" style="display:inline-flex;margin-bottom:12px;color:{colors[idx]};border-color:{colors[idx]};">{role_text}</div>
+              <div class="hf-glass-panel hf-glass-cyan" style="padding:22px 24px;border-radius:20px;min-height:112px;">
+                <div style="font-size:18px;font-weight:800;letter-spacing:.14em;color:{colors[idx]};margin-bottom:8px;">NODE {idx + 1}</div>
+                <div style="font-size:34px;font-weight:900;line-height:1.12;color:#fff;margin-bottom:8px;">{escape(tool)}</div>
+                <div style="font-size:22px;line-height:1.4;color:rgba(248,250,252,0.78);">{escape(_slot_items(slots, 'tool_roles', fallback=['输入','处理','输出'])[idx] if idx < len(_slot_items(slots, 'tool_roles', fallback=['输入','处理','输出'])) else role_text)}</div>
+              </div>
+            </div>
+            """
+        )
+    return f"""
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+      <div class="bg-grid" style="opacity:.16"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,{acc}24 0%,transparent 70%);"></div>
+    </div>
+    <div class="hf-page-anchor" style="top:106px;bottom:auto;left:96px;right:96px;">
+      <div class="hf-glow-divider"></div>
+      <div class="hf-status-stamp hf-status-live" style="display:inline-flex;color:{acc};border-color:{acc};background:rgba(6,8,16,0.68);">TOOL PIPELINE</div>
+    </div>
+    <div style="position:absolute;top:240px;left:72px;right:72px;display:grid;grid-template-columns:1fr 0.78fr;gap:24px;align-items:start;">
+      <div style="position:relative;min-height:900px;padding-top:18px;">
+        {''.join(nodes)}
+      </div>
+      <div style="display:grid;gap:18px;">
+        <div class="hf-result-card hf-page-anchor" style="text-align:left;border-color:rgba(56,225,255,0.35);background:rgba(56,225,255,0.08);padding:24px 26px;">
+          <div class="hf-status-stamp hf-status-ready" style="display:inline-flex;margin-bottom:12px;color:{acc};border-color:{acc};">WORKFLOW RESULT</div>
+          <div style="font-size:34px;font-weight:900;line-height:1.18;color:#fff;margin-bottom:12px;">{escape(result)}</div>
+          <div style="font-size:22px;line-height:1.45;color:rgba(248,250,252,0.78);">{escape(scene.get('save_reason') or scene.get('memory_anchor') or title)}</div>
+          <div class="hf-progress" style="margin-top:20px;--hf-target:88%;height:12px;border-radius:6px;">
+            <div class="hf-progress-fill"></div>
+          </div>
+        </div>
+        <div class="hf-result-card" style="border-color:rgba(255,200,61,0.28);background:rgba(255,200,61,0.08);text-align:left;">
+          <div class="hf-step-number amber" style="font-size:120px;margin-bottom:8px;">3</div>
+          <div style="font-size:18px;letter-spacing:.16em;color:rgba(248,250,252,0.6);margin-bottom:10px;">CAPTURED FLOW</div>
+          <div style="font-size:26px;line-height:1.4;color:#fff;">{escape(scene.get('visual_object') or 'tool_pipeline')}</div>
+        </div>
+      </div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _render_strategy_config_panel_skeleton(
+    sid: str,
+    role: str,
+    scene: dict[str, Any],
+    slots: dict[str, Any],
+    fallback_body: str,
+) -> str:
+    acc = _accent(role)
+    title = _contract_headline(scene, slots, "stack_title", "method_title", "display_headline")
+    items = _slot_items(slots, "steps", fallback=_slot_items(slots, "tools", fallback=["输入", "整理", "调用"]))
+    reason = _contract_headline(scene, slots, "workflow_result", "final_result", "save_reason")
+    top_item = items[0] if items else "CONFIG"
+    return f"""
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+      <div class="bg-grid" style="opacity:.15"></div>
+    </div>
+    <div class="hf-page-anchor" style="top:108px;bottom:auto;left:96px;right:96px;">
+      <div class="hf-glow-divider"></div>
+      <div class="hf-status-stamp hf-status-live" style="display:inline-flex;color:{acc};border-color:{acc};background:rgba(6,8,16,0.68);">CONFIG PANEL</div>
+    </div>
+    <div style="position:absolute;top:245px;left:72px;right:72px;display:grid;grid-template-columns:1fr 0.78fr;gap:24px;align-items:start;">
+      <div style="min-height:900px;">
+        <div class="hf-result-card" style="border-color:rgba(56,225,255,0.3);background:rgba(56,225,255,0.08);margin-bottom:18px;">
+          <div class="hf-status-stamp hf-status-live" style="display:inline-flex;margin-bottom:12px;color:{acc};border-color:{acc};">CONTROL SURFACE</div>
+          <div style="font-size:42px;font-weight:900;line-height:1.1;color:#fff;margin-bottom:12px;">{escape(title)}</div>
+          <div style="font-size:24px;line-height:1.5;color:rgba(248,250,252,0.78);">{escape(scene.get('memory_anchor') or scene.get('visual_object') or reason)}</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;">
+          <div class="hf-glass-panel hf-glass-cyan" style="min-height:220px;padding:22px 24px;">
+            <div class="hf-step-number" style="font-size:108px;color:{acc};margin-bottom:8px;">1</div>
+            <div style="font-size:18px;letter-spacing:.14em;color:rgba(248,250,252,0.6);margin-bottom:8px;">INPUT</div>
+            <div style="font-size:26px;line-height:1.4;color:#fff;">{escape(top_item)}</div>
+          </div>
+          <div class="hf-glass-panel hf-glass-cyan" style="min-height:220px;padding:22px 24px;">
+            <div class="hf-step-number amber" style="font-size:108px;margin-bottom:8px;">2</div>
+            <div style="font-size:18px;letter-spacing:.14em;color:rgba(248,250,252,0.6);margin-bottom:8px;">PROCESS</div>
+            <div style="font-size:26px;line-height:1.4;color:#fff;">{escape(items[1] if len(items) > 1 else reason)}</div>
+          </div>
+          <div class="hf-glass-panel hf-glass-cyan" style="grid-column:1 / -1;min-height:220px;padding:22px 24px;">
+            <div class="hf-step-number green" style="font-size:108px;margin-bottom:8px;">3</div>
+            <div style="font-size:18px;letter-spacing:.14em;color:rgba(248,250,252,0.6);margin-bottom:8px;">OUTPUT</div>
+            <div style="font-size:32px;font-weight:800;line-height:1.28;color:#fff;">{escape(reason)}</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;gap:18px;align-content:start;">
+        <div class="hf-metric-card hf-glass-green">
+          <div class="hf-metric-label">MEMORY ANCHOR</div>
+          <div class="hf-metric-value" style="font-size:34px;line-height:1.08;margin-top:6px;">{escape(scene.get('memory_anchor') or title)}</div>
+          <div class="hf-metric-delta" style="margin-top:14px;color:#fff;">{escape(scene.get('save_reason') or '先把配置入口统一起来。')}</div>
+        </div>
+        <div class="hf-result-card" style="border-color:rgba(255,200,61,0.28);background:rgba(255,200,61,0.08);">
+          <div class="hf-status-stamp hf-status-viral" style="display:inline-flex;margin-bottom:10px;">SAVE REASON</div>
+          <div style="font-size:28px;line-height:1.45;color:#fff;">{escape(scene.get('save_reason') or reason)}</div>
+        </div>
+      </div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _render_strategy_file_tree_skeleton(
+    sid: str,
+    role: str,
+    scene: dict[str, Any],
+    slots: dict[str, Any],
+    fallback_body: str,
+) -> str:
+    acc = _accent(role)
+    title = _contract_headline(scene, slots, "stack_title", "graph_title", "display_headline")
+    items = _slot_items(slots, "tools", fallback=_slot_items(slots, "nodes", fallback=["input", "process", "output"]))
+    if not items:
+        items = ["输入", "整理", "调用", "输出"]
+    lines = []
+    for idx, item in enumerate(items[:4]):
+        indent = 0 if idx == 0 else min(42 * idx, 126)
+        lines.append(
+            f"""
+            <div style="position:relative;margin-bottom:16px;padding-left:{36 + indent}px;">
+              <div class="hf-flow-line" style="left:{16 + indent}px;top:-8px;height:{92 if idx < len(items[:4]) - 1 else 18}px;opacity:{0.72 if idx < len(items[:4]) - 1 else 0.4};"></div>
+              <div class="hf-glass-panel" style="padding:18px 22px;border-radius:18px;min-height:92px;border-color:{acc}55;background:rgba(2,4,12,0.68);">
+                <div style="font-size:16px;letter-spacing:.14em;color:{acc};margin-bottom:8px;">TREE NODE {idx + 1}</div>
+                <div style="font-size:28px;font-weight:800;line-height:1.2;color:#fff;">{escape(item)}</div>
+              </div>
+            </div>
+            """
+        )
+    return f"""
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+      <div class="bg-grid" style="opacity:.16"></div>
+    </div>
+    <div class="hf-page-anchor" style="top:108px;bottom:auto;left:96px;right:96px;">
+      <div class="hf-glow-divider"></div>
+      <div class="hf-status-stamp hf-status-live" style="display:inline-flex;color:{acc};border-color:{acc};background:rgba(6,8,16,0.68);">FILE TREE</div>
+    </div>
+    <div style="position:absolute;top:245px;left:72px;right:72px;display:grid;grid-template-columns:1fr 0.82fr;gap:24px;align-items:start;">
+      <div style="min-height:900px;">
+        <div class="hf-result-card" style="border-color:rgba(56,225,255,0.3);background:rgba(56,225,255,0.08);margin-bottom:18px;">
+          <div class="hf-status-stamp hf-status-live" style="display:inline-flex;margin-bottom:12px;color:{acc};border-color:{acc};">TREE ROOT</div>
+          <div style="font-size:42px;font-weight:900;line-height:1.1;color:#fff;margin-bottom:10px;">{escape(title)}</div>
+          <div style="font-size:24px;line-height:1.4;color:rgba(248,250,252,0.78);">{escape(scene.get('memory_anchor') or scene.get('save_reason') or title)}</div>
+        </div>
+        {''.join(lines)}
+      </div>
+      <div style="display:grid;gap:18px;">
+        <div class="hf-metric-card hf-glass-purple">
+          <div class="hf-metric-label">VISUAL OBJECT</div>
+          <div class="hf-metric-value" style="font-size:34px;line-height:1.08;margin-top:6px;">{escape(scene.get('visual_object') or 'file_tree')}</div>
+          <div class="hf-metric-delta" style="margin-top:14px;color:#fff;">{escape(scene.get('save_reason') or '把结构保存成可回看的树。')}</div>
+        </div>
+        <div class="hf-result-card" style="border-color:rgba(255,200,61,0.28);background:rgba(255,200,61,0.08);">
+          <div class="hf-status-stamp hf-status-viral" style="display:inline-flex;margin-bottom:10px;">ANCHOR</div>
+          <div style="font-size:28px;line-height:1.45;color:#fff;">{escape(scene.get('memory_anchor') or title)}</div>
+        </div>
+      </div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _render_strategy_framework_skeleton(
+    sid: str,
+    role: str,
+    scene: dict[str, Any],
+    slots: dict[str, Any],
+    fallback_body: str,
+) -> str:
+    acc = _accent(role)
+    layout_family = str(scene.get("layout_family") or "").strip()
+    title = _contract_headline(scene, slots, "framework_title", "graph_title", "case_title", "display_headline")
+    if layout_family == "proof_matrix":
+        quadrants = _slot_items(slots, "quadrants", fallback=_slot_items(slots, "proof_items", fallback=["标准 1", "标准 2", "标准 3", "标准 4"]))
+        cards = []
+        colors = [acc, "#FF5577", "#FFC83D", "#A855F7"]
+        for idx in range(4):
+            item = quadrants[idx] if idx < len(quadrants) else f"节点 {idx + 1}"
+            cards.append(
+                f"""
+                <div class="hf-glass-panel hf-glass-cyan" style="padding:20px 20px;border-radius:18px;min-height:170px;border-color:{colors[idx]}66;background:rgba(2,4,12,0.68);">
+                  <div class="hf-step-number {'amber' if idx == 1 else 'green' if idx == 2 else 'purple' if idx == 3 else ''}" style="font-size:88px;margin-bottom:8px;color:{colors[idx]};">{idx + 1}</div>
+                  <div style="font-size:18px;letter-spacing:.14em;color:{colors[idx]};margin-bottom:10px;">{escape(_value_from_slot_item(item, 'label', f'Q{idx + 1}'))}</div>
+                  <div style="font-size:24px;line-height:1.38;color:#fff;">{escape(_value_from_slot_item(item, 'text', str(item)))}</div>
+                </div>
+                """
+            )
+        return f"""
+        <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+          <div class="bg-grid" style="opacity:.15"></div>
+        </div>
+        <div class="hf-page-anchor" style="top:106px;bottom:auto;left:96px;right:96px;">
+          <div class="hf-glow-divider"></div>
+          <div class="hf-status-stamp hf-status-live" style="display:inline-flex;color:{acc};border-color:{acc};background:rgba(6,8,16,0.68);">PROOF MATRIX</div>
+        </div>
+        <div style="position:absolute;top:245px;left:72px;right:72px;display:grid;grid-template-columns:1.12fr 0.88fr;gap:24px;align-items:start;">
+          <div style="min-height:900px;">
+            <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;position:relative;">
+              <div class="hf-flow-line" style="left:50%;top:178px;height:280px;opacity:.5;"></div>
+              {''.join(cards)}
+            </div>
+          </div>
+          <div style="display:grid;gap:18px;">
+            <div class="hf-result-card hf-page-anchor" style="text-align:left;border-color:rgba(255,200,61,0.35);background:rgba(255,200,61,0.08);padding:22px 24px;">
+              <div class="hf-status-stamp hf-status-pass" style="display:inline-flex;margin-bottom:12px;color:{acc};border-color:{acc};">CENTER CLAIM</div>
+              <div style="font-size:36px;font-weight:900;line-height:1.15;color:#fff;margin-bottom:12px;">{escape(_contract_headline(scene, slots, 'center_claim', 'memory_anchor', 'save_reason', 'insight'))}</div>
+              <div style="font-size:22px;line-height:1.45;color:rgba(248,250,252,0.78);">{escape(_contract_headline(scene, slots, 'usage_note', 'credibility_note', 'save_reason'))}</div>
+            </div>
+            <div class="hf-metric-card hf-glass-amber">
+              <div class="hf-metric-label">VISUAL OBJECT</div>
+              <div class="hf-metric-value" style="font-size:34px;line-height:1.08;margin-top:6px;">{escape(scene.get('visual_object') or 'proof_matrix')}</div>
+              <div class="hf-metric-delta" style="margin-top:14px;color:#fff;">{escape(scene.get('memory_anchor') or title)}</div>
+            </div>
+          </div>
+        </div>
+        <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+        """
+    framework_nodes = []
+    nodes = slots.get("nodes", [])
+    if not isinstance(nodes, list) or not nodes:
+        nodes = [
+            {"id": "N1", "label": _contract_headline(scene, slots, "situation", "main_claim")},
+            {"id": "N2", "label": _contract_headline(scene, slots, "action", "truth", "result")},
+            {"id": "N3", "label": _contract_headline(scene, slots, "result", "insight", "next_step")},
+            {"id": "N4", "label": _contract_headline(scene, slots, "lesson", "final_verdict", "save_reason")},
+        ]
+    for idx, node in enumerate(nodes[:4]):
+        x = 18 if idx in {0, 2} else 58
+        y = 0 if idx < 2 else 1
+        label = _value_from_slot_item(node, "label", str(node))
+        node_id = _value_from_slot_item(node, "id", f"N{idx + 1}")
+        framework_nodes.append(
+            f"""
+            <div class="hf-glass-panel" style="position:relative;padding:20px 22px;border-radius:18px;min-height:120px;border-color:{[acc, '#FF5577', '#FFC83D', '#A855F7'][idx % 4]}66;background:rgba(2,4,12,0.68);">
+              <div class="hf-step-number {'amber' if idx % 4 == 1 else 'green' if idx % 4 == 2 else 'purple' if idx % 4 == 3 else ''}" style="font-size:80px;margin-bottom:6px;color:{[acc, '#FF5577', '#FFC83D', '#A855F7'][idx % 4]};">{idx + 1}</div>
+              <div style="font-size:16px;letter-spacing:.14em;color:{[acc, '#FF5577', '#FFC83D', '#A855F7'][idx % 4]};margin-bottom:8px;">{escape(node_id)}</div>
+              <div style="font-size:24px;font-weight:800;line-height:1.34;color:#fff;">{escape(label)}</div>
+            </div>
+            """
+        )
+    return f"""
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+      <div class="bg-grid" style="opacity:.14"></div>
+    </div>
+    <div class="hf-page-anchor" style="top:106px;bottom:auto;left:96px;right:96px;">
+      <div class="hf-glow-divider"></div>
+      <div class="hf-status-stamp hf-status-live" style="display:inline-flex;color:{acc};border-color:{acc};background:rgba(6,8,16,0.68);">{'PROOF MATRIX' if layout_family == 'proof_matrix' else 'FRAMEWORK MAP'}</div>
+    </div>
+    <div style="position:absolute;top:245px;left:72px;right:72px;display:grid;grid-template-columns:1fr 0.84fr;gap:24px;align-items:start;">
+      <div style="position:relative;min-height:900px;">
+        <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:18px;position:relative;">
+          <div class="hf-flow-line" style="left:50%;top:172px;height:280px;opacity:.45;"></div>
+          {''.join(framework_nodes)}
+        </div>
+      </div>
+      <div style="display:grid;gap:18px;">
+        <div class="hf-result-card hf-page-anchor" style="text-align:left;border-color:rgba(56,225,255,0.35);background:rgba(56,225,255,0.08);padding:24px 26px;">
+          <div class="hf-status-stamp hf-status-ready" style="display:inline-flex;margin-bottom:12px;color:{acc};border-color:{acc};">INSIGHT</div>
+          <div style="font-size:36px;font-weight:900;line-height:1.15;color:#fff;margin-bottom:12px;">{escape(_contract_headline(scene, slots, 'insight', 'center_claim', 'usage_note', 'save_reason'))}</div>
+          <div style="font-size:22px;line-height:1.45;color:rgba(248,250,252,0.78);">{escape(scene.get('memory_anchor') or scene.get('visual_object') or title)}</div>
+        </div>
+        <div class="hf-metric-card hf-glass-purple">
+          <div class="hf-metric-label">STRUCTURE</div>
+          <div class="hf-metric-value" style="font-size:34px;line-height:1.08;margin-top:6px;">{escape(scene.get('visual_object') or layout_family)}</div>
+          <div class="hf-metric-delta" style="margin-top:14px;color:#fff;">{escape(scene.get('save_reason') or '把结构从列表升成骨架。')}</div>
+          <div class="hf-progress" style="margin-top:20px;--hf-target:72%;height:12px;border-radius:6px;">
+            <div class="hf-progress-fill"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
+
+
+def _render_strategy_close_skeleton(
+    sid: str,
+    role: str,
+    scene: dict[str, Any],
+    slots: dict[str, Any],
+    fallback_body: str,
+) -> str:
+    acc = _accent(role)
+    layout_family = str(scene.get("layout_family") or "").strip()
+    headline = _contract_headline(scene, slots, "final_claim", "result_title", "proof_title", "main_claim", "verdict")
+    next_step = _contract_headline(scene, slots, "next_step", "save_reason", "display_subtitle")
+    cta_text = _contract_headline(scene, slots, "cta_text", "next_step", "save_reason")
+    variant = str(scene.get("ending_variant") or layout_family or "insight_close").strip()
+    items = _slot_items(slots, "avoid_phrases", fallback=_slot_items(slots, "key_results", fallback=_slot_items(slots, "steps", fallback=["先跑一遍", "再复盘", "继续优化"])))
+    item_cards = []
+    for idx, item in enumerate(items[:4]):
+        tone = [acc, "#FF5577", "#FFC83D", "#2ED573"][idx % 4]
+        item_cards.append(
+            f"""
+            <div class="hf-glass-panel" style="padding:14px 16px;border-radius:14px;border-color:{tone}55;background:rgba(255,255,255,0.05);font-size:22px;line-height:1.4;color:#fff;">
+              {escape(item)}
+            </div>
+            """
+        )
+    label = "ACTION CLOSE" if variant == "action_close" else "CHECKLIST CLOSE" if variant == "checklist_close" else "INSIGHT CLOSE"
+    hero_sub = "下一步怎么做" if variant == "action_close" else "保存后下一次直接复用" if variant == "checklist_close" else "观点收束"
+    hero_badge = "NEXT ACTION" if variant == "action_close" else "CHECKLIST" if variant == "checklist_close" else "INSIGHT"
+    return f"""
+    <div data-motion-target="scene-bg" class="hf-bg-cinematic" style="position:absolute;inset:0;background:{_bg(role)};">
+      <div class="bg-grid" style="opacity:.15"></div>
+      <div class="bg-glow bg-glow-1" style="background:radial-gradient(circle,{acc}26 0%,transparent 70%);"></div>
+    </div>
+    <div class="hf-page-anchor" style="top:106px;bottom:auto;left:96px;right:96px;">
+      <div class="hf-glow-divider"></div>
+      <div class="hf-status-stamp hf-status-viral" style="display:inline-flex;color:{acc};border-color:{acc};background:rgba(6,8,16,0.68);">{label}</div>
+    </div>
+    <div style="position:absolute;top:250px;left:72px;right:72px;display:grid;grid-template-columns:1fr 0.8fr;gap:24px;align-items:start;">
+      <div style="display:grid;gap:18px;min-height:860px;">
+        <div class="hf-result-card hf-page-anchor" style="text-align:left;border-color:{acc}55;background:rgba(6,8,16,0.72);padding:28px 30px;">
+          <div class="hf-status-stamp hf-status-pass" style="display:inline-flex;margin-bottom:12px;color:{acc};border-color:{acc};">{hero_badge}</div>
+          <div style="font-size:58px;font-weight:900;line-height:1.08;color:#fff;max-width:760px;">{escape(headline)}</div>
+          <div style="margin-top:18px;font-size:30px;line-height:1.42;color:rgba(248,250,252,0.82);max-width:700px;">{escape(next_step)}</div>
+          <div style="margin-top:18px;font-size:24px;line-height:1.45;color:rgba(248,250,252,0.62);max-width:680px;">{escape(scene.get('save_reason') or hero_sub)}</div>
+        </div>
+        <div style="position:relative;padding-left:40px;">
+          <div class="hf-flow-line" style="left:14px;top:0;height:240px;opacity:.55;"></div>
+          <div style="display:grid;gap:14px;">
+            {''.join(item_cards)}
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;gap:18px;align-content:start;">
+        <div class="hf-metric-card hf-glass-green">
+          <div class="hf-metric-label">CTA</div>
+          <div class="hf-metric-value" style="font-size:34px;line-height:1.08;margin-top:6px;">{escape(cta_text)}</div>
+          <div class="hf-metric-delta" style="margin-top:14px;color:#fff;">{escape(scene.get('memory_anchor') or scene.get('visual_object') or '把这一页保存成行动卡。')}</div>
+        </div>
+        <div class="hf-progress" style="--hf-target:84%;height:14px;border-radius:7px;">
+          <div class="hf-progress-fill"></div>
+        </div>
+        <div class="hf-result-card" style="border-color:rgba(255,200,61,0.28);background:rgba(255,200,61,0.08);">
+          <div class="hf-status-stamp hf-status-live" style="display:inline-flex;margin-bottom:10px;color:{acc};border-color:{acc};">SAVE REASON</div>
+          <div style="font-size:28px;line-height:1.45;color:#fff;">{escape(scene.get('save_reason') or next_step)}</div>
+        </div>
+      </div>
+    </div>
+    <div class="scene-label" style="position:absolute;top:24px;left:24px;font-size:14px;color:{acc};opacity:0.7;">{sid} · {role}</div>
+"""
 
 
 def save_reason_or_default(scene: dict[str, Any]) -> str:

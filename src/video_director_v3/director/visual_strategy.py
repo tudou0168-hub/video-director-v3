@@ -307,6 +307,8 @@ def choose_layout_family(
         if video_type == "knowledge_method":
             return "hero_statement" if "为什么" in blob or "不是" in blob else "framework_map"
         if video_type == "ai_toolflow":
+            if re.search(r"\d+(?:\.\d+)?\s*(?:分钟|秒|小时|天|周|倍|%|条|个|种|层|页|步|次|万|亿)?", blob):
+                return "hero_metric"
             return "tool_pipeline" if any(token in blob for token in ("工具", "流程", "工作流", "接进")) else "config_panel"
         if video_type == "sales_offer":
             return "hero_metric" if any(token in blob for token in ("数字", "增长", "%", "收入", "成本")) else "opportunity_map"

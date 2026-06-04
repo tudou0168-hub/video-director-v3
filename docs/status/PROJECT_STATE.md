@@ -34,10 +34,10 @@
 
 完整路线图：`docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md`
 
-当前阶段：`P4.1B-R2 Debug Cleanup + Mature Visual Component Reuse Smoke（PASS）`
-当前候选片：`p4_1b_r2_debug_smoke_preview`
+当前阶段：`P4.1B-R3 Layout Skeleton Deepening / Strategy-to-Skeleton Binding（smoke-ready）`
+当前候选片：`p4_1b_r3_layout_skeleton_smoke_preview`
 下一任务：`进入 P4.2 前，确认 debug cleanup / caption differentiation / mature HUD component reuse 是否足够稳定可复用`
-当前工作：`把 visual_strategy 从 render-effective 继续收口到发布预览：默认隐藏 debug meta、去掉 scan beam、强化 caption_mode 差异，并在真实 smoke 里复用成熟 HUD 组件`
+当前工作：`把 visual_strategy 从“调试清理”推进到“布局骨架绑定”：让 layout_family 真正决定 hero_metric / tool_pipeline / framework_map / action_close 等骨架，并用 smoke contact sheet 验证结构差异是否足够可读`
 
 ## 项目目标
 

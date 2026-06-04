@@ -348,3 +348,108 @@ def test_contract_renderer_reuses_mature_hud_components():
     assert "hf-glass-panel" in proof_body
     assert "hf-status-stamp" in cta_body
     assert "hf-glass-panel" in cta_body
+
+
+def test_contract_renderer_binds_layout_skeleton_to_family():
+    hero_scene = {
+        "id": "S01",
+        "role": "hook",
+        "template_type": "hook",
+        "contract_template_id": "hook",
+        "display_headline": "10 分钟定选题",
+        "display_subtitle": "把流程先收束起来",
+        "visual_headline": "10分钟定选题",
+        "caption_mode": "emphasis_caption",
+        "layout_family": "hero_metric",
+        "visual_object": "metric_dashboard",
+        "memory_anchor": "10分钟定选题",
+        "save_reason": "先抓住一个强锚点",
+        "ending_variant": "",
+        "slots": {
+            "main_claim": "10分钟定选题",
+            "pain_point": "别让入口太散",
+            "status_badge": "QUESTION",
+            "visual_emphasis": "10分钟",
+        },
+    }
+    pipeline_scene = {
+        "id": "S02",
+        "role": "method",
+        "template_type": "method_steps",
+        "contract_template_id": "method_steps",
+        "display_headline": "输入-整理-调用-输出",
+        "display_subtitle": "让动作像管线一样流动",
+        "caption_mode": "minimal_caption",
+        "layout_family": "tool_pipeline",
+        "visual_object": "tool_pipeline",
+        "memory_anchor": "输入-整理-调用-输出",
+        "save_reason": "流程本身就能被复用",
+        "ending_variant": "",
+        "slots": {
+            "stack_title": "输入-整理-调用-输出",
+            "tools": ["输入", "整理", "调用"],
+            "tool_roles": ["INPUT", "PROCESS", "OUTPUT"],
+            "workflow_result": "把动作变成可复制的流程",
+        },
+    }
+    proof_scene = {
+        "id": "S03",
+        "role": "proof",
+        "template_type": "framework_quadrant",
+        "contract_template_id": "framework_quadrant",
+        "display_headline": "证据不是一句话，而是一张结构图",
+        "display_subtitle": "看起来就像矩阵而不是结论条",
+        "caption_mode": "standard_caption",
+        "layout_family": "framework_map",
+        "visual_object": "proof_matrix",
+        "memory_anchor": "证据结构图",
+        "save_reason": "把证据排成可以检查的骨架",
+        "ending_variant": "",
+        "slots": {
+            "framework_title": "证据结构图",
+            "center_claim": "这组证据能被复用",
+            "usage_note": "矩阵比单句更可信",
+            "quadrants": [
+                {"label": "A", "text": "来源"},
+                {"label": "B", "text": "动作"},
+                {"label": "C", "text": "结果"},
+                {"label": "D", "text": "复用"},
+            ],
+        },
+    }
+    close_scene = {
+        "id": "S04",
+        "role": "cta",
+        "template_type": "final_cta",
+        "contract_template_id": "final_cta",
+        "display_headline": "现在开始执行",
+        "display_subtitle": "把入口收束起来",
+        "caption_mode": "action_caption",
+        "layout_family": "action_close",
+        "visual_object": "checklist_board",
+        "memory_anchor": "现在开始执行",
+        "save_reason": "收束到下一步",
+        "ending_variant": "action_close",
+        "is_final_scene": True,
+        "slots": {
+            "final_claim": "现在开始执行",
+            "next_step": "先跑一遍预览",
+            "cta_text": "继续下一步",
+            "avoid_phrases": ["评论区打关键词领取资料"],
+        },
+    }
+
+    hero_body = get_scene_body("S01", "hook", hero_scene)
+    pipeline_body = get_scene_body("S02", "method", pipeline_scene)
+    proof_body = get_scene_body("S03", "proof", proof_scene)
+    close_body = get_scene_body("S04", "cta", close_scene)
+
+    assert "hf-big-number" in hero_body
+    assert "HERO METRIC" in hero_body
+    assert "hf-flow-line" in pipeline_body
+    assert "NODE 1" in pipeline_body
+    assert "PROOF MATRIX" in proof_body or "FRAMEWORK MAP" in proof_body
+    assert "hf-step-number" in proof_body
+    assert "ACTION CLOSE" in close_body
+    assert "CHECKLIST CLOSE" not in close_body
+    assert "INSIGHT CLOSE" not in close_body
