@@ -2,7 +2,7 @@
 
 ## 当前任务
 
-**P4.1B-R3 Follow-up Fix** — 当前已把 `layout_family` 作为通用规则从 `scene_pack` 透传到 `director_timeline/index.html`，现在要重新看 contact sheet 与 HTML 是否一致，确认这次不是旧模板缓存或单次样本特判。
+**P4.1B-R4 Visual Composition Polish + Collision Cleanup** — 当前只围绕一条 smoke preview 收紧通用构图规则，不进入 P4.2，不做三脚本文案验证。
 
 当前重点：
 
@@ -12,12 +12,15 @@
 
 ## 本轮改动
 
-### P4.1B-R3
+### P4.1B-R4
 
-- `scene_pack` 的 `layout_family` 已经进入 `director_timeline.json`
-- `publish_templates.py` 已对非 contract scene 与 contract scene 统一套 skeleton
-- 重新生成的 `contact-sheet.jpg` 需要用人工眼睛确认是否已经摆脱旧模板骨架
-- 先留在 R3 范围内，不进入 P4.2
+- `close` 页已禁用旧 `FINAL SCORE / COMPLETE / CHAPTER CLOSE`
+- `caption` 已整体降权到底部辅助层
+- `tool_pipeline` 已做通用防碰撞
+- `framework_map / proof_matrix` 已做中心结构图可读化
+- `hero_metric` 已升级为数字 + 单位 + 标题 + 指标卡层级
+- `scene_pack -> director_timeline -> index.html` 已透传 `display_headline / visual_headline / memory_anchor / save_reason`
+- `contact-sheet.jpg` 需要继续按 panel 逐张人工复核，不要直接宣布收口
 
 ## 验证
 
@@ -26,19 +29,19 @@
 - `PYTHONPATH=src .venv/bin/python3 -m pytest tests/test_visual_strategy_pack.py tests/test_semantic_quality_gate.py tests/test_scene_pack_contracts.py tests/test_preview_pipeline.py tests/test_tts_contract.py tests/test_render_gate.py tests/test_offer_proof_cta_contracts.py -q`
 - `PYTHONPATH=src .venv/bin/python3 -m compileall src tests`
 - `git diff --check`
-- `hyperframes_preview` on `p4_1b_r3_layout_skeleton_smoke_preview`（已重新生成）
+- `hyperframes_preview` on `p4_1b_r4_followup_visual_rules_preview`（已重新生成）
 
 ## 交付物
 
-- `docs/status/P4_1B_R3_LAYOUT_SKELETON_DEEPENING.md`
-- `docs/status/P4_1B_R3_STRATEGY_TO_SKELETON_AUDIT.md`
-- `docs/status/P4_1B_R3_FOLLOWUP_FIX.md`
+- `docs/status/P4_1B_R4_FOLLOWUP_VISUAL_RULES.md`
+- `docs/status/P4_1B_R4_FOLLOWUP_CONTACT_SHEET_REVIEW.md`
 
 ## 注意
 
 - 不把 MP4 提交到 GitHub
 - 不提交 outputs/
 - 不提交 renders/
+- 不提交 contact-sheet.jpg
 - 不把 `narrative_compressor.py` 接入主线
 
 ---

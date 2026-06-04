@@ -34,10 +34,10 @@
 
 完整路线图：`docs/plans/V3_P3_VIRAL_VIDEO_ROADMAP.md`
 
-当前阶段：`P4.1B-R3 Follow-up Fix`
-当前候选片：`p4_1b_r3_layout_skeleton_smoke_preview`
-下一任务：`继续留在 P4.1B-R3 范围内，确认新的 contact sheet 与 director_timeline/index.html 是否一致，再决定是否收口到下一轮多脚本验证`
-当前工作：`把 visual_strategy 的 layout_family 作为通用规则透传到 director_timeline/index.html，让 skeleton 不再停留在旧模板；这不是对单条 smoke 的特判，不要进入 P4.2`
+当前阶段：`P4.1B-R4 Visual Composition Polish + Collision Cleanup`
+当前候选片：`p4_1b_r4_followup_visual_rules_preview`
+下一任务：`继续留在 P4.1B-R4 范围内，根据 contact sheet 人工结果决定是否还要做一次 R4 follow-up fix；不要进入 P4.2`
+当前工作：`只修通用构图规则：close 页禁旧 FINAL SCORE / COMPLETE、caption 降权、tool_pipeline 防碰撞、framework_map 可读化、hero_metric 成熟层级；这不是对单条 smoke 的特判`
 
 ## 项目目标
 

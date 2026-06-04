@@ -702,7 +702,36 @@ def _render_strategy_close_skeleton(
     next_step = _contract_headline(scene, slots, "next_step", "save_reason", "display_subtitle")
     cta_text = _contract_headline(scene, slots, "cta_text", "next_step", "save_reason")
     variant = str(scene.get("ending_variant") or layout_family or "insight_close").strip()
-    items = _slot_items(slots, "avoid_phrases", fallback=_slot_items(slots, "key_results", fallback=_slot_items(slots, "steps", fallback=["先跑一遍", "再复盘", "继续优化"])))
+    positive_items = _slot_items(
+        slots,
+        "steps",
+        fallback=_slot_items(
+            slots,
+            "key_results",
+            fallback=_slot_items(slots, "proof_items", fallback=[]),
+        ),
+    )
+    if not positive_items:
+        positive_items = [
+            text
+            for text in (
+                cta_text,
+                next_step,
+                scene.get("save_reason"),
+                scene.get("memory_anchor"),
+            )
+            if isinstance(text, str) and text.strip()
+        ]
+    items: list[str] = []
+    seen_items: set[str] = set()
+    for item in positive_items:
+        normalized = str(item).strip()
+        if not normalized or normalized in seen_items:
+            continue
+        seen_items.add(normalized)
+        items.append(normalized)
+    if len(items) < 3:
+        items = _items_to_bullets(items, fallback=["先跑一遍", "再复盘", "继续优化"])
     item_cards = []
     for idx, item in enumerate(items[:4]):
         tone = [acc, "#FF5577", "#FFC83D", "#2ED573"][idx % 4]

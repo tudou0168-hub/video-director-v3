@@ -19,6 +19,7 @@ from video_director_v3.director.visual_strategy import (
 )
 from video_director_v3.qa.semantic_quality_gate import build_semantic_quality_report
 from video_director_v3.renderers.hyperframes.studio_native_project_builder import build_studio_native_project
+from video_director_v3.renderers.hyperframes.studio_native_project_builder import _hud_scene_config
 from video_director_v3.renderers.hyperframes.publish_templates import get_scene_body
 from video_director_v3.renderers.hyperframes.publish_templates import _split_metric_text
 
@@ -479,6 +480,65 @@ def test_contract_renderer_close_variants_do_not_use_legacy_score_language():
 def test_split_metric_text_extracts_generic_number_and_unit():
     assert _split_metric_text("10分钟") == ("10", "分钟")
     assert _split_metric_text("75.64s") == ("75.64", "s")
+
+
+def test_close_skeleton_uses_positive_actions_instead_of_policy_forbidden_phrases():
+    scene = {
+        "id": "S24",
+        "role": "cta",
+        "template_type": "final_cta",
+        "contract_template_id": "final_cta",
+        "display_headline": "输入-整理-调用-输出，你会轻一点",
+        "display_subtitle": "你会轻一点",
+        "visual_headline": "输入-整理-调用-输出，你会轻一点",
+        "caption_mode": "standard_caption",
+        "layout_family": "checklist_close",
+        "ending_variant": "checklist_close",
+        "memory_anchor": "输入-整理-调用-输出",
+        "save_reason": "下次可直接套这条工具链",
+        "slots": {
+            "final_claim": "先跑通一个最小成交流程，再继续优化",
+            "next_step": "你会轻一点",
+            "cta_text": "先跑一版最小成交流程",
+            "avoid_phrases": [
+                "评论区打关键词领取资料",
+                "私信领取资料",
+            ],
+        },
+    }
+
+    body = get_scene_body("S24", "cta", scene)
+
+    assert "评论区打关键词领取资料" not in body
+    assert "私信领取资料" not in body
+    assert "先跑一版最小成交流程" in body
+    assert "下次可直接套这条工具链" in body
+
+
+def test_hud_scene_config_preserves_scene_pack_visual_copy_fields():
+    scene = {
+        "scene_id": "S20",
+        "role": "problem",
+        "narration": "问题不是努力不够，而是动作没接上。",
+        "visual_template": "myth_bust",
+        "scene_pack_scene": {
+            "display_headline": "问题不是努力不够",
+            "display_subtitle": "先把入口统一，再开始输出",
+            "visual_headline": "问题不是努力不够",
+            "memory_anchor": "1分钟",
+            "save_reason": "下次可直接套这条工具链：1分钟",
+            "layout_family": "action_close",
+            "caption_mode": "action_caption",
+        },
+    }
+
+    config = _hud_scene_config(scene, 19, scene["narration"])
+
+    assert config["display_headline"] == "问题不是努力不够"
+    assert config["display_subtitle"] == "先把入口统一，再开始输出"
+    assert config["visual_headline"] == "问题不是努力不够"
+    assert config["memory_anchor"] == "1分钟"
+    assert config["save_reason"] == "下次可直接套这条工具链：1分钟"
 
 
 def test_legacy_scene_body_is_wrapped_by_layout_skeleton():
