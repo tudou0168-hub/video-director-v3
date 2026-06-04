@@ -139,6 +139,24 @@ def build_scene_pack(
             memory_anchor=memory_anchor,
             visual_object=visual_object,
         )
+        primary_message = _scene_pack_primary_message(
+            headline=headline,
+            video_type=video_type,
+            role=role,
+            template_type=template_type,
+            memory_anchor=memory_anchor,
+            save_reason=save_reason,
+            visual_object=visual_object,
+        )
+        support_elements = _scene_pack_support_elements(
+            layout_family=layout_family,
+            role=role,
+            template_type=template_type,
+            primary_message=primary_message,
+            memory_anchor=memory_anchor,
+            save_reason=save_reason,
+            visual_object=visual_object,
+        )
         slot_context = {
             **contract_context,
             "offer_profile": offer_profile.as_dict(),
@@ -170,14 +188,16 @@ def build_scene_pack(
             "intent": _intent_for_role(role, voiceover, template_type),
             "duration": round(float(scene.get("duration", 0) or 0), 3),
             "voiceover": voiceover,
-            "display_headline": headline,
-            "display_subtitle": subtitle,
-            "visual_headline": headline,
+            "display_headline": primary_message,
+            "display_subtitle": support_elements[0] if support_elements else subtitle,
+            "visual_headline": primary_message,
             "memory_anchor": memory_anchor,
             "save_reason": save_reason,
             "layout_family": layout_family,
             "visual_object": visual_object,
-            "headline_compact": headline,
+            "primary_message": primary_message,
+            "support_elements": support_elements,
+            "headline_compact": primary_message,
             "title_caption_similarity": round(title_caption_overlap, 3),
             "caption_mode": caption_mode,
             "visual_role": _visual_role_for_scene(role, template_type, video_type),
@@ -1000,6 +1020,130 @@ def _memory_anchor(text: str) -> str:
     if "直接" in compact:
         return "直接调用"
     return "看筛建"
+
+
+def _support_anchor_for_scene(
+    *,
+    layout_family: str,
+    role: str,
+    template_type: str,
+    primary_message: str,
+    memory_anchor: str,
+    save_reason: str,
+    visual_object: str,
+) -> str:
+    layout_family = (layout_family or "").strip()
+    role = (role or "").strip().lower()
+    template_type = (template_type or "").strip()
+    candidates = [
+        {
+            "hero_metric": "数字支撑",
+            "hero_statement": "主视觉",
+            "myth_bust": "问题拆解",
+            "tool_pipeline": "流程支撑",
+            "config_panel": "流程支撑",
+            "file_tree": "流程支撑",
+            "framework_map": "结构支撑",
+            "proof_matrix": "证据支撑",
+            "comparison_board": "对照支撑",
+            "knowledge_graph": "结构支撑",
+            "concept_layers": "概念分层",
+            "progress_tracker": "进度追踪",
+            "section_board": "结果收束",
+            "action_close": "收束动作",
+            "checklist_close": "行动清单",
+            "insight_close": "观点收束",
+            "offer_close": "成交收束",
+        }.get(layout_family, ""),
+        {
+            "hook": "开场钩子",
+            "problem": "问题定位",
+            "conflict": "冲突点",
+            "method": "方法支撑",
+            "proof": "证据支撑",
+            "offer": "价值说明",
+            "cta": "行动收束",
+            "verdict": "最终结论",
+        }.get(role, ""),
+        {
+            "hook": "开场钩子",
+            "problem_conflict": "问题定位",
+            "before_after": "前后对比",
+            "proof": "证据支撑",
+            "final_cta": "行动收束",
+            "method_steps": "方法步骤",
+            "framework_quadrant": "框架图",
+            "progress_tracker": "进度追踪",
+            "tool_stack": "工具栈",
+            "keyword_punchline": "关键词",
+            "myth_bust": "问题拆解",
+            "case_study_card": "真实案例",
+            "concept_layers": "概念分层",
+            "knowledge_graph": "知识图谱",
+            "result_summary": "结果总结",
+        }.get(template_type, ""),
+        _clip(memory_anchor or "", 12),
+        _clip(save_reason or "", 12),
+        _clip(visual_object or "", 12),
+        "结构支撑",
+    ]
+    normalized_primary = re.sub(r"\s+", "", primary_message or "")
+    for candidate in candidates:
+        text = _clip(candidate or "", 16)
+        if text and re.sub(r"\s+", "", text) != normalized_primary:
+            return text
+    return "结构支撑"
+
+
+def _scene_pack_primary_message(
+    *,
+    headline: str,
+    video_type: str,
+    role: str,
+    template_type: str,
+    memory_anchor: str,
+    save_reason: str,
+    visual_object: str,
+) -> str:
+    primary = headline_compact(headline or "", video_type=video_type, role=role, template_type=template_type)
+    if not primary:
+        for candidate in (memory_anchor, save_reason, visual_object, headline):
+            compact = headline_compact(candidate or "", video_type=video_type, role=role, template_type=template_type)
+            if compact:
+                primary = compact
+                break
+    if not primary:
+        primary = "结构支撑"
+    return _clip(primary, 16)
+
+
+def _scene_pack_support_elements(
+    *,
+    layout_family: str,
+    role: str,
+    template_type: str,
+    primary_message: str,
+    memory_anchor: str,
+    save_reason: str,
+    visual_object: str,
+) -> list[str]:
+    support = _support_anchor_for_scene(
+        layout_family=layout_family,
+        role=role,
+        template_type=template_type,
+        primary_message=primary_message,
+        memory_anchor=memory_anchor,
+        save_reason=save_reason,
+        visual_object=visual_object,
+    )
+    support = _clip(support, 12)
+    if support and re.sub(r"\s+", "", support) != re.sub(r"\s+", "", primary_message or ""):
+        return [support]
+    for candidate in (memory_anchor, save_reason, visual_object):
+        support = _clip(candidate or "", 12)
+        if support and re.sub(r"\s+", "", support) != re.sub(r"\s+", "", primary_message or ""):
+            return [support]
+    return [support or "结构支撑"]
 
 
 def _myth_truth(text: str) -> tuple[str, str]:

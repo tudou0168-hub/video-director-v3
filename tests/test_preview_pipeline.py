@@ -326,6 +326,7 @@ def test_approval_payload_fails_closed_when_required_stage_fails(tmp_path: Path)
         {"name": "semantic_transitions", "status": "PASS"},
         {"name": "caption_beats", "status": "PASS"},
         {"name": "studio_native_preview", "status": "PASS"},
+        {"name": "preview_load", "status": "PASS"},
         {"name": "review_frames", "status": "PASS"},
         {"name": "input_relevance", "status": "PASS"},
         {"name": "preview_report", "status": "PASS"},
@@ -367,6 +368,7 @@ def test_approval_payload_requires_scene_pack_stage(tmp_path: Path):
         {"name": "semantic_transitions", "status": "PASS"},
         {"name": "caption_beats", "status": "PASS"},
         {"name": "studio_native_preview", "status": "PASS"},
+        {"name": "preview_load", "status": "PASS"},
         {"name": "review_frames", "status": "PASS"},
         {"name": "input_relevance", "status": "PASS"},
         {"name": "preview_report", "status": "PASS"},
@@ -407,6 +409,7 @@ def test_approval_payload_requires_template_contracts_stage(tmp_path: Path):
         {"name": "semantic_transitions", "status": "PASS"},
         {"name": "caption_beats", "status": "PASS"},
         {"name": "studio_native_preview", "status": "PASS"},
+        {"name": "preview_load", "status": "PASS"},
         {"name": "review_frames", "status": "PASS"},
         {"name": "input_relevance", "status": "PASS"},
         {"name": "preview_report", "status": "PASS"},
@@ -446,6 +449,7 @@ def test_approval_payload_requires_semantic_quality_stage(tmp_path: Path):
         {"name": "semantic_transitions", "status": "PASS"},
         {"name": "caption_beats", "status": "PASS"},
         {"name": "studio_native_preview", "status": "PASS"},
+        {"name": "preview_load", "status": "PASS"},
         {"name": "review_frames", "status": "PASS"},
         {"name": "input_relevance", "status": "PASS"},
         {"name": "preview_report", "status": "PASS"},
@@ -724,6 +728,8 @@ def test_visual_chapter_aggregation_reduces_scene_count_and_keeps_captions(tmp_p
 
     scenes = director_timeline["scenes"]
     assert 7 <= len(scenes) <= 10
+    assert scenes[0]["layout_family"] in {"hero_metric", "hero_statement", "myth_bust"}
+    assert sum(1 for scene in scenes if scene.get("layout_family") == "framework_map") <= 2
     assert len(caption_payload["beats"]) == len(caption_beats)
     assert all(scene.get("source_scene_ids") for scene in scenes)
     assert all(scene.get("caption_ids") for scene in scenes)
@@ -800,6 +806,30 @@ def test_semantic_quality_report_can_generate_and_pass(tmp_path: Path):
     (review_dir / "contact-sheet.jpg").write_bytes(b"fake")
     timeline_data_dir = tmp_path / "hyperframes_timeline" / "data"
     timeline_data_dir.mkdir(parents=True)
+    timeline_root = tmp_path / "hyperframes_timeline"
+    (timeline_root / "assets").mkdir(parents=True, exist_ok=True)
+    (timeline_root / "meta.json").write_text(
+        json.dumps(
+            {
+                "project": tmp_path.name,
+                "project_id": tmp_path.name,
+                "entry_point": "hyperframes_timeline/index.html",
+                "entry_point_path": str(timeline_root / "index.html"),
+                "audio_duration": 12.0,
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    (timeline_root / "index.html").write_text(
+        """<!doctype html><html><body>
+        <section data-duration=\"4.0\"></section>
+        <section data-duration=\"4.0\"></section>
+        <section data-duration=\"4.0\"></section>
+        </body></html>""",
+        encoding="utf-8",
+    )
+    (timeline_root / "assets" / "voiceover.mp3").write_bytes(b"fake")
     (timeline_data_dir / "director_timeline.json").write_text(
         json.dumps(
             {
@@ -825,7 +855,8 @@ def test_semantic_quality_report_can_generate_and_pass(tmp_path: Path):
                         "template_contract_status": "PASS",
                         "template_contract_fallback_used": False,
                     },
-                ]
+                ],
+                "total_duration_sec": 12.0,
             },
             ensure_ascii=False,
         ),
@@ -886,7 +917,8 @@ def test_semantic_quality_report_fails_on_excessive_fallback(tmp_path: Path):
                     {"id": "S01", "contract_template_id": "hook", "contract_source": "slots_only", "template_contract_status": "FAIL", "template_contract_fallback_used": True},
                     {"id": "S02", "contract_template_id": "proof", "contract_source": "slots_only", "template_contract_status": "FAIL", "template_contract_fallback_used": True},
                     {"id": "S03", "contract_template_id": "final_cta", "contract_source": "slots_only", "template_contract_status": "PASS", "template_contract_fallback_used": False},
-                ]
+                ],
+                "total_duration_sec": 12.0,
             },
             ensure_ascii=False,
         ),

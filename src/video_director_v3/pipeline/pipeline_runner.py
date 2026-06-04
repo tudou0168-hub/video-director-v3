@@ -273,7 +273,26 @@ def run_preview(args: argparse.Namespace, project_dir: Path) -> int:
         _record_error(errors, "studio_native_preview", e)
         _record_stage(stages, "studio_native_preview", "FAIL", str(e))
 
-    # ── 10. Review frames capture ─────────────────────────────────────────
+    # ── 10. Preview load gate ──────────────────────────────────────────────
+    try:
+        from video_director_v3.qa.semantic_quality_gate import build_preview_load_report
+
+        preview_load = build_preview_load_report(project_dir)
+        (project_dir / "preview_load_report.json").write_text(
+            json.dumps(preview_load, ensure_ascii=False, indent=2) + "\n",
+            encoding="utf-8",
+        )
+        _record_stage(
+            stages,
+            "preview_load",
+            "PASS" if preview_load.get("status") == "PASS" else "FAIL",
+            f"preview_load status={preview_load.get('status')} duration={preview_load.get('index_duration', 0)}",
+        )
+    except Exception as e:
+        _record_error(errors, "preview_load", e)
+        _record_stage(stages, "preview_load", "FAIL", str(e))
+
+    # ── 11. Review frames capture ─────────────────────────────────────────
     review_frames_data = None
     try:
         from video_director_v3.renderers.hyperframes.studio_native_project_builder import capture_native_review_frames
@@ -298,7 +317,7 @@ def run_preview(args: argparse.Namespace, project_dir: Path) -> int:
         _record_stage(stages, "review_frames", "FAIL", str(e))
         review_frames_data = {"status": "FAIL", "error": str(e)}
 
-    # ── 11. Input relevance ───────────────────────────────────────────────
+    # ── 12. Input relevance ───────────────────────────────────────────────
     try:
         from video_director_v3.director.input_relevance_evaluator import build_input_relevance_report
         input_rel = build_input_relevance_report(project_dir)
@@ -312,7 +331,7 @@ def run_preview(args: argparse.Namespace, project_dir: Path) -> int:
         _record_error(errors, "input_relevance", e)
         _record_stage(stages, "input_relevance", "FAIL", str(e))
 
-    # ── 11.5 Semantic quality gate ───────────────────────────────────────
+    # ── 12.5 Semantic quality gate ───────────────────────────────────────
     try:
         from video_director_v3.qa.semantic_quality_gate import build_semantic_quality_report
 
@@ -336,7 +355,7 @@ def run_preview(args: argparse.Namespace, project_dir: Path) -> int:
         _record_error(errors, "semantic_quality", e)
         _record_stage(stages, "semantic_quality", "FAIL", str(e))
 
-    # ── 12. Quality report ────────────────────────────────────────────────
+    # ── 13. Quality report ────────────────────────────────────────────────
     try:
         quality = _build_quality_report(project_dir, stages, args.platform, tts_result, review_frames_data)
         (project_dir / "quality_report.json").write_text(
@@ -348,10 +367,10 @@ def run_preview(args: argparse.Namespace, project_dir: Path) -> int:
         _record_error(errors, "quality_report", e)
         _record_stage(stages, "quality_report", "FAIL", str(e))
 
-    # ── 13. Error report ──────────────────────────────────────────────────
+    # ── 14. Error report ──────────────────────────────────────────────────
     _write_error_report(project_dir, stages, errors)
 
-    # ── 14. Preview report ────────────────────────────────────────────────
+    # ── 15. Preview report ────────────────────────────────────────────────
     try:
         preview_md = _build_preview_report(project_dir, stages, args)
         (project_dir / "preview_report.md").write_text(preview_md, encoding="utf-8")
@@ -360,7 +379,7 @@ def run_preview(args: argparse.Namespace, project_dir: Path) -> int:
         _record_error(errors, "preview_report", e)
         _record_stage(stages, "preview_report", "FAIL", str(e))
 
-    # ── 14.5. Viral QA report (P3.6) ─────────────────────────────────────
+    # ── 15.5. Viral QA report (P3.6) ─────────────────────────────────────
     try:
         from video_director_v3.qa.viral_qa_evaluator import build_viral_quality_report
         vq_report = build_viral_quality_report(
@@ -382,7 +401,7 @@ def run_preview(args: argparse.Namespace, project_dir: Path) -> int:
         _record_error(errors, "viral_qa", e)
         _record_stage(stages, "viral_qa", "FAIL", str(e))
 
-    # ── 15. Approval required ─────────────────────────────────────────────
+    # ── 16. Approval required ─────────────────────────────────────────────
     try:
         approval = _build_approval_payload(
             project_id=args.project_id,
@@ -564,6 +583,7 @@ def _build_approval_payload(
         "semantic_transitions",
         "caption_beats",
         "studio_native_preview",
+        "preview_load",
         "review_frames",
         "input_relevance",
         "preview_report",

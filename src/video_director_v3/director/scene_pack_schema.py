@@ -42,12 +42,19 @@ OPTIONAL_SCENE_EXTENSIONS = {
     "cta_policy_ref",
     "cta_stage",
     "cta_strength",
+    "chapter_goal",
     "caption_mode",
     "layout_family",
+    "layout_variant",
     "visual_object",
     "visual_headline",
     "memory_anchor",
     "save_reason",
+    "primary_message",
+    "visual_hook",
+    "primary_elements",
+    "support_elements",
+    "forbidden_duplicates",
     "visual_role",
     "sequence_slot",
     "visual_strategy_reason",
@@ -55,6 +62,7 @@ OPTIONAL_SCENE_EXTENSIONS = {
     "headline_compact",
     "title_caption_similarity",
     "readability_risk",
+    "layout_box",
 }
 
 TOP_LEVEL_OPTIONAL_EXTENSIONS = {
@@ -213,6 +221,10 @@ def validate_scene(scene: dict[str, Any], index: int = 0) -> list[str]:
         value = scene.get("readability_risk")
         if not isinstance(value, (int, float)) or float(value) < 0 or float(value) > 1:
             errors.append(f"{prefix}.readability_risk must be between 0 and 1")
+    if "layout_box" in scene:
+        value = scene.get("layout_box")
+        if not isinstance(value, dict):
+            errors.append(f"{prefix}.layout_box must be an object when present")
     return errors
 
 

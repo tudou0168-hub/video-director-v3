@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import shutil
 import subprocess
+import re
 from collections import Counter
 from html import escape
 from pathlib import Path
@@ -24,6 +25,24 @@ def _scene_flag(scene: dict[str, Any], key: str) -> bool:
         return value
     if isinstance(value, str):
         return value.strip().lower() in {"1", "true", "yes", "on"}
+    return False
+
+
+def _compact_text(text: str, limit: int) -> str:
+    cleaned = re.sub(r"\s+", " ", str(text or "")).strip(" ，,。！？!?；;:：")
+    if len(cleaned) <= limit:
+        return cleaned
+    cut_points = [cleaned.rfind(ch, 0, limit) for ch in "，,。！？!?；;:："]
+    cut = max(cut_points) if cut_points else -1
+    if cut >= max(6, limit // 2):
+        return cleaned[:cut].rstrip(" ，,。！？!?；;:：")
+    return cleaned[:limit].rstrip(" ，,。！？!?；;:：")
+
+
+def _scene_has_digits(*values: Any) -> bool:
+    for value in values:
+        if re.search(r"\d", str(value or "")):
+            return True
     return False
 
 
@@ -158,6 +177,222 @@ def _chapter_content_item_count(scene: dict[str, Any]) -> int:
     return max(3, min(5, sum(1 for value in (headline, subtitle, anchor, result) if value) or 3))
 
 
+def _scene_text_candidates(scene: dict[str, Any]) -> list[str]:
+    slots = scene.get("slots", {}) if isinstance(scene.get("slots", {}), dict) else {}
+    candidates: list[str] = []
+    values = [
+        scene.get("narration"),
+        scene.get("display_headline"),
+        scene.get("visual_headline"),
+        scene.get("display_subtitle"),
+        scene.get("memory_anchor"),
+        scene.get("save_reason"),
+        scene.get("visual_object"),
+        scene.get("display_conclusion"),
+        scene.get("voiceover"),
+    ]
+    for value in values:
+        text = str(value or "").strip()
+        if text:
+            candidates.append(text)
+    for key in ("main_claim", "pain_point", "stack_title", "method_title", "workflow_result", "final_result", "framework_title", "graph_title", "center_claim", "usage_note", "proof_title", "proof_items", "final_claim", "next_step", "cta_text"):
+        value = slots.get(key)
+        if isinstance(value, list):
+            for item in value:
+                text = str(item or "").strip()
+                if text:
+                    candidates.append(text)
+        else:
+            text = str(value or "").strip()
+            if text:
+                candidates.append(text)
+    return candidates
+
+
+def _chapter_goal_for_group(chapter_family: str, representative: dict[str, Any], chapter_index: int, total: int) -> str:
+    if chapter_index == 1:
+        return "strong_hook"
+    if chapter_family == "hook":
+        return "strong_hook"
+    if chapter_family == "problem":
+        return "problem_statement"
+    if chapter_family == "tool":
+        return "process_flow"
+    if chapter_family == "proof":
+        return "proof_structure"
+    if chapter_family == "close":
+        return "closing_action" if chapter_index >= total else "closing_bridge"
+    if chapter_family == "framework":
+        return "structure_map"
+    role = str(representative.get("role") or representative.get("scene_pack_role") or "").strip().lower()
+    if role in {"cta", "offer", "verdict"}:
+        return "closing_action"
+    if role in {"proof", "evidence"}:
+        return "proof_structure"
+    if role in {"pain", "problem", "conflict"}:
+        return "problem_statement"
+    if role == "hook":
+        return "strong_hook"
+    return "bridge"
+
+
+def _chapter_support_anchor(chapter_goal: str, chapter_family: str, layout_family: str) -> str:
+    anchors = {
+        "strong_hook": "开场钩子",
+        "problem_statement": "问题定位",
+        "process_flow": "流程闭环",
+        "proof_structure": "证据支撑",
+        "closing_action": "下一步动作",
+        "closing_bridge": "收束过渡",
+        "structure_map": "结构图",
+        "bridge": "承上启下",
+    }
+    if layout_family in {"hero_metric", "hero_statement"}:
+        return "主视觉"
+    if layout_family in {"tool_pipeline", "config_panel", "file_tree", "process_ladder", "step_ladder", "tool_stack"}:
+        return "流程支撑"
+    if layout_family in {"framework_map", "proof_matrix", "comparison_board", "knowledge_graph", "concept_layers", "progress_tracker", "section_board"}:
+        return "结构支撑"
+    if layout_family in {"action_close", "checklist_close", "insight_close", "offer_close"}:
+        return "收束动作"
+    return anchors.get(chapter_goal, chapter_family or "结构支撑")
+
+
+def _choose_layout_family_for_chapter(
+    *,
+    chapter_goal: str,
+    chapter_family: str,
+    representative: dict[str, Any],
+    chapter_index: int,
+    total_chapters: int,
+    used_counts: Counter[str],
+    prev_layout_family: str | None,
+) -> str:
+    layout_family = str(representative.get("layout_family") or "").strip()
+    digits_present = _scene_has_digits(
+        representative.get("display_headline"),
+        representative.get("visual_headline"),
+        representative.get("memory_anchor"),
+        representative.get("save_reason"),
+        representative.get("visual_object"),
+    )
+    if chapter_index == 1:
+        if digits_present:
+            preferred = ["hero_metric", "hero_statement", "myth_bust"]
+        else:
+            preferred = ["hero_statement", "myth_bust", "hero_metric"]
+    elif chapter_goal == "strong_hook":
+        preferred = ["hero_statement", "myth_bust", "hero_metric"]
+    elif chapter_goal == "problem_statement":
+        preferred = ["myth_bust", "broken_chain", "pain_card_stack", "decision_fork"]
+    elif chapter_goal == "process_flow":
+        preferred = ["tool_pipeline", "config_panel", "tool_stack", "process_ladder"]
+    elif chapter_goal == "proof_structure":
+        preferred = ["proof_matrix", "comparison_board", "knowledge_graph", "decision_fork", "section_board"]
+    elif chapter_goal in {"closing_action", "closing_bridge"}:
+        preferred = ["action_close", "checklist_close", "insight_close", "offer_close"]
+    elif chapter_goal == "structure_map":
+        preferred = ["framework_map", "proof_matrix", "comparison_board", "decision_fork", "section_board"]
+    else:
+        preferred = ["config_panel", "comparison_board", "section_board", "framework_map"]
+    if layout_family in preferred:
+        preferred = [layout_family] + [item for item in preferred if item != layout_family]
+    if prev_layout_family:
+        preferred = [item for item in preferred if item != prev_layout_family] + [prev_layout_family]
+    max_allowed = 2
+    for candidate in preferred:
+        if candidate and used_counts.get(candidate, 0) < max_allowed:
+            return candidate
+    for candidate in preferred:
+        if candidate:
+            return candidate
+    return layout_family or "hero_statement"
+
+
+def _build_layout_box(
+    *,
+    layout_family: str,
+    chapter_goal: str,
+    chapter_index: int,
+    total_chapters: int,
+    primary_message: str,
+    support_elements: list[str],
+) -> dict[str, Any]:
+    chapter_band = {
+        "hero_metric": (230, 346),
+        "hero_statement": (246, 332),
+        "myth_bust": (258, 336),
+        "tool_pipeline": (296, 262),
+        "config_panel": (286, 278),
+        "tool_stack": (292, 270),
+        "process_ladder": (286, 276),
+        "proof_matrix": (294, 286),
+        "comparison_board": (292, 284),
+        "framework_map": (296, 286),
+        "decision_fork": (290, 280),
+        "section_board": (292, 280),
+        "action_close": (300, 270),
+        "checklist_close": (296, 274),
+        "insight_close": (296, 274),
+        "offer_close": (300, 270),
+    }
+    main_top, main_bottom = chapter_band.get(layout_family, (286, 284))
+    if chapter_index == 1:
+        main_top = min(main_top, 250)
+        main_bottom = max(main_bottom, 320)
+    if chapter_goal in {"closing_action", "closing_bridge"}:
+        main_top = max(main_top, 294)
+        main_bottom = max(main_bottom, 278)
+    support_top = min(1080, max(180, main_top + 112))
+    support_bottom = min(1540, max(1240, 1480 - max(0, len(support_elements) - 1) * 34))
+    center_y = int((main_top + (1920 - main_bottom)) / 2)
+    caption_top = 1580
+    header_bottom = 170
+    support_cards: list[dict[str, int]] = []
+    support_x = 690 if layout_family not in {"hero_metric", "hero_statement"} else 712
+    support_w = 310 if layout_family not in {"hero_metric", "hero_statement"} else 286
+    support_h = 160 if chapter_goal not in {"closing_action", "closing_bridge"} else 148
+    for idx, _ in enumerate(support_elements[:2]):
+        support_cards.append({
+            "x": support_x,
+            "y": int(support_top + idx * (support_h + 18)),
+            "w": support_w,
+            "h": support_h,
+        })
+    return {
+        "main_top": int(main_top),
+        "main_bottom": int(main_bottom),
+        "support_top": int(support_top),
+        "support_bottom": int(support_bottom),
+        "center_y": center_y,
+        "caption_top": caption_top,
+        "header_bottom": header_bottom,
+        "support_cards": support_cards,
+    }
+
+
+def _compress_elements(primary_message: str, support_candidates: list[str]) -> tuple[list[str], list[str]]:
+    primary = _compact_text(primary_message, 16)
+    support: list[str] = []
+    duplicates: list[str] = []
+    normalized_primary = re.sub(r"\s+", "", primary)
+    for candidate in support_candidates:
+        text = _compact_text(candidate, 24)
+        if not text:
+            continue
+        normalized = re.sub(r"\s+", "", text)
+        if not normalized or normalized == normalized_primary or normalized in normalized_primary or normalized_primary in normalized:
+            duplicates.append(text)
+            continue
+        if any(re.sub(r"\s+", "", existing) == normalized for existing in support):
+            duplicates.append(text)
+            continue
+        support.append(text)
+        if len(support) >= 2:
+            break
+    return support, duplicates
+
+
 def _pick_representative_scene(group: list[dict[str, Any]]) -> dict[str, Any]:
     if len(group) == 1:
         return group[0]
@@ -285,6 +520,8 @@ def _build_visual_chapters(
         caption_items.append({**caption, "start_time": start, "end_time": end})
 
     chapters: list[dict[str, Any]] = []
+    used_layout_counts: Counter[str] = Counter()
+    prev_layout_family: str | None = None
     for chapter_index, (start_idx, end_idx) in enumerate(ranges, start=1):
         group = storyboard_scenes[start_idx:end_idx]
         group_family_counts = Counter(_visual_scene_family(scene) for scene in group)
@@ -292,6 +529,10 @@ def _build_visual_chapters(
         representative = _pick_representative_scene(group)
         representative_id = str(representative.get("scene_id") or representative.get("id") or f"S{chapter_index:02d}")
         rep_pack = scene_pack_by_id.get(representative_id, {})
+        scene_pack_compiled = bool(rep_pack)
+        representative_for_layout = dict(representative)
+        if rep_pack:
+            representative_for_layout.update(rep_pack)
         chapter_start = float(group[0].get("start", group[0].get("start_time", 0)) or 0)
         chapter_end = float(group[-1].get("start", group[-1].get("start_time", 0)) or 0) + float(group[-1].get("duration", 0) or 0)
         chapter_duration = round(max(chapter_end - chapter_start, 0.0), 3)
@@ -305,6 +546,16 @@ def _build_visual_chapters(
             if chapter_start <= float(item.get("start_time", 0) or 0) < chapter_end
             and str(item.get("caption_id") or "").strip()
         ]
+        chapter_goal = _chapter_goal_for_group(chapter_family, representative, chapter_index, len(ranges))
+        layout_family = _choose_layout_family_for_chapter(
+            chapter_goal=chapter_goal,
+            chapter_family=chapter_family,
+            representative=representative_for_layout,
+            chapter_index=chapter_index,
+            total_chapters=len(ranges),
+            used_counts=used_layout_counts,
+            prev_layout_family=prev_layout_family,
+        )
         if chapter_family == "hook":
             role = "hook"
         elif chapter_family == "problem":
@@ -323,11 +574,105 @@ def _build_visual_chapters(
                 role = "method"
             elif role == "pain":
                 role = "problem"
-        layout_family = str(representative.get("layout_family") or "hero_statement").strip() or "hero_statement"
-        content_item_count = _chapter_content_item_count(representative)
+        text_candidates = _scene_text_candidates(representative) + _scene_text_candidates(rep_pack or {})
+        if chapter_index == 1:
+            pref = [text for text in text_candidates if _scene_has_digits(text)] or text_candidates
+        else:
+            pref = text_candidates
+        primary_message = _compact_text(
+            pref[0] if pref else (chapter_family if chapter_family != "other" else representative.get("visual_object") or representative.get("memory_anchor") or "主视觉"),
+            16,
+        )
+        if chapter_index == 1 and layout_family not in {"hero_metric", "hero_statement", "myth_bust"}:
+            layout_family = "hero_metric" if _scene_has_digits(primary_message) else "hero_statement"
+        support_source = [text for text in text_candidates[1:6] if text]
+        support_elements, duplicate_elements = _compress_elements(primary_message, support_source)
+        if not support_elements:
+            fallback_candidates = [
+                representative.get("save_reason"),
+                representative.get("memory_anchor"),
+                representative.get("display_subtitle"),
+                representative.get("display_conclusion"),
+                chapter_goal.replace("_", " "),
+                chapter_family,
+                "先把这一层跑通",
+            ]
+            normalized_primary = re.sub(r"\s+", "", primary_message)
+            for candidate in fallback_candidates:
+                fallback_text = _compact_text(candidate or "", 24)
+                if fallback_text and re.sub(r"\s+", "", fallback_text) != normalized_primary:
+                    support_elements = [fallback_text]
+                    break
+            if not support_elements:
+                support_elements = [_chapter_support_anchor(chapter_goal, chapter_family, layout_family)]
+        visual_hook = _compact_text(
+            support_elements[0] if support_elements else representative.get("display_subtitle") or representative.get("save_reason") or primary_message,
+            18,
+        )
+        visual_object = _compact_text(representative.get("visual_object") or representative.get("layout_variant") or layout_family, 16)
+        memory_anchor = _compact_text(
+            representative.get("memory_anchor") or primary_message or representative.get("display_subtitle") or visual_object,
+            24,
+        )
+        save_reason_source = representative.get("save_reason") or representative.get("display_conclusion")
+        if not save_reason_source and support_elements:
+            save_reason_source = support_elements[0]
+        if not save_reason_source:
+            save_reason_source = memory_anchor
+        save_reason = _compact_text(save_reason_source, 24)
+        primary_elements = [primary_message] + support_elements[:1]
+        content_item_count = min(6, max(1, len(primary_elements) + len(support_elements)))
         content_item_limit = _chapter_content_item_limit(layout_family)
+        layout_box = _build_layout_box(
+            layout_family=layout_family,
+            chapter_goal=chapter_goal,
+            chapter_index=chapter_index,
+            total_chapters=len(ranges),
+            primary_message=primary_message,
+            support_elements=support_elements,
+        )
+        layout_variant = "compact" if chapter_goal == "closing_action" else "balanced" if layout_family in {"hero_metric", "hero_statement", "tool_pipeline"} else "wide"
+        chapter_pack = dict(rep_pack or representative)
+        chapter_pack.update({
+            "id": f"V{chapter_index:02d}",
+            "scene_id": f"V{chapter_index:02d}",
+            "role": role,
+            "scene_pack_role": role,
+            "template_type": str((rep_pack or representative).get("template_type") or "method_steps"),
+            "layout_family": layout_family,
+            "layout_variant": layout_variant,
+            "chapter_goal": chapter_goal,
+            "primary_message": primary_message,
+            "primary_elements": primary_elements,
+            "support_elements": support_elements,
+            "visual_hook": visual_hook,
+            "layout_box": layout_box,
+            "forbidden_duplicates": duplicate_elements[:2],
+            "visual_object": visual_object,
+            "memory_anchor": memory_anchor,
+            "save_reason": save_reason,
+            "display_headline": primary_message,
+            "display_subtitle": support_elements[0] if support_elements else save_reason,
+            "visual_headline": primary_message,
+            "display_conclusion": save_reason,
+            "source_scene_ids": source_scene_ids,
+            "caption_ids": caption_ids,
+            "source_scene_count": len(group),
+            "source_scene_range": [start_idx + 1, end_idx],
+            "scene_pack_compiled": scene_pack_compiled,
+            "start": round(chapter_start, 3),
+            "start_time": round(chapter_start, 3),
+            "duration": chapter_duration,
+            "end": round(chapter_end, 3),
+            "end_time": round(chapter_end, 3),
+            "content_item_count": content_item_count,
+            "content_item_limit": content_item_limit,
+            "layout_density_overflow": max(0, content_item_count - content_item_limit),
+        })
+        used_layout_counts[layout_family] += 1
+        prev_layout_family = layout_family
         chapters.append({
-            **representative,
+            **chapter_pack,
             "scene_id": f"V{chapter_index:02d}",
             "id": f"V{chapter_index:02d}",
             "source_scene_ids": source_scene_ids,
@@ -342,7 +687,8 @@ def _build_visual_chapters(
             "duration": chapter_duration,
             "end": round(chapter_end, 3),
             "end_time": round(chapter_end, 3),
-            "scene_pack_scene": rep_pack or representative,
+            "scene_pack_compiled": scene_pack_compiled,
+            **({"scene_pack_scene": chapter_pack} if scene_pack_compiled else {}),
             "content_item_count": content_item_count,
             "content_item_limit": content_item_limit,
             "layout_density_overflow": max(0, content_item_count - content_item_limit),
@@ -508,9 +854,7 @@ def build_studio_native_project(
             new_prev_t, _ = _anti_repeat_rotate_scene(
                 scene, len(director_scenes), prev_template, prev_variant
             )
-        contract_scene = scene.get("scene_pack_scene")
-        if not isinstance(contract_scene, dict):
-            contract_scene = scene_pack_by_id.get(scene.get("source_scene_ids", [""])[0], {})
+        contract_scene = scene.get("scene_pack_scene") if scene.get("scene_pack_compiled") else None
         if contract_scene and contract_scene.get("template_type") in _SUPPORTED_CONTRACT_TEMPLATES:
             hud_scene = _contract_hud_scene_config(
                 scene=scene,
@@ -526,16 +870,12 @@ def build_studio_native_project(
         # narration keyword routing already picked a different CTA variant
         # (button_banner, scorecard, end_score_goodbye). Guarded by the
         # same design_variance threshold as Layer 2.
-        if (
-            use_layer2
-            and role == "cta"
-            and len(director_scenes) == len(visual_chapters) - 1
-            and hud_scene.get("layout_variant") == "checklist_steps"
-        ):
-            hud_scene["layout_variant"] = "end_score_goodbye"
-            hud_scene.setdefault("score", "100")
-            hud_scene.setdefault("score_label", "本章掌握度")
-            hud_scene.setdefault("next_teaser", "下期讲：把检索真正接进 AI 流程")
+        if use_layer2 and role == "cta" and len(director_scenes) == len(visual_chapters) - 1:
+            if hud_scene.get("layout_variant") not in {"button_banner", "scorecard", "end_score_goodbye"}:
+                hud_scene["layout_variant"] = "end_score_goodbye"
+                hud_scene.setdefault("score", "100")
+                hud_scene.setdefault("score_label", "本章掌握度")
+                hud_scene.setdefault("next_teaser", "下期讲：把检索真正接进 AI 流程")
         prev_template = hud_scene.get("visual_template", "")
         prev_variant = hud_scene.get("layout_variant", "")
         layout_family = str(hud_scene.get("layout_family") or "hero_statement").strip() or "hero_statement"
@@ -1034,7 +1374,11 @@ html,body{{margin:0;width:1080px;height:1920px;overflow:hidden;background:var(--
     _write_json(data_dir / "visual_beats.json", visual_beats)
     _write_json(data_dir / "transition_map.json", transitions)
     _write_json(timeline_dir / "meta.json", {
-        "phase": "V3-P3.1-Audio-First", "project": project_dir.name,
+        "phase": "V3-P3.1-Audio-First",
+        "project": project_dir.name,
+        "project_id": project_dir.name,
+        "entry_point": "hyperframes_timeline/index.html",
+        "entry_point_path": str(timeline_dir / "index.html"),
         "canvas": {"width": 1080, "height": 1920},
         "audio_duration": duration, "scene_count": len(director_scenes), "source_scene_count": len(source_scenes), "caption_count": len(captions),
     })
@@ -1415,6 +1759,20 @@ def _scene_strategy_style(scene: dict[str, Any]) -> str:
         **caption_presets.get(caption_mode, caption_presets["standard_caption"]),
         "--vf-ending-variant": ending_variant,
     }
+    layout_box = scene.get("layout_box")
+    if isinstance(layout_box, dict):
+        if "main_top" in layout_box:
+            style["--vf-main-top"] = f"{int(layout_box['main_top'])}px"
+        if "main_bottom" in layout_box:
+            style["--vf-main-bottom"] = f"{int(layout_box['main_bottom'])}px"
+        if "support_top" in layout_box:
+            style["--vf-support-top"] = f"{int(layout_box['support_top'])}px"
+        if "support_bottom" in layout_box:
+            style["--vf-support-bottom"] = f"{int(layout_box['support_bottom'])}px"
+        if "caption_top" in layout_box:
+            style["--vf-caption-top"] = f"{int(layout_box['caption_top'])}px"
+        if "header_bottom" in layout_box:
+            style["--vf-safe-top"] = f"{int(layout_box['header_bottom'])}px"
     return "; ".join(f"{key}:{value}" for key, value in style.items())
 
 
@@ -1489,10 +1847,10 @@ def _hud_scene_config(scene: dict[str, Any], index: int, narration: str) -> dict
     elif template == "tool_chain_three_cols":
         config.setdefault("headline", narration[:30] or "输入、链接、检索，形成最小工作流")
         config.setdefault("three_cols", _three_cols_from_narration(narration))
-        config.setdefault("layout_variant", _tool_layout_variant_from_narration(narration))
+        config["layout_variant"] = _tool_layout_variant_from_narration(narration)
     elif template == "before_after_compare":
         config.setdefault("headline", narration[:30] or "找素材，从翻遍 App 到 30 秒拿到素材包")
-        config.setdefault("layout_variant", _compare_layout_variant_from_narration(narration))
+        config["layout_variant"] = _compare_layout_variant_from_narration(narration)
         left_items, right_items = _compare_items_from_narration(narration)
         config.setdefault("left_items", left_items)
         config.setdefault("right_items", right_items)
@@ -1505,7 +1863,7 @@ def _hud_scene_config(scene: dict[str, Any], index: int, narration: str) -> dict
     elif template == "checklist_cta":
         config.setdefault("headline", narration[:30] or "先收藏，再跑通最小闭环")
         layout_variant = _cta_layout_variant_from_narration(narration)
-        config.setdefault("layout_variant", layout_variant)
+        config["layout_variant"] = layout_variant
         checklist, final_message = _checklist_from_narration(narration)
         config.setdefault("checklist", checklist)
         config.setdefault("final_message", final_message)

@@ -38,8 +38,32 @@ def _write_preview_artifacts(tmp_path: Path, scenes: list[dict], *, contact_shee
     if contact_sheet:
         (review_dir / "contact-sheet.jpg").write_bytes(b"fake")
 
-    timeline_dir = tmp_path / "hyperframes_timeline" / "data"
+    timeline_root = tmp_path / "hyperframes_timeline"
+    timeline_dir = timeline_root / "data"
     timeline_dir.mkdir(parents=True, exist_ok=True)
+    (timeline_root / "assets").mkdir(parents=True, exist_ok=True)
+    (timeline_root / "meta.json").write_text(
+        json.dumps(
+            {
+                "project": tmp_path.name,
+                "project_id": tmp_path.name,
+                "entry_point": "hyperframes_timeline/index.html",
+                "entry_point_path": str(timeline_root / "index.html"),
+                "audio_duration": 12.0,
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    (timeline_root / "index.html").write_text(
+        """<!doctype html><html><body>
+        <section data-duration=\"4.0\"></section>
+        <section data-duration=\"4.0\"></section>
+        <section data-duration=\"4.0\"></section>
+        </body></html>""",
+        encoding="utf-8",
+    )
+    (timeline_root / "assets" / "voiceover.mp3").write_bytes(b"fake")
     director_scenes = []
     for scene in scenes:
         director_scenes.append(
@@ -52,7 +76,13 @@ def _write_preview_artifacts(tmp_path: Path, scenes: list[dict], *, contact_shee
             }
         )
     (timeline_dir / "director_timeline.json").write_text(
-        json.dumps({"scenes": director_scenes}, ensure_ascii=False),
+        json.dumps(
+            {
+                "scenes": director_scenes,
+                "total_duration_sec": sum(float(scene.get("duration", 4.0) or 4.0) for scene in scenes),
+            },
+            ensure_ascii=False,
+        ),
         encoding="utf-8",
     )
 
@@ -394,6 +424,111 @@ def test_weak_hook_detection(tmp_path: Path):
     assert report["hook_strength"]["hook_strength_risk"] == "high"
     assert report["hook_strength"]["hook_scene_id"] == "S01"
     assert any("weak_hook" in item["structural_risks"] for item in report["worst_3_scenes"])
+
+
+def test_preview_load_report_passes_with_complete_artifacts(tmp_path: Path):
+    from video_director_v3.qa.semantic_quality_gate import build_preview_load_report
+
+    scenes = [
+        _scene("S01", "hook", "hook", {
+            "main_claim": "先跑通",
+            "pain_point": "别再囤工具",
+            "status_badge": "QUESTION",
+            "visual_emphasis": "闭环",
+        }),
+        _scene("S02", "proof", "proof", {
+            "proof_title": "结果更稳",
+            "proof_items": ["资料可复用", "过程可验证"],
+            "metric_or_evidence": "真实案例",
+            "credibility_note": "已经跑通",
+        }),
+        _scene("S03", "cta", "final_cta", {
+            "final_claim": "现在开始",
+            "next_step": "先完成最小闭环",
+            "cta_text": "先跑一遍",
+            "avoid_phrases": ["空谈"],
+        }),
+    ]
+    _write_preview_artifacts(tmp_path, scenes)
+    report = build_preview_load_report(tmp_path)
+    assert report["status"] == "PASS"
+    assert report["preview_load_status"] == "PASS"
+    assert report["index_duration"] > 0
+    assert report["timeline_scene_count"] == 3
+
+
+def test_preview_load_report_fails_on_zero_duration(tmp_path: Path):
+    from video_director_v3.qa.semantic_quality_gate import build_preview_load_report
+
+    timeline_root = tmp_path / "hyperframes_timeline"
+    timeline_data_dir = timeline_root / "data"
+    timeline_data_dir.mkdir(parents=True, exist_ok=True)
+    (timeline_root / "assets").mkdir(parents=True, exist_ok=True)
+    (timeline_root / "meta.json").write_text(
+        json.dumps(
+            {
+                "project": tmp_path.name,
+                "project_id": tmp_path.name,
+                "entry_point": "hyperframes_timeline/index.html",
+                "entry_point_path": str(timeline_root / "index.html"),
+            },
+            ensure_ascii=False,
+        ),
+        encoding="utf-8",
+    )
+    (timeline_root / "index.html").write_text(
+        "<html><body><section data-duration=\"0\"></section></body></html>",
+        encoding="utf-8",
+    )
+    (timeline_root / "assets" / "voiceover.mp3").write_bytes(b"fake")
+    (timeline_data_dir / "director_timeline.json").write_text(
+        json.dumps({"scenes": [{"id": "S01"}], "total_duration_sec": 4.0}, ensure_ascii=False),
+        encoding="utf-8",
+    )
+    report = build_preview_load_report(tmp_path)
+    assert report["status"] == "FAIL"
+    assert "index duration is zero" in report["hard_fail_reasons"]
+
+
+def test_layout_fit_gate_detects_off_canvas_and_caption_overlap(tmp_path: Path):
+    scenes = [
+        _scene("S01", "hook", "hook", {
+            "main_claim": "先跑通",
+            "pain_point": "别再囤工具",
+            "status_badge": "QUESTION",
+            "visual_emphasis": "闭环",
+        }),
+        _scene("S02", "proof", "proof", {
+            "proof_title": "结果更稳",
+            "proof_items": ["资料可复用", "过程可验证"],
+            "metric_or_evidence": "真实案例",
+            "credibility_note": "已经跑通",
+        }),
+        _scene("S03", "cta", "final_cta", {
+            "final_claim": "现在开始",
+            "next_step": "先完成最小闭环",
+            "cta_text": "先跑一遍",
+            "avoid_phrases": ["空谈"],
+        }),
+    ]
+    for scene in scenes:
+        scene["layout_box"] = {
+            "main_top": 120,
+            "main_bottom": 120,
+            "support_top": 70,
+            "support_bottom": 1600,
+            "center_y": 1400,
+            "caption_top": 1200,
+            "header_bottom": 260,
+            "support_cards": [{"x": -20, "y": 80, "w": 320, "h": 180}],
+        }
+
+    report = _report(tmp_path, scenes)
+    assert report["layout_fit"]["layout_fit_status"] == "FAIL"
+    assert any(
+        "layout fit gate failed" == reason or "off-canvas support card detected" in reason
+        for reason in report["hard_fail_reasons"]
+    )
 
 
 def test_missing_proof_is_hard_fail(tmp_path: Path):

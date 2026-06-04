@@ -129,6 +129,8 @@ def build_semantic_quality_report(
     proof_asset_info = _analyze_proof_asset(scene_pack.get("scenes", []))
     cta_policy_info = _analyze_cta_policy(scene_pack.get("scenes", []))
     layout_density_info = _analyze_layout_density(merged_scenes)
+    preview_load_info = build_preview_load_report(project_dir)
+    layout_fit_info = _analyze_layout_fit(merged_scenes)
     visual_strategy_info = _analyze_visual_strategy_pack(scene_pack, merged_scenes, repetition_info)
     chinese_dominance_score = round(_chinese_dominance_score(merged_scenes), 3)
     layout_families = [str(scene.get("layout_family") or "").strip() for scene in merged_scenes]
@@ -224,6 +226,12 @@ def build_semantic_quality_report(
         hard_fail_reasons.append("layout_density_overflow_count > 0")
     if layout_density_info["repeated_layout_family_run_count"] > 0:
         hard_fail_reasons.append("layout_family repeated > 2 with no variant")
+    if preview_load_info["status"] != "PASS":
+        hard_fail_reasons.append("preview load gate failed")
+    hard_fail_reasons.extend(preview_load_info["hard_fail_reasons"])
+    if layout_fit_info["layout_fit_status"] != "PASS":
+        hard_fail_reasons.append("layout fit gate failed")
+    hard_fail_reasons.extend(layout_fit_info["hard_fail_reasons"])
     if visual_strategy_enabled and visual_strategy_info["same_video_risk"] == "high":
         if visual_strategy_info["differentiation_score"] < 25 or unique_layout_families <= 3:
             hard_fail_reasons.append("same_video_risk = high")
@@ -256,6 +264,10 @@ def build_semantic_quality_report(
         differentiation_score=visual_strategy_scoring["differentiation_score"],
         layout_density_risk=layout_density_info["layout_density_risk"],
     )
+    if preview_load_info["status"] != "PASS":
+        semantic_quality_score = round(max(0.0, semantic_quality_score - 12.0), 2)
+    if layout_fit_info["layout_fit_status"] != "PASS":
+        semantic_quality_score = round(max(0.0, semantic_quality_score - 8.0), 2)
 
     gate_status = "FAIL" if hard_fail_reasons else "PASS"
     score_band = "FAIL" if hard_fail_reasons else _score_band(semantic_quality_score)
@@ -274,6 +286,8 @@ def build_semantic_quality_report(
 
     preview_ready = (
         stage_status.get("studio_native_preview") == "PASS"
+        and preview_load_info["status"] == "PASS"
+        and layout_fit_info["layout_fit_status"] == "PASS"
         and (review_frames_data or {}).get("status") == "PASS"
         and contact_sheet_exists
         and not hard_fail_reasons
@@ -305,6 +319,10 @@ def build_semantic_quality_report(
         "proof_asset": proof_asset_info,
         "cta_policy": cta_policy_info,
         "layout_density": layout_density_info,
+        "preview_load": preview_load_info,
+        "preview_load_status": preview_load_info["status"],
+        "layout_fit": layout_fit_info,
+        "layout_fit_status": layout_fit_info["layout_fit_status"],
         "visual_strategy": visual_strategy_info,
         "worst_3_scenes": worst_3_scenes,
         "hard_fail_reasons": hard_fail_reasons,
@@ -325,6 +343,84 @@ def _merge_scene_views(
         combined.update(scene)
         merged.append(combined)
     return merged
+
+
+def build_preview_load_report(project_dir: Path) -> dict[str, Any]:
+    timeline_dir = project_dir / "hyperframes_timeline"
+    meta_path = timeline_dir / "meta.json"
+    index_path = timeline_dir / "index.html"
+    director_timeline_path = timeline_dir / "data" / "director_timeline.json"
+    audio_path = timeline_dir / "assets" / "voiceover.mp3"
+
+    meta: dict[str, Any] = {}
+    director_timeline: dict[str, Any] = {}
+    meta_exists = meta_path.exists()
+    index_exists = index_path.exists()
+    director_timeline_exists = director_timeline_path.exists()
+    audio_exists = audio_path.exists()
+    meta_entry_point = ""
+    index_duration = 0.0
+
+    if meta_exists:
+        try:
+            meta = json.loads(meta_path.read_text(encoding="utf-8"))
+        except Exception:
+            meta = {}
+    if index_exists:
+        try:
+            html = index_path.read_text(encoding="utf-8")
+        except Exception:
+            html = ""
+        duration_matches = [float(match) for match in re.findall(r'data-duration="([0-9.]+)"', html)]
+        if duration_matches:
+            index_duration = max(duration_matches)
+    if director_timeline_exists:
+        try:
+            director_timeline = json.loads(director_timeline_path.read_text(encoding="utf-8"))
+        except Exception:
+            director_timeline = {}
+
+    meta_project = str(meta.get("project") or meta.get("project_id") or "").strip()
+    meta_entry_point = str(meta.get("entry_point") or meta.get("entry_point_path") or "").strip()
+    timeline_scene_count = len(director_timeline.get("scenes", [])) if isinstance(director_timeline.get("scenes"), list) else 0
+    timeline_duration = float(director_timeline.get("total_duration_sec") or 0)
+
+    hard_fail_reasons: list[str] = []
+    if not meta_exists:
+        hard_fail_reasons.append("meta.json missing")
+    if not index_exists:
+        hard_fail_reasons.append("index.html missing")
+    if not director_timeline_exists:
+        hard_fail_reasons.append("director_timeline.json missing")
+    if not audio_exists:
+        hard_fail_reasons.append("voiceover audio missing")
+    if meta_project and meta_project != project_dir.name:
+        hard_fail_reasons.append("meta project id mismatch")
+    if meta_entry_point not in {"hyperframes_timeline/index.html", str(index_path.relative_to(project_dir))}:
+        hard_fail_reasons.append("meta entry point mismatch")
+    if timeline_scene_count <= 0:
+        hard_fail_reasons.append("director timeline empty")
+    if index_duration <= 0:
+        hard_fail_reasons.append("index duration is zero")
+    if timeline_duration <= 0:
+        hard_fail_reasons.append("timeline duration is zero")
+
+    status = "PASS" if not hard_fail_reasons else "FAIL"
+    return {
+        "status": status,
+        "preview_load_status": status,
+        "project_id": project_dir.name,
+        "meta_exists": meta_exists,
+        "index_exists": index_exists,
+        "director_timeline_exists": director_timeline_exists,
+        "audio_exists": audio_exists,
+        "meta_project_id": meta_project,
+        "meta_entry_point": meta_entry_point,
+        "index_duration": round(index_duration, 3),
+        "timeline_scene_count": timeline_scene_count,
+        "timeline_duration": round(timeline_duration, 3),
+        "hard_fail_reasons": hard_fail_reasons,
+    }
 
 
 def _analyze_cta_distribution(scenes: list[dict[str, Any]]) -> dict[str, Any]:
@@ -739,6 +835,113 @@ def _analyze_layout_density(scenes: list[dict[str, Any]]) -> dict[str, Any]:
         "repeated_layout_family_run_ids": repeated_layout_family_run_ids,
         "max_layout_family_run": max_run,
         "layout_density_risk": risk,
+    }
+
+
+def _default_layout_box(layout_family: str) -> dict[str, Any]:
+    presets = {
+        "hero_metric": {"main_top": 230, "main_bottom": 346, "support_top": 380, "support_bottom": 1480, "center_y": 840, "caption_top": 1580, "header_bottom": 170},
+        "hero_statement": {"main_top": 246, "main_bottom": 332, "support_top": 392, "support_bottom": 1480, "center_y": 850, "caption_top": 1580, "header_bottom": 170},
+        "myth_bust": {"main_top": 258, "main_bottom": 336, "support_top": 404, "support_bottom": 1500, "center_y": 848, "caption_top": 1580, "header_bottom": 170},
+        "tool_pipeline": {"main_top": 296, "main_bottom": 262, "support_top": 408, "support_bottom": 1490, "center_y": 866, "caption_top": 1580, "header_bottom": 168},
+        "config_panel": {"main_top": 286, "main_bottom": 278, "support_top": 398, "support_bottom": 1492, "center_y": 858, "caption_top": 1580, "header_bottom": 168},
+        "file_tree": {"main_top": 286, "main_bottom": 290, "support_top": 398, "support_bottom": 1492, "center_y": 856, "caption_top": 1580, "header_bottom": 168},
+        "framework_map": {"main_top": 296, "main_bottom": 286, "support_top": 410, "support_bottom": 1496, "center_y": 862, "caption_top": 1580, "header_bottom": 170},
+        "proof_matrix": {"main_top": 294, "main_bottom": 286, "support_top": 408, "support_bottom": 1496, "center_y": 860, "caption_top": 1580, "header_bottom": 170},
+        "comparison_board": {"main_top": 292, "main_bottom": 284, "support_top": 406, "support_bottom": 1494, "center_y": 859, "caption_top": 1580, "header_bottom": 170},
+        "decision_fork": {"main_top": 290, "main_bottom": 280, "support_top": 404, "support_bottom": 1494, "center_y": 858, "caption_top": 1580, "header_bottom": 170},
+        "section_board": {"main_top": 292, "main_bottom": 280, "support_top": 406, "support_bottom": 1494, "center_y": 859, "caption_top": 1580, "header_bottom": 170},
+        "action_close": {"main_top": 300, "main_bottom": 270, "support_top": 416, "support_bottom": 1500, "center_y": 870, "caption_top": 1580, "header_bottom": 176},
+        "checklist_close": {"main_top": 296, "main_bottom": 274, "support_top": 414, "support_bottom": 1500, "center_y": 868, "caption_top": 1580, "header_bottom": 176},
+        "insight_close": {"main_top": 296, "main_bottom": 274, "support_top": 414, "support_bottom": 1500, "center_y": 868, "caption_top": 1580, "header_bottom": 176},
+        "offer_close": {"main_top": 300, "main_bottom": 270, "support_top": 416, "support_bottom": 1500, "center_y": 870, "caption_top": 1580, "header_bottom": 176},
+    }
+    return presets.get(layout_family, {"main_top": 286, "main_bottom": 286, "support_top": 400, "support_bottom": 1490, "center_y": 860, "caption_top": 1580, "header_bottom": 170})
+
+
+def _analyze_layout_fit(scenes: list[dict[str, Any]]) -> dict[str, Any]:
+    off_canvas_ids: list[str] = []
+    center_out_ids: list[str] = []
+    caption_overlap_ids: list[str] = []
+    header_overlap_ids: list[str] = []
+    line_overflow_ids: list[str] = []
+
+    def _fit_score(scene: dict[str, Any]) -> int:
+        layout_family = str(scene.get("layout_family") or "").strip()
+        box = scene.get("layout_box") if isinstance(scene.get("layout_box"), dict) else _default_layout_box(layout_family)
+        scene_id = str(scene.get("id") or "").strip()
+        support_cards = box.get("support_cards", [])
+        support_top = int(box.get("support_top", 0) or 0)
+        support_bottom = int(box.get("support_bottom", 0) or 0)
+        center_y = int(box.get("center_y", 0) or 0)
+        caption_top = int(box.get("caption_top", 1580) or 1580)
+        header_bottom = int(box.get("header_bottom", 170) or 170)
+        primary = str(scene.get("primary_message") or scene.get("display_headline") or "").strip()
+        support_texts = [str(item or "").strip() for item in (scene.get("support_elements") or []) if str(item or "").strip()]
+        duplicate_text = any(text and primary and text in primary for text in support_texts)
+        if (support_top < 120 or support_bottom > 1500) and scene_id:
+            off_canvas_ids.append(scene_id)
+        if center_y < 520 or center_y > 1180:
+            if scene_id:
+                center_out_ids.append(scene_id)
+        if caption_top < 1580 and scene_id:
+            caption_overlap_ids.append(scene_id)
+        if header_bottom > 220 and support_top < header_bottom + 48 and scene_id:
+            header_overlap_ids.append(scene_id)
+        if len(primary) > 16 or any(len(text) > 24 for text in support_texts):
+            if scene_id:
+                line_overflow_ids.append(scene_id)
+        if support_cards:
+            for card in support_cards:
+                if not isinstance(card, dict):
+                    continue
+                card_top = int(card.get("y", support_top) or support_top)
+                card_bottom = card_top + int(card.get("h", 160) or 160)
+                card_x = int(card.get("x", 0) or 0)
+                card_w = int(card.get("w", 0) or 0)
+                if card_top < 120 or card_bottom > 1500 or card_x < 0 or card_x + card_w > 1080:
+                    if scene_id and scene_id not in off_canvas_ids:
+                        off_canvas_ids.append(scene_id)
+                if duplicate_text and scene_id and scene_id not in line_overflow_ids:
+                    line_overflow_ids.append(scene_id)
+        return len(off_canvas_ids) + len(center_out_ids) + len(caption_overlap_ids) + len(header_overlap_ids) + len(line_overflow_ids)
+
+    for scene in scenes:
+        _fit_score(scene)
+
+    hard_fail_reasons: list[str] = []
+    if off_canvas_ids:
+        hard_fail_reasons.append("off-canvas support card detected")
+    if center_out_ids:
+        hard_fail_reasons.append("main structure center out of band")
+    if caption_overlap_ids:
+        hard_fail_reasons.append("caption starts too early")
+    if header_overlap_ids:
+        hard_fail_reasons.append("header/support overlap detected")
+    if line_overflow_ids:
+        hard_fail_reasons.append("text line overflow detected")
+
+    if hard_fail_reasons:
+        risk = "high"
+    elif len(scenes) >= 8 and (off_canvas_ids or center_out_ids or caption_overlap_ids):
+        risk = "medium"
+    else:
+        risk = "low"
+
+    return {
+        "off_canvas_count": len(off_canvas_ids),
+        "off_canvas_ids": list(dict.fromkeys(off_canvas_ids)),
+        "center_out_count": len(center_out_ids),
+        "center_out_ids": list(dict.fromkeys(center_out_ids)),
+        "caption_overlap_count": len(caption_overlap_ids),
+        "caption_overlap_ids": list(dict.fromkeys(caption_overlap_ids)),
+        "header_overlap_count": len(header_overlap_ids),
+        "header_overlap_ids": list(dict.fromkeys(header_overlap_ids)),
+        "line_overflow_count": len(line_overflow_ids),
+        "line_overflow_ids": list(dict.fromkeys(line_overflow_ids)),
+        "layout_fit_risk": risk,
+        "layout_fit_status": "PASS" if not hard_fail_reasons else "FAIL",
+        "hard_fail_reasons": hard_fail_reasons,
     }
 
 
